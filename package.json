@@ -2,8 +2,15 @@
   "name": "eclip.pro",
   "private": true,
   "version": "0.1.0",
-  "workspaces": ["apps/*", "packages/*", "db"],
+  "workspaces": [
+    "apps/*",
+    "packages/*",
+    "db"
+  ],
   "engines": {
     "node": ">=18"
+  },
+  "devDependencies": {
+    "@types/node": "^24.10.1"
   }
 }
