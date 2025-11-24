@@ -1,1 +1,7 @@
 node_modules
+.next
+# ignore build and debug logs
+*.log
+build-errors.txt
+npm-install.log
+npm-install-legacy.log

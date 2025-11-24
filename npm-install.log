@@ -8,7 +8,7 @@ npm WARN deprecated
 npm WARN deprecated (For a CapTP with native promises, see @endo/eventual-send and @endo/captp)
 npm WARN deprecated eslint@8.57.1: This version is no longer supported. Please see https://eslint.org/version-support for other options.
 
-added 498 packages, and audited 499 packages in 21s
+added 498 packages, and audited 499 packages in 34s
 
 152 packages are looking for funding
   run `npm fund` for details
