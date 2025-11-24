@@ -7,4 +7,4 @@ export default function AdminPage() {
       </p>
     </div>
   );
-}\n
+}

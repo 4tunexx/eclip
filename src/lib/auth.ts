@@ -54,4 +54,4 @@ export function clearAuthCookie(res: NextApiResponse) {
     "Set-Cookie",
     `eclip_token=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0${isProd ? "; Secure" : ""}`,
   );
-}\n
+}

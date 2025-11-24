@@ -7,4 +7,4 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
     finishedMatches: 0,
     coinsEarned: 0,
   });
-}\n
+}

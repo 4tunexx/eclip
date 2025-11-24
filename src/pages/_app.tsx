@@ -58,4 +58,4 @@ export default function MyApp({ Component, pageProps }: AppProps) {
       </div>
     </div>
   );
-}\n
+}

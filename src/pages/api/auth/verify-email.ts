@@ -19,4 +19,4 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   await prisma.emailVerificationToken.delete({ where: { id: record.id } });
 
   return res.status(200).send("Email verified. You can close this page.");
-}\n
+}

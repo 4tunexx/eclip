@@ -5,13 +5,9 @@ const apiKey = process.env.CLOUDINARY_API_KEY;
 const apiSecret = process.env.CLOUDINARY_API_SECRET;
 
 if (cloudName && apiKey && apiSecret) {
-  cloudinary.config({
-    cloud_name: cloudName,
-    api_key: apiKey,
-    api_secret: apiSecret,
-  });
+  cloudinary.config({ cloud_name: cloudName, api_key: apiKey, api_secret: apiSecret });
 } else {
   console.warn("Cloudinary env vars are missing. Uploads will be disabled.");
 }
 
-export { cloudinary };\n
+export { cloudinary };

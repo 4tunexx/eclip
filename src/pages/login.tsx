@@ -71,4 +71,4 @@ export default function LoginPage() {
       </div>
     </div>
   );
-}\n
+}

@@ -7,4 +7,4 @@ export default function ChatPage() {
       </p>
     </div>
   );
-}\n
+}

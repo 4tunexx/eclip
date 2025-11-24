@@ -73,4 +73,4 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   setAuthCookie(res, jwt);
 
   return res.status(201).json({ user: authUser });
-}\n
+}

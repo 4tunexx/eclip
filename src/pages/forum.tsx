@@ -7,4 +7,4 @@ export default function ForumPage() {
       </p>
     </div>
   );
-}\n
+}

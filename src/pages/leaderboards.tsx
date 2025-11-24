@@ -7,4 +7,4 @@ export default function LeaderboardsPage() {
       </p>
     </div>
   );
-}\n
+}

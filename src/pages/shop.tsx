@@ -7,4 +7,4 @@ export default function ShopPage() {
       </p>
     </div>
   );
-}\n
+}

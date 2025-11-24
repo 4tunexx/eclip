@@ -32,4 +32,4 @@ export async function sendMail(options: { to: string; subject: string; html: str
     subject: options.subject,
     html: options.html,
   });
-}\n
+}
