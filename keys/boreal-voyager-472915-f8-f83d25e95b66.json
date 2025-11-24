@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "boreal-voyager-472915-f8",
+  "private_key_id": "f83d25e95b66e3ba75a7fe4f230b715d7b20d976",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvwIBADANBgkqhkiG9w0BAQEFAASCBKkwggSlAgEAAoIBAQC6ySQ3Z89Oicdm\nhuX5uXEzlu45cQzexF5R6d06LlxdEYSJVRlOspb6wXVA3IAQoWBA2Ncdt5/arth5\nqrV89qWTnZeJ292yQcxM4S2Wp361+vKb66U9Ifh1vZK3WsJvtFv3PRZT8t8pbp7+\n2Wn7KTBmse1Sq9tGX1njn94flO9Cl9+D/kZNJc0YG/pz5wkAdCy0fFLQTnmzih5W\n2StZy49JAyqAsrs3y6oARPENQAyOhAPk1C3O2qZJVgV0KVE71Likr2BA078tPMs4\nSer9hzyKv0ncgnkcdt3hrRujxb5sXyabo9TJn/j1gG8iqcinEzjjcgHU19MP47av\n8sqRhZ5pAgMBAAECggEAC4QIJBRV3yE2dnc9qYJJ3OTixg7WvMs9h25UMdiW4DQK\nyE7DUytGjKotuPR/Psc8QHM9+/qMs/ZQqVuhedVZCvtN0vWHuww8dMbzQRUNhlm0\n6HEETHsSLuwjpgNF9o4Xl2wgOsfAA3Vq/wpXcuEst0AkAhNPXwzU5Wg/URIlGCVa\n2qPU1WakNsXJ3FMlpGvEa6SP2hd1jbRWW2aAeaK9QIxIQZNFbrN8Y5ZGONsg/N2C\nQCT+P+gW2D0pcIwyqDTufS8JojtHg4LqCvGo0I1wct5Y+IuUqi9VaDWx6u9LGUs3\nxulIPs6WFflaJT9EUDRKgqd3unEuaZp1wutixLDLYwKBgQDsPmJWKjVXnyMtVSvO\neCeuS75FFV4I2pXvdEQkvZ5x11U4jeY3Jt43VDV9HMUs7TAfwI6vdxvaP0qZY52O\nuAd3jPvt4xFhpHbaLpVMdcaB3ho4msdn25oCZhxGX5z/+Haf0JLMyVoJJXxoW4jU\n2T+QMO7qOxXzPtdC7otRtcyxKwKBgQDKZ/AMUPiHoVTB9jaO27dLaUg1CNGbkoms\nclHfquS8K6qJQe6SEfJKBeRxzwEj3h7SM5a5z6E5cEXsIWwZasUBWLydFaGP0o8J\nuZuLag2ldiNBivAuIMWROUlLErnlaafleWzkIm8gZ5rYA1Mo/svaLwtqWj8EOs1S\n8YQA0h6cuwKBgQCH10dMLHEHtSXRB0xtKIIIot0BdEvh426bhcs5JR9abms+Xbmm\ntN7KCc3H5ycpsikd2Ocy1dZaJFKM6M7MJd2FTLgADbUM5DjDNE387Sv7uO5y5e0L\nNybTgkt327q3JPNw6cm/n3f6Emf6ycdgPJtkGf8HCHqSp+u3PNs3XMYaiQKBgQC/\n7ISLOTAgc5MKBGxBVAffAurMFxuiV/YhxZjq7IHOB93CHvmYGlpTZHj0jaP4HcO9\n79sJP98Rtusmd56oDzzVBQ58KSm0VaT6RLxAGwTrkzTlDlimdL7B8L8V56DL7z6b\n8mKVhC05XeRO1gBBzDECJz+8zewZF6Tf9FEF8jfCxwKBgQDWdul06IylPChqdlxF\nSU34tX5yT820XFVZeq1p5MNCyu/T0S1g4rf6XYOUDRempxT61G7VemHtgHkPK0Au\ns2AbUhBPVO8FV3L/7VrpHG9aJJNU/g5WcLSPcRp4zpeT3NrYOAE/eXFlegV3FoRs\nr9Fje//CgEEg5gnQ0uq8SmkbGA==\n-----END PRIVATE KEY-----\n",
+  "client_email": "ecliop-automatation@boreal-voyager-472915-f8.iam.gserviceaccount.com",
+  "client_id": "109074616371326860208",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/ecliop-automatation%40boreal-voyager-472915-f8.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}

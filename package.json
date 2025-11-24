@@ -1,0 +1,9 @@
+{
+  "name": "eclip.pro",
+  "private": true,
+  "version": "0.1.0",
+  "workspaces": ["apps/*", "packages/*", "db"],
+  "engines": {
+    "node": ">=18"
+  }
+}

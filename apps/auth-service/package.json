@@ -1,0 +1,30 @@
+{
+  "name": "@eclip/auth-service",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "ts-node-dev src/index.ts",
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/index.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "pg": "^8.11.3",
+    "ioredis": "^5.3.2",
+    "zod": "^3.23.8",
+    "dotenv": "^16.4.5",
+    "jsonwebtoken": "^9.0.2",
+    "passport": "^0.7.0",
+    "passport-steam": "^1.0.16",
+    "express-session": "^1.17.3"
+  },
+  "devDependencies": {
+    "ts-node-dev": "^2.0.0",
+    "typescript": "^5.6.3",
+    "@types/jsonwebtoken": "^9.0.6",
+    "@types/pg": "^8.11.7",
+    "@types/express": "^4.17.21",
+    "@types/express-session": "^1.17.8",
+    "@types/passport": "^1.0.16"
+  }
+}
