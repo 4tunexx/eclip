@@ -3,19 +3,14 @@
   "private": true,
   "version": "0.1.0",
   "workspaces": [
-    "apps/*",
-    "prisma"
+    "apps/*"
   ],
   "scripts": {
     "dev": "cd apps/frontend && npm run dev",
     "build": "cd apps/frontend && npm run build",
-    "start": "cd apps/frontend && npm start",
-    "lint": "cd apps/frontend && npm run lint",
-    "prisma:generate": "cd apps/frontend && npx prisma generate"
+    "start": "cd apps/frontend && npm start"
   },
   "engines": {
     "node": ">=18"
-  },
-  "dependencies": {},
-  "devDependencies": {}
+  }
 }
