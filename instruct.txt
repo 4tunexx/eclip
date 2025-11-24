@@ -1,0 +1,5 @@
+npm install --save-dev @types/jsonwebtoken
+
+git add .
+git commit -m "Fix: add jsonwebtoken type definitions"
+git push
