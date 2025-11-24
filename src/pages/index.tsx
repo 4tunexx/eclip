@@ -32,7 +32,36 @@ export default function HomePage() {
             </div>
           </div>
         </section>
+        <section className="grid gap-3 text-xs sm:grid-cols-4">
+          <div className="rounded-xl border border-white/10 bg-black/40 p-3">
+            <p className="text-neutral-400">Players online</p>
+            <p className="mt-1 text-2xl font-semibold text-neutral-100">–</p>
+          </div>
+          <div className="rounded-xl border border-white/10 bg-black/40 p-3">
+            <p className="text-neutral-400">Matches live</p>
+            <p className="mt-1 text-2xl font-semibold text-neutral-100">–</p>
+          </div>
+          <div className="rounded-xl border border-white/10 bg-black/40 p-3">
+            <p className="text-neutral-400">Matches finished</p>
+            <p className="mt-1 text-2xl font-semibold text-neutral-100">–</p>
+          </div>
+          <div className="rounded-xl border border-white/10 bg-black/40 p-3">
+            <p className="text-neutral-400">Coins earned</p>
+            <p className="mt-1 text-2xl font-semibold text-[#FFD047]">–</p>
+          </div>
+        </section>
+        <section className="space-y-3">
+          <h2 className="text-sm font-semibold text-neutral-100">
+            Top players today
+          </h2>
+          <div className="rounded-xl border border-white/10 bg-black/40 p-3 text-xs text-neutral-400">
+            Leaderboard preview will appear here once the backend is wired.
+          </div>
+        </section>
       </div>
+      <footer className="mt-8 w-full border-t border-white/10 py-4 text-center text-[11px] text-neutral-500">
+        © {new Date().getFullYear()} Eclip.pro – Dominate • Win • Compete • Play • Enjoy
+      </footer>
     </div>
   );
 }

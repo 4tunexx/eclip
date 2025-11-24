@@ -2,6 +2,10 @@
 @tailwind components;
 @tailwind utilities;
 
+html, body, #__next {
+  height: 100%;
+}
+
 body {
   @apply bg-[#05060A] text-[#E5E5E5];
 }

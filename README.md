@@ -1,19 +1,21 @@
-# Eclip.pro – Starter Stack (Next.js + Prisma + Neon-ready)
+# Eclip.pro Frontend (Single-App, Stable)
 
-This ZIP contains a minimal but structured foundation for your platform:
+This is a clean, stable Next.js 14 frontend using the **pages** router.
 
-- Next.js 14 App Router at `apps/frontend`
-- Prisma schema at `/prisma/schema.prisma`
-- R2 helper at `src/lib/r2.ts`
-- App route groups:
-  - `(landing)` – public landing, login, register
-  - `(app)` – authenticated app shell with sidebar
-- Example API route at `/api/health`
+- Landing page at `/` with logo, banner, login/register buttons, and stats placeholders.
+- Auth placeholders at `/login` and `/register`.
+- Dashboard at `/dashboard`.
+- Shell pages for `/leaderboards`, `/shop`, `/forum`, `/chat`, `/settings`, `/admin`.
+- Sidebar layout shown on all non-landing routes, hidden on `/`.
+- Tailwind CSS configured via `tailwind.config.js` and `src/styles/globals.css`.
+- Custom 404 and 500 pages.
+- Health check endpoint at `/api/health`.
 
-You will still need to:
-- Configure DATABASE_URL pointing to Neon
-- Run `npm install` in root
-- Generate Prisma client from `/prisma/schema.prisma`
-- Implement real auth, admin, matchmaking, etc.
+To run locally:
+1. `npm install`
+2. `npm run dev`
 
-This is a solid base to deploy on Vercel and iterate from.
+To deploy on Vercel:
+- Set project root to this folder.
+- Build command: `npm run build`
+- Output: default (Next.js).
