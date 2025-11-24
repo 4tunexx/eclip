@@ -4,13 +4,18 @@
   "version": "0.1.0",
   "workspaces": [
     "apps/*",
-    "packages/*",
-    "db"
+    "prisma"
   ],
+  "scripts": {
+    "dev": "cd apps/frontend && npm run dev",
+    "build": "cd apps/frontend && npm run build",
+    "start": "cd apps/frontend && npm start",
+    "lint": "cd apps/frontend && npm run lint",
+    "prisma:generate": "cd apps/frontend && npx prisma generate"
+  },
   "engines": {
     "node": ">=18"
   },
-  "devDependencies": {
-    "@types/node": "^24.10.1"
-  }
+  "dependencies": {},
+  "devDependencies": {}
 }

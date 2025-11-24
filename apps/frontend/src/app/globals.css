@@ -2,12 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --bg: #0E141B;
-  --fg: #FFFFFF;
-}
-
-html, body {
-  background: var(--bg);
-  color: var(--fg);
+body {
+  @apply bg-[#05060A] text-[#E5E5E5];
 }
