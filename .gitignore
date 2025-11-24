@@ -5,3 +5,8 @@ node_modules
 build-errors.txt
 npm-install.log
 npm-install-legacy.log
+keys/
+env.local
+.env.local
+.env
+keys/
