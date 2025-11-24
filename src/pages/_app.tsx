@@ -3,28 +3,28 @@ import "../styles/globals.css";
 import Link from "next/link";
 import { useRouter } from "next/router";
 
+const LANDING_ROUTES = ["/", "/login", "/register"];
+
 export default function MyApp({ Component, pageProps }: AppProps) {
   const router = useRouter();
-  const landingRoutes = ["/", "/login", "/register"];
-
-  const isLanding = landingRoutes.includes(router.pathname);
+  const isLanding = LANDING_ROUTES.includes(router.pathname);
 
   if (isLanding) {
     return (
-      <div className="min-h-screen bg-[#05060A] text-[#E5E5E5]">
+      <div className="min-h-screen bg-bg text-[#E5E5E5]">
         <Component {...pageProps} />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#05060A] text-[#E5E5E5]">
+    <div className="min-h-screen bg-bg text-[#E5E5E5]">
       <div className="flex min-h-screen">
         <aside className="hidden w-64 flex-col border-r border-white/10 bg-black/40 p-4 md:flex">
           <div className="mb-6 flex items-center gap-2">
-            <div className="h-8 w-8 rounded-md border border-[#7BFF5A]/40 bg-gradient-to-br from-[#7BFF5A]/50 to-[#00FFB3]/20" />
+            <div className="h-8 w-8 rounded-md border border-accent-primary/40 bg-gradient-to-br from-accent-primary/50 to-accent-secondary/20" />
             <div className="text-sm font-semibold tracking-wide">
-              <span className="text-[#7BFF5A]">Eclip</span>
+              <span className="text-accent-primary">Eclip</span>
               <span className="text-neutral-300">.pro</span>
             </div>
           </div>

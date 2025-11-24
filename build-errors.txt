@@ -1,5 +1,5 @@
 
-> eclip-frontend@0.2.0 build
+> eclip@1.0.0 build
 > next build
 
 Attention: Next.js now collects completely anonymous telemetry regarding usage.
@@ -23,30 +23,31 @@ https://nextjs.org/telemetry
    Collecting build traces ...
 
 Route (pages)                             Size     First Load JS
-┌ ○ /                                     1.22 kB        82.4 kB
+┌ ○ /                                     1.3 kB         82.4 kB
 ├   /_app                                 0 B            81.1 kB
-├ ○ /404                                  428 B          81.6 kB
-├ ○ /500                                  428 B          81.6 kB
+├ ○ /404                                  421 B          81.6 kB
+├ ○ /500                                  421 B          81.6 kB
 ├ ○ /admin                                389 B          81.5 kB
 ├ ƒ /api/auth/login                       0 B            81.1 kB
 ├ ƒ /api/auth/logout                      0 B            81.1 kB
 ├ ƒ /api/auth/me                          0 B            81.1 kB
 ├ ƒ /api/auth/register                    0 B            81.1 kB
+├ ƒ /api/auth/steam                       0 B            81.1 kB
 ├ ƒ /api/auth/verify-email                0 B            81.1 kB
 ├ ƒ /api/health                           0 B            81.1 kB
 ├ ƒ /api/platform/stats                   0 B            81.1 kB
 ├ ○ /chat                                 386 B          81.5 kB
-├ ○ /dashboard                            5.54 kB        86.7 kB
-├ ○ /forum                                390 B          81.5 kB
-├ ○ /leaderboards                         391 B          81.5 kB
-├ ○ /login                                1.01 kB        82.2 kB
+├ ○ /dashboard                            5.3 kB         86.4 kB
+├ ○ /forum                                391 B          81.5 kB
+├ ○ /leaderboards                         394 B          81.5 kB
+├ ○ /login                                1.15 kB        82.3 kB
 ├ ○ /register                             1.05 kB        82.2 kB
-├ ○ /settings                             391 B          81.5 kB
+├ ○ /settings                             393 B          81.5 kB
 └ ○ /shop                                 388 B          81.5 kB
-+ First Load JS shared by all             84.1 kB
++ First Load JS shared by all             84.2 kB
   ├ chunks/framework-2c16ac744b6cdea6.js  45.2 kB
-  ├ chunks/main-b4b7cbcc7ee0fc77.js       32 kB
-  └ other shared chunks (total)           6.85 kB
+  ├ chunks/main-8b0186800519fc26.js       32 kB
+  └ other shared chunks (total)           6.94 kB
 
 ○  (Static)   prerendered as static content
 ƒ  (Dynamic)  server-rendered on demand

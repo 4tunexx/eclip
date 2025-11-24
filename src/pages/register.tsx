@@ -33,7 +33,7 @@ export default function RegisterPage() {
 
   return (
     <div className="flex min-h-screen items-center justify-center px-4">
-      <div className="w-full max-w-sm space-y-4 rounded-2xl border border-white/10 bg-black/50 p-5">
+      <div className="w-full max-w-sm space-y-4 rounded-2xl border border-white/10 bg-black/60 p-5">
         <h1 className="text-lg font-semibold text-neutral-100">Register</h1>
         <form className="space-y-3" onSubmit={handleSubmit}>
           <div className="space-y-1 text-xs">
@@ -42,7 +42,7 @@ export default function RegisterPage() {
               name="email"
               type="email"
               required
-              className="w-full rounded border border-white/10 bg-black/40 px-3 py-2 text-xs outline-none focus:border-[#7BFF5A]/60"
+              className="w-full rounded border border-white/10 bg-black/40 px-3 py-2 text-xs outline-none focus:border-accent-primary/60"
             />
           </div>
           <div className="space-y-1 text-xs">
@@ -51,7 +51,7 @@ export default function RegisterPage() {
               name="username"
               type="text"
               required
-              className="w-full rounded border border-white/10 bg-black/40 px-3 py-2 text-xs outline-none focus:border-[#7BFF5A]/60"
+              className="w-full rounded border border-white/10 bg-black/40 px-3 py-2 text-xs outline-none focus:border-accent-primary/60"
             />
           </div>
           <div className="space-y-1 text-xs">
@@ -60,21 +60,21 @@ export default function RegisterPage() {
               name="password"
               type="password"
               required
-              className="w-full rounded border border-white/10 bg-black/40 px-3 py-2 text-xs outline-none focus:border-[#7BFF5A]/60"
+              className="w-full rounded border border-white/10 bg-black/40 px-3 py-2 text-xs outline-none focus:border-accent-primary/60"
             />
           </div>
           {error && <p className="text-xs text-red-400">{error}</p>}
           <button
             type="submit"
             disabled={loading}
-            className="flex w-full items-center justify-center rounded bg-[#7BFF5A] py-2 text-xs font-semibold text-black hover:bg-[#93FF7B] disabled:opacity-60"
+            className="flex w-full items-center justify-center rounded bg-accent-primary py-2 text-xs font-semibold text-black hover:bg-[#93FF7B] disabled:opacity-60"
           >
             {loading ? "Creating account…" : "Create account"}
           </button>
         </form>
         <p className="text-[11px] text-neutral-400">
           Already have an account?{" "}
-          <Link href="/login" className="text-[#7BFF5A]">
+          <Link href="/login" className="text-accent-primary">
             Login
           </Link>
         </p>

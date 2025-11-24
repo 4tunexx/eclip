@@ -11,17 +11,18 @@ export async function sendMail(options: { to: string; subject: string; html: str
   if (!server || !from) return;
 
   const url = new URL(server);
-  const [user, pass] = (url.username + ":" + url.password).split(":");
+  const username = decodeURIComponent(url.username);
+  const password = decodeURIComponent(url.password);
   const secure = url.port === "465";
 
   const transporter = nodemailer.createTransport({
     host: url.hostname,
     port: Number(url.port) || 587,
     secure,
-    auth: user
+    auth: username
       ? {
-          user,
-          pass,
+          user: username,
+          pass: password,
         }
       : undefined,
   });

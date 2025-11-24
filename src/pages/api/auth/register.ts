@@ -67,7 +67,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     username: user.username,
     coins: user.coins,
     level: user.level,
-    rank: user.rank,
+    rankTier: user.rankTier,
+    rankDivision: user.rankDivision,
+    xp: user.xp,
   };
   const jwt = signUserToken(authUser);
   setAuthCookie(res, jwt);

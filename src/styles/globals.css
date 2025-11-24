@@ -7,5 +7,5 @@ html, body, #__next {
 }
 
 body {
-  @apply bg-[#05060A] text-[#E5E5E5];
+  @apply bg-bg text-[#E5E5E5];
 }

@@ -10,7 +10,9 @@ export type AuthUser = {
   username: string | null;
   coins: number;
   level: number;
-  rank: string;
+  rankTier: string;
+  rankDivision: number;
+  xp: number;
 };
 
 export function signUserToken(user: AuthUser) {
@@ -32,7 +34,9 @@ export async function getUserFromRequest(req: NextApiRequest): Promise<AuthUser 
       username: user.username,
       coins: user.coins,
       level: user.level,
-      rank: user.rank,
+      rankTier: user.rankTier,
+      rankDivision: user.rankDivision,
+      xp: user.xp,
     };
   } catch {
     return null;

@@ -23,9 +23,9 @@ export default function HomePage() {
       <div className="w-full max-w-4xl space-y-8">
         <div className="flex items-center justify-center">
           <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-md border border-[#7BFF5A]/40 bg-gradient-to-br from-[#7BFF5A]/50 to-[#00FFB3]/20" />
+            <div className="h-10 w-10 rounded-md border border-accent-primary/40 bg-gradient-to-br from-accent-primary/50 to-accent-secondary/20" />
             <div className="text-xl font-semibold tracking-wide">
-              <span className="text-[#7BFF5A]">Eclip</span>
+              <span className="text-accent-primary">Eclip</span>
               <span className="text-neutral-300">.pro</span>
             </div>
           </div>
@@ -40,12 +40,24 @@ export default function HomePage() {
               and flex your public profile.
             </p>
             <div className="flex flex-wrap items-center justify-center gap-4">
-              <Link href="/login" className="rounded-lg bg-[#7BFF5A] px-5 py-2 text-sm font-semibold text-black shadow-[0_0_25px_rgba(123,255,90,0.7)] hover:bg-[#93FF7B] transition">
+              <Link
+                href="/login"
+                className="rounded-lg bg-accent-primary px-5 py-2 text-sm font-semibold text-black shadow-[0_0_25px_rgba(123,255,90,0.7)] hover:bg-[#93FF7B] transition"
+              >
                 Login
               </Link>
-              <Link href="/register" className="rounded-lg border border-white/15 bg-white/5 px-5 py-2 text-sm font-semibold text-neutral-100 hover:border-[#7BFF5A]/60 transition">
+              <Link
+                href="/register"
+                className="rounded-lg border border-white/15 bg-white/5 px-5 py-2 text-sm font-semibold text-neutral-100 hover:border-accent-primary/60 transition"
+              >
                 Register
               </Link>
+              <a
+                href="/api/auth/steam"
+                className="inline-flex items-center gap-2 rounded-lg border border-[#66c0f4]/60 bg-[#1b2838] px-5 py-2 text-sm font-semibold text-[#c7d5e0] hover:bg-[#171a21] transition"
+              >
+                <span>Sign in with Steam</span>
+              </a>
             </div>
           </div>
         </section>
@@ -70,7 +82,7 @@ export default function HomePage() {
           </div>
           <div className="rounded-xl border border-white/10 bg-black/40 p-3">
             <p className="text-neutral-400">Coins earned</p>
-            <p className="mt-1 text-2xl font-semibold text-[#FFD047]">
+            <p className="mt-1 text-2xl font-semibold text-accent-gold">
               {stats ? stats.coinsEarned : "–"}
             </p>
           </div>

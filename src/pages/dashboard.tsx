@@ -17,11 +17,21 @@ export default function DashboardPage() {
     return <p className="text-sm text-neutral-400">You are not logged in.</p>;
   }
 
-  const user = data.user as any;
+  const user = data.user as {
+    email: string;
+    username: string | null;
+    level: number;
+    rankTier: string;
+    rankDivision: number;
+    coins: number;
+    xp: number;
+  };
 
   return (
     <div className="space-y-4">
-      <h1 className="text-xl font-semibold text-neutral-100">Welcome, {user.username ?? user.email}</h1>
+      <h1 className="text-xl font-semibold text-neutral-100">
+        Welcome, {user.username ?? user.email}
+      </h1>
       <div className="grid gap-3 text-xs sm:grid-cols-3">
         <div className="rounded-xl border border-white/10 bg-black/40 p-3">
           <p className="text-neutral-400">Level</p>
@@ -29,11 +39,13 @@ export default function DashboardPage() {
         </div>
         <div className="rounded-xl border border-white/10 bg-black/40 p-3">
           <p className="text-neutral-400">Rank</p>
-          <p className="mt-1 text-2xl font-semibold text-[#7BFF5A]">{user.rank}</p>
+          <p className="mt-1 text-lg font-semibold text-accent-primary">
+            {user.rankTier} {user.rankDivision}
+          </p>
         </div>
         <div className="rounded-xl border border-white/10 bg-black/40 p-3">
           <p className="text-neutral-400">Coins</p>
-          <p className="mt-1 text-2xl font-semibold text-[#FFD047]">{user.coins}</p>
+          <p className="mt-1 text-2xl font-semibold text-accent-gold">{user.coins}</p>
         </div>
       </div>
     </div>

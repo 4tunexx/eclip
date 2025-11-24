@@ -7,17 +7,32 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum UserRole {
+  USER
+  MOD
+  ADMIN
+}
+
 model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  password  String
-  username  String?
-  coins     Int      @default(0)
-  level     Int      @default(1)
-  xp        Int      @default(0)
-  rank      String   @default("Bronze I")
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id              String   @id @default(cuid())
+  email           String   @unique
+  password        String
+  username        String?
+  steamId         String?  @unique
+  steamName       String?
+  avatarUrl       String?
+  bannerUrl       String?
+  role            UserRole @default(USER)
+  coins           Int      @default(0)
+  xp              Int      @default(0)
+  level           Int      @default(1)
+  rankTier        String   @default("Bronze")
+  rankDivision    Int      @default(1)
+  mmr             Int      @default(0)
+  emailVerifiedAt DateTime?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  tokens          EmailVerificationToken[]
 }
 
 model EmailVerificationToken {
@@ -27,4 +42,4 @@ model EmailVerificationToken {
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
   expiresAt DateTime
-  }
+}
