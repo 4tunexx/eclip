@@ -1,0 +1,44 @@
+# npm audit report
+
+glob  10.2.0 - 10.4.5
+Severity: high
+glob CLI: Command injection via -c/--cmd executes matches with shell:true - https://github.com/advisories/GHSA-5j98-mcp5-4vw2
+fix available via `npm audit fix --force`
+Will install eslint-config-next@16.0.3, which is a breaking change
+node_modules/@next/eslint-plugin-next/node_modules/glob
+  @next/eslint-plugin-next  14.0.5-canary.0 - 15.0.0-rc.1
+  Depends on vulnerable versions of glob
+  node_modules/@next/eslint-plugin-next
+    eslint-config-next  14.0.5-canary.0 - 15.0.0-rc.1
+    Depends on vulnerable versions of @next/eslint-plugin-next
+    node_modules/eslint-config-next
+
+next  0.9.9 - 14.2.31
+Severity: critical
+Next.js Cache Poisoning - https://github.com/advisories/GHSA-gp8f-8m3g-qvj9
+Denial of Service condition in Next.js image optimization - https://github.com/advisories/GHSA-g77x-44xx-532m
+Next.js Allows a Denial of Service (DoS) with Server Actions - https://github.com/advisories/GHSA-7m27-7ghc-44w9
+Information exposure in Next.js dev server due to lack of origin verification - https://github.com/advisories/GHSA-3h52-269p-cp9r
+Next.js Affected by Cache Key Confusion for Image Optimization API Routes - https://github.com/advisories/GHSA-g5qg-72qw-gw5v
+Next.js authorization bypass vulnerability - https://github.com/advisories/GHSA-7gfc-8cq8-jh5f
+Next.js Improper Middleware Redirect Handling Leads to SSRF - https://github.com/advisories/GHSA-4342-x723-ch2f
+Next.js Content Injection Vulnerability for Image Optimization - https://github.com/advisories/GHSA-xv57-4mr9-wg8v
+Next.js Race Condition to Cache Poisoning - https://github.com/advisories/GHSA-qpjv-v59x-3qc4
+Authorization Bypass in Next.js Middleware - https://github.com/advisories/GHSA-f82v-jwr5-mffw
+fix available via `npm audit fix`
+node_modules/next
+
+nodemailer  <7.0.7
+Severity: moderate
+Nodemailer: Email to an unintended domain can occur due to Interpretation Conflict - https://github.com/advisories/GHSA-mm7p-fcc7-pg87
+fix available via `npm audit fix --force`
+Will install nodemailer@7.0.10, which is a breaking change
+node_modules/nodemailer
+
+5 vulnerabilities (1 moderate, 3 high, 1 critical)
+
+To address issues that do not require attention, run:
+  npm audit fix
+
+To address all issues (including breaking changes), run:
+  npm audit fix --force
