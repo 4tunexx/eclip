@@ -1,6 +1,23 @@
 import Link from "next/link";
+import { useEffect, useState } from "react";
+
+type Stats = {
+  onlinePlayers: number;
+  liveMatches: number;
+  finishedMatches: number;
+  coinsEarned: number;
+};
 
 export default function HomePage() {
+  const [stats, setStats] = useState<Stats | null>(null);
+
+  useEffect(() => {
+    fetch("/api/platform/stats")
+      .then((r) => r.json())
+      .then((data) => setStats(data))
+      .catch(() => setStats(null));
+  }, []);
+
   return (
     <div className="flex min-h-screen flex-col items-center justify-between px-4 py-6">
       <div className="w-full max-w-4xl space-y-8">
@@ -35,27 +52,27 @@ export default function HomePage() {
         <section className="grid gap-3 text-xs sm:grid-cols-4">
           <div className="rounded-xl border border-white/10 bg-black/40 p-3">
             <p className="text-neutral-400">Players online</p>
-            <p className="mt-1 text-2xl font-semibold text-neutral-100">–</p>
+            <p className="mt-1 text-2xl font-semibold text-neutral-100">
+              {stats ? stats.onlinePlayers : "–"}
+            </p>
           </div>
           <div className="rounded-xl border border-white/10 bg-black/40 p-3">
             <p className="text-neutral-400">Matches live</p>
-            <p className="mt-1 text-2xl font-semibold text-neutral-100">–</p>
+            <p className="mt-1 text-2xl font-semibold text-neutral-100">
+              {stats ? stats.liveMatches : "–"}
+            </p>
           </div>
           <div className="rounded-xl border border-white/10 bg-black/40 p-3">
             <p className="text-neutral-400">Matches finished</p>
-            <p className="mt-1 text-2xl font-semibold text-neutral-100">–</p>
+            <p className="mt-1 text-2xl font-semibold text-neutral-100">
+              {stats ? stats.finishedMatches : "–"}
+            </p>
           </div>
           <div className="rounded-xl border border-white/10 bg-black/40 p-3">
             <p className="text-neutral-400">Coins earned</p>
-            <p className="mt-1 text-2xl font-semibold text-[#FFD047]">–</p>
-          </div>
-        </section>
-        <section className="space-y-3">
-          <h2 className="text-sm font-semibold text-neutral-100">
-            Top players today
-          </h2>
-          <div className="rounded-xl border border-white/10 bg-black/40 p-3 text-xs text-neutral-400">
-            Leaderboard preview will appear here once the backend is wired.
+            <p className="mt-1 text-2xl font-semibold text-[#FFD047]">
+              {stats ? stats.coinsEarned : "–"}
+            </p>
           </div>
         </section>
       </div>
@@ -64,4 +81,4 @@ export default function HomePage() {
       </footer>
     </div>
   );
-}
+}\n

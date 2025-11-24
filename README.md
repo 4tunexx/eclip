@@ -1,21 +1,27 @@
-# Eclip.pro Frontend (Single-App, Stable)
+# Eclip.pro – Phase 2 (Auth + DB + Email + Cloudinary)
 
-This is a clean, stable Next.js 14 frontend using the **pages** router.
+Single Next.js 14 app with:
 
-- Landing page at `/` with logo, banner, login/register buttons, and stats placeholders.
-- Auth placeholders at `/login` and `/register`.
-- Dashboard at `/dashboard`.
-- Shell pages for `/leaderboards`, `/shop`, `/forum`, `/chat`, `/settings`, `/admin`.
-- Sidebar layout shown on all non-landing routes, hidden on `/`.
-- Tailwind CSS configured via `tailwind.config.js` and `src/styles/globals.css`.
-- Custom 404 and 500 pages.
-- Health check endpoint at `/api/health`.
+- Landing page at `/` (stats wired to `/api/platform/stats`).
+- Auth pages: `/login`, `/register`.
+- Protected dashboard at `/dashboard` (uses `/api/auth/me`).
+- Sidebar layout on all non-landing routes.
+- Prisma + Neon integration (`prisma/schema.prisma`).
+- Email auth (register sends verification email via `EMAIL_SERVER`).
+- JWT auth with HttpOnly cookies.
 
-To run locally:
-1. `npm install`
-2. `npm run dev`
+## Setup
 
-To deploy on Vercel:
-- Set project root to this folder.
-- Build command: `npm run build`
-- Output: default (Next.js).
+1. Put your `.env.local` with all variables (DATABASE_URL, EMAIL_SERVER, JWT_SECRET, etc.).
+2. Install deps and push schema:
+
+```bash
+npm install
+npx prisma generate
+npx prisma db push
+npm run dev
+```
+
+Then open http://localhost:3000.
+
+On Vercel, set the same env vars and just deploy.\n

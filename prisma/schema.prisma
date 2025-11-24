@@ -1,276 +1,30 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
-generator client {
-  provider = "prisma-client-js"
-}
-
 model User {
-  id            Int           @id @default(autoincrement())
-  email         String?       @unique
-  emailVerified Boolean       @default(false)
-  steamId       String?       @unique
-  username      String
-  passwordHash  String?
-  role          UserRole      @default(USER)
-  avatarUrl     String?
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
-
-  stats         UserStats?
-  wallet        Wallet?
-  sessions      Session[]
-  notifications Notification[]
-  achievements  UserAchievement[]
-  cosmetics     UserCosmetic[]
-  moderationLog ModerationAction[] @relation("ModeratorActions")
-  moderationOn  ModerationAction[] @relation("TargetUser")
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  username  String?
+  coins     Int      @default(0)
+  level     Int      @default(1)
+  xp        Int      @default(0)
+  rank      String   @default("Bronze I")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
-enum UserRole {
-  USER
-  MOD
-  ADMIN
-}
-
-model Session {
-  id        Int      @id @default(autoincrement())
-  user      User     @relation(fields: [userId], references: [id])
-  userId    Int
+model EmailVerificationToken {
+  id        String   @id @default(cuid())
   token     String   @unique
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
   expiresAt DateTime
-}
-
-model UserStats {
-  user        User   @relation(fields: [userId], references: [id])
-  userId      Int    @id
-  xp          Int    @default(0)
-  profileLevel Int   @default(1)
-  rating      Int    @default(1000)
-  rank        Rank?  @relation(fields: [rankId], references: [id])
-  rankId      Int?
-  matchesPlayed Int  @default(0)
-  wins        Int    @default(0)
-  losses      Int    @default(0)
-  kills       Int    @default(0)
-  deaths      Int    @default(0)
-  assists     Int    @default(0)
-  headshots   Int    @default(0)
-  kdrCached   Float?
-}
-
-model Rank {
-  id         Int         @id @default(autoincrement())
-  code       String      @unique
-  name       String
-  minRating  Int
-  maxRating  Int?
-  colorHex   String
-  badgeIcon  String?
-  createdAt  DateTime    @default(now())
-  users      UserStats[]
-}
-
-model Wallet {
-  id             Int      @id @default(autoincrement())
-  user           User     @relation(fields: [userId], references: [id])
-  userId         Int      @unique
-  balanceCoins   Float    @default(0)
-  lifetimeEarned Float    @default(0)
-  lifetimeSpent  Float    @default(0)
-  transactions   Transaction[]
-}
-
-model Transaction {
-  id        Int      @id @default(autoincrement())
-  wallet    Wallet   @relation(fields: [walletId], references: [id])
-  walletId  Int
-  amount    Float
-  currency  String   @default("EC")
-  type      String
-  meta      Json?
-  createdAt DateTime @default(now())
-}
-
-model Achievement {
-  id          Int               @id @default(autoincrement())
-  code        String            @unique
-  title       String
-  description String?
-  icon        String?
-  xpReward    Int               @default(0)
-  coinReward  Float             @default(0)
-  users       UserAchievement[]
-}
-
-model UserAchievement {
-  user         User        @relation(fields: [userId], references: [id])
-  userId       Int
-  achievement  Achievement @relation(fields: [achievementId], references: [id])
-  achievementId Int
-  earnedAt     DateTime    @default(now())
-
-  @@id([userId, achievementId])
-}
-
-model Cosmetic {
-  id          Int            @id @default(autoincrement())
-  type        String
-  name        String
-  description String?
-  rarity      String?
-  priceCoins  Float          @default(0)
-  active      Boolean        @default(true)
-  config      Json?
-  createdAt   DateTime       @default(now())
-  owners      UserCosmetic[]
-}
-
-model UserCosmetic {
-  user       User     @relation(fields: [userId], references: [id])
-  userId     Int
-  cosmetic   Cosmetic @relation(fields: [cosmeticId], references: [id])
-  cosmeticId Int
-  ownedAt    DateTime @default(now())
-  equipped   Boolean  @default(false)
-
-  @@id([userId, cosmeticId])
-}
-
-model Notification {
-  id        Int      @id @default(autoincrement())
-  user      User     @relation(fields: [userId], references: [id])
-  userId    Int
-  type      String
-  title     String
-  body      String?
-  data      Json?
-  read      Boolean  @default(false)
-  createdAt DateTime @default(now())
-}
-
-model Match {
-  id            Int            @id @default(autoincrement())
-  externalId    String?        @unique
-  status        String         @default("pending")
-  mapName       String?
-  startedAt     DateTime?
-  endedAt       DateTime?
-  teamAScore    Int?
-  teamBScore    Int?
-  players       MatchPlayer[]
-  stats         MatchStat[]
-}
-
-model MatchPlayer {
-  match    Match @relation(fields: [matchId], references: [id])
-  matchId  Int
-  user     User  @relation(fields: [userId], references: [id])
-  userId   Int
-  team     String?
-
-  @@id([matchId, userId])
-}
-
-model MatchStat {
-  id          Int      @id @default(autoincrement())
-  match       Match    @relation(fields: [matchId], references: [id])
-  matchId     Int
-  user        User     @relation(fields: [userId], references: [id])
-  userId      Int
-  kills       Int      @default(0)
-  deaths      Int      @default(0)
-  assists     Int      @default(0)
-  headshots   Int      @default(0)
-  mvps        Int      @default(0)
-  adr         Float?
-  score       Int?
-  clutchWins  Int      @default(0)
-}
-
-model ForumCategory {
-  id          Int           @id @default(autoincrement())
-  name        String
-  slug        String        @unique
-  description String?
-  threads     ForumThread[]
-}
-
-model ForumThread {
-  id          Int          @id @default(autoincrement())
-  category    ForumCategory @relation(fields: [categoryId], references: [id])
-  categoryId  Int
-  user        User?         @relation(fields: [userId], references: [id])
-  userId      Int?
-  title       String
-  slug        String        @unique
-  createdAt   DateTime      @default(now())
-  locked      Boolean       @default(false)
-  pinned      Boolean       @default(false)
-  posts       ForumPost[]
-}
-
-model ForumPost {
-  id        Int          @id @default(autoincrement())
-  thread    ForumThread  @relation(fields: [threadId], references: [id])
-  threadId  Int
-  user      User?        @relation(fields: [userId], references: [id])
-  userId    Int?
-  content   String
-  createdAt DateTime      @default(now())
-  editedAt  DateTime?
-}
-
-model ChatRoom {
-  id        Int           @id @default(autoincrement())
-  type      String
-  name      String?
-  createdBy User?         @relation(fields: [createdById], references: [id])
-  createdById Int?
-  createdAt DateTime      @default(now())
-  messages  ChatMessage[]
-}
-
-model ChatMessage {
-  id        Int       @id @default(autoincrement())
-  room      ChatRoom  @relation(fields: [roomId], references: [id])
-  roomId    Int
-  user      User?     @relation(fields: [userId], references: [id])
-  userId    Int?
-  content   String
-  createdAt DateTime  @default(now())
-  deleted   Boolean   @default(false)
-}
-
-model ModerationAction {
-  id           Int      @id @default(autoincrement())
-  actor        User?    @relation("ModeratorActions", fields: [actorId], references: [id])
-  actorId      Int?
-  target       User?    @relation("TargetUser", fields: [targetUserId], references: [id])
-  targetUserId Int?
-  type         String
-  reason       String?
-  meta         Json?
-  expiresAt    DateTime?
-  createdAt    DateTime @default(now())
-}
-
-model SiteSetting {
-  key       String   @id
-  value     Json
-  updatedBy Int?
-  updatedAt DateTime @default(now())
-}
-
-model QueueEntry {
-  id        Int      @id @default(autoincrement())
-  user      User     @relation(fields: [userId], references: [id])
-  userId    Int
-  rating    Int
-  region    String
-  mode      String
-  createdAt DateTime @default(now())
-}
+}\n

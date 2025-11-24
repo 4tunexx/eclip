@@ -5,7 +5,9 @@ import { useRouter } from "next/router";
 
 export default function MyApp({ Component, pageProps }: AppProps) {
   const router = useRouter();
-  const isLanding = router.pathname === "/";
+  const landingRoutes = ["/", "/login", "/register"];
+
+  const isLanding = landingRoutes.includes(router.pathname);
 
   if (isLanding) {
     return (
@@ -56,4 +58,4 @@ export default function MyApp({ Component, pageProps }: AppProps) {
       </div>
     </div>
   );
-}
+}\n

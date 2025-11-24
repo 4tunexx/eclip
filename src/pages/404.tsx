@@ -7,4 +7,4 @@ export default function NotFoundPage() {
       </p>
     </div>
   );
-}
+}\n
