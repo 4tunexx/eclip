@@ -7,11 +7,71 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+//
+// BASIC PLATFORM ENUMS
+//
+
 enum UserRole {
   USER
   MOD
   ADMIN
 }
+
+enum BanType {
+  TEMP
+  PERM
+  QUEUE_ONLY
+}
+
+enum MatchStatus {
+  PENDING
+  LIVE
+  FINISHED
+  CANCELLED
+}
+
+enum TeamSide {
+  A
+  B
+}
+
+enum QueueStatus {
+  QUEUED
+  MATCHED
+  CANCELLED
+  EXPIRED
+}
+
+enum CosmeticType {
+  AVATAR_FRAME
+  PROFILE_BANNER
+  BADGE
+  TITLE
+}
+
+enum CosmeticRarity {
+  COMMON
+  RARE
+  EPIC
+  LEGENDARY
+}
+
+enum TransactionType {
+  MATCH_REWARD
+  PURCHASE
+  REFUND
+  ADMIN_GRANT
+  ADMIN_REMOVE
+}
+
+enum ThreadType {
+  DM
+  FORUM_TOPIC
+}
+
+//
+// CORE USER + TOKENS
+//
 
 model User {
   id              String   @id @default(cuid())
@@ -23,16 +83,41 @@ model User {
   avatarUrl       String?
   bannerUrl       String?
   role            UserRole @default(USER)
+
   coins           Int      @default(0)
   xp              Int      @default(0)
   level           Int      @default(1)
   rankTier        String   @default("Bronze")
   rankDivision    Int      @default(1)
   mmr             Int      @default(0)
+
+  // summary stats (for quick leaderboard/profile)
+  totalMatches    Int      @default(0)
+  totalWins       Int      @default(0)
+  totalLosses     Int      @default(0)
+  totalKills      Int      @default(0)
+  totalDeaths     Int      @default(0)
+  totalHeadshots  Int      @default(0)
+  totalClutches   Int      @default(0)
+
   emailVerifiedAt DateTime?
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
-  tokens          EmailVerificationToken[]
+
+  // relations
+  emailTokens     EmailVerificationToken[]
+  resetTokens     PasswordResetToken[]
+  bans            Ban[]
+  queueTickets    QueueTicket[]
+  matchPlayers    MatchPlayer[]
+  acEvents        ACEvent[]
+  notifications   Notification[]
+  threads         Thread[]         @relation("UserThreads")
+  messages        Message[]
+  cosmetics       UserCosmetic[]
+  loadouts        ProfileLoadout?
+  transactions    WalletTransaction[]
+  adminLogs       AdminLog[]       @relation("AdminActor")
 }
 
 model EmailVerificationToken {
@@ -42,4 +127,220 @@ model EmailVerificationToken {
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
   expiresAt DateTime
+}
+
+model PasswordResetToken {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  expiresAt DateTime
+}
+
+//
+// MATCHMAKING + MATCHES
+//
+
+model QueueTicket {
+  id          String       @id @default(cuid())
+  userId      String
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  status      QueueStatus  @default(QUEUED)
+  region      String       @default("eu")
+  mode        String       @default("5v5")
+  mmrAtJoin   Int
+  createdAt   DateTime     @default(now())
+  matchedAt   DateTime?
+  matchId     String?
+  match       Match?       @relation(fields: [matchId], references: [id])
+}
+
+model Match {
+  id           String         @id @default(cuid())
+  status       MatchStatus    @default(PENDING)
+  map          String?
+  region       String         @default("eu")
+  mode         String         @default("5v5")
+  startedAt    DateTime?
+  finishedAt   DateTime?
+  serverId     String?
+  server       GameServer?    @relation(fields: [serverId], references: [id])
+  players      MatchPlayer[]
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+}
+
+model MatchPlayer {
+  id           String     @id @default(cuid())
+  matchId      String
+  match        Match      @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  userId       String
+  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  team         TeamSide
+  kills        Int        @default(0)
+  deaths       Int        @default(0)
+  assists      Int        @default(0)
+  headshots    Int        @default(0)
+  damage       Int        @default(0)
+  mvps         Int        @default(0)
+  score        Int        @default(0)
+  result       String?    // "WIN" / "LOSS" / "DRAW"
+  mmrChange    Int        @default(0)
+  coinsEarned  Int        @default(0)
+  createdAt    DateTime   @default(now())
+}
+
+//
+// SERVERS + ANTI-CHEAT
+//
+
+model GameServer {
+  id            String    @id @default(cuid())
+  provider      String    @default("gcp")
+  region        String    @default("eu")
+  host          String
+  port          Int
+  status        String    @default("IDLE") // IDLE, STARTING, RUNNING, STOPPING
+  currentMatch  Match?
+  currentMatchId String?
+  lastHeartbeat DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model ACEvent {
+  id          String    @id @default(cuid())
+  userId      String?
+  user        User?     @relation(fields: [userId], references: [id])
+  matchId     String?
+  match       Match?    @relation(fields: [matchId], references: [id])
+  code        String    // e.g. "AIM_SNAP", "BHOP_SCRIPT"
+  severity    Int       // 1-10
+  details     String?
+  createdAt   DateTime  @default(now())
+}
+
+model Ban {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type        BanType
+  reason      String
+  createdAt   DateTime @default(now())
+  expiresAt   DateTime?
+  createdById String?
+  createdBy   User?    @relation("AdminActor", fields: [createdById], references: [id])
+}
+
+//
+// COSMETICS + WALLET
+//
+
+model Cosmetic {
+  id          String          @id @default(cuid())
+  name        String
+  description String?
+  type        CosmeticType
+  rarity      CosmeticRarity  @default(COMMON)
+  priceCoins  Int             @default(0)
+  active      Boolean         @default(true)
+  imageUrl    String?
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+  owners      UserCosmetic[]
+}
+
+model UserCosmetic {
+  id          String    @id @default(cuid())
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  cosmeticId  String
+  cosmetic    Cosmetic  @relation(fields: [cosmeticId], references: [id], onDelete: Cascade)
+  acquiredAt  DateTime  @default(now())
+}
+
+model ProfileLoadout {
+  id                 String     @id @default(cuid())
+  userId             String     @unique
+  user               User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  avatarFrameId      String?
+  avatarFrame        Cosmetic?  @relation("AvatarFrame", fields: [avatarFrameId], references: [id])
+  bannerId           String?
+  banner             Cosmetic?  @relation("Banner", fields: [bannerId], references: [id])
+  badgeId            String?
+  badge              Cosmetic?  @relation("Badge", fields: [badgeId], references: [id])
+  titleId            String?
+  title              Cosmetic?  @relation("Title", fields: [titleId], references: [id])
+}
+
+model WalletTransaction {
+  id          String           @id @default(cuid())
+  userId      String
+  user        User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type        TransactionType
+  amount      Int              // positive or negative
+  balanceAfter Int
+  refType     String?          // e.g. "MATCH", "SHOP_PURCHASE"
+  refId       String?
+  createdAt   DateTime         @default(now())
+}
+
+//
+// NOTIFICATIONS + CHAT + FORUM
+//
+
+model Notification {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type        String
+  title       String
+  body        String?
+  readAt      DateTime?
+  createdAt   DateTime @default(now())
+}
+
+model Thread {
+  id          String      @id @default(cuid())
+  type        ThreadType
+  title       String?
+  createdById String
+  createdBy   User        @relation("UserThreads", fields: [createdById], references: [id])
+  createdAt   DateTime    @default(now())
+  locked      Boolean     @default(false)
+  pinned      Boolean     @default(false)
+  messages    Message[]
+}
+
+model Message {
+  id          String   @id @default(cuid())
+  threadId    String
+  thread      Thread   @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  content     String
+  createdAt   DateTime @default(now())
+  editedAt    DateTime?
+  deletedAt   DateTime?
+}
+
+//
+// ADMIN + CONFIG
+//
+
+model AdminLog {
+  id          String   @id @default(cuid())
+  actorId     String?
+  actor       User?    @relation("AdminActor", fields: [actorId], references: [id])
+  action      String
+  targetUserId String?
+  meta        String?  // you can store JSON as string if you like
+  createdAt   DateTime @default(now())
+}
+
+model KeyValueConfig {
+  key        String  @id
+  value      String
+  updatedAt  DateTime @default(now()) @updatedAt
 }
