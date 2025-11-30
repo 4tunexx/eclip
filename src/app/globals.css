@@ -1,0 +1,204 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 120 1% 17%; /* #2a2b2a */
+    --foreground: 0 0% 98%;
+    --card: 120 1% 20%;
+    --card-foreground: 0 0% 98%;
+    --popover: 120 1% 17%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 139 45% 49%; /* #43b868 */
+    --primary-foreground: 0 0% 98%;
+    --secondary: 120 1% 22%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 120 1% 22%;
+    --muted-foreground: 0 0% 63.9%;
+    --accent: 139 45% 49%; /* #43b868 */
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 120 1% 25%;
+    --input: 120 1% 25%;
+    --ring: 139 45% 49%;
+    --chart-1: 139 45% 49%;
+    --chart-2: 139 45% 55%;
+    --chart-3: 139 45% 65%;
+    --chart-4: 139 45% 75%;
+    --chart-5: 139 45% 85%;
+    --radius: 0.5rem;
+    --sidebar-background: 120 1% 15%;
+    --sidebar-foreground: 0 0% 95.9%;
+    --sidebar-primary: 139 45% 49%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 120 1% 20%;
+    --sidebar-accent-foreground: 0 0% 95.9%;
+    --sidebar-border: 120 1% 25%;
+    --sidebar-ring: 139 45% 49%;
+  }
+
+  .dark {
+    --background: 120 1% 17%; /* #2a2b2a */
+    --foreground: 0 0% 98%;
+    --card: 120 1% 20%;
+    --card-foreground: 0 0% 98%;
+    --popover: 120 1% 17%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 139 45% 49%; /* #43b868 */
+    --primary-foreground: 0 0% 98%;
+    --secondary: 120 1% 22%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 120 1% 22%;
+    --muted-foreground: 0 0% 63.9%;
+    --accent: 139 45% 49%; /* #43b868 */
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 120 1% 25%;
+    --input: 120 1% 25%;
+    --ring: 139 45% 49%;
+    --chart-1: 139 45% 49%;
+    --chart-2: 139 45% 55%;
+    --chart-3: 139 45% 65%;
+    --chart-4: 139 45% 75%;
+    --chart-5: 139 45% 85%;
+    --radius: 0.5rem;
+    --sidebar-background: 120 1% 15%;
+    --sidebar-foreground: 0 0% 95.9%;
+    --sidebar-primary: 139 45% 49%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 120 1% 20%;
+    --sidebar-accent-foreground: 0 0% 95.9%;
+    --sidebar-border: 120 1% 25%;
+    --sidebar-ring: 139 45% 49%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    background-image: url(https://i.postimg.cc/W4LbFwmK/bg.png);
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+  }
+}
+
+@layer utilities {
+    .glow-card-hover {
+        @apply transition-all duration-300;
+    }
+    .glow-card-hover:hover {
+        @apply shadow-[0_0_30px_-5px] shadow-primary/60;
+        transform: scale(1.02);
+    }
+    .animate-slide-in-left {
+        animation: slideInFromLeft 1s ease-out forwards;
+    }
+    .animate-slide-in-right {
+        animation: slideInFromRight 1s ease-out forwards;
+    }
+    .animate-drop-in {
+        animation: dropIn 1s ease-out forwards;
+    }
+    .hover-shake:hover {
+        animation: shake 0.5s;
+        animation-iteration-count: infinite;
+    }
+}
+
+@keyframes slideInFromLeft {
+    0% {
+        transform: translateX(-100%);
+        opacity: 0;
+    }
+    100% {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes slideInFromRight {
+    0% {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    100% {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes dropIn {
+    0% {
+        transform: translateY(-100%);
+        opacity: 0;
+    }
+    100% {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+@keyframes shake {
+    0% { transform: translate(1px, 1px) rotate(0deg); }
+    10% { transform: translate(-1px, -2px) rotate(-1deg); }
+    20% { transform: translate(-3px, 0px) rotate(1deg); }
+    30% { transform: translate(3px, 2px) rotate(0deg); }
+    40% { transform: translate(1px, -1px) rotate(1deg); }
+    50% { transform: translate(-1px, 2px) rotate(-1deg); }
+    60% { transform: translate(-3px, 1px) rotate(0deg); }
+    70% { transform: translate(3px, 1px) rotate(-1deg); }
+    80% { transform: translate(-1px, -1px) rotate(1deg); }
+    90% { transform: translate(1px, 2px) rotate(0deg); }
+    100% { transform: translate(1px, -2px) rotate(-1deg); }
+}
+
+
+.custom-crosshair {
+    cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="%2343b868" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>') 12 12, auto;
+}
+
+/* styles/Particles.css */
+@keyframes rise {
+  0% {
+    transform: translateY(0);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-100vh);
+    opacity: 0;
+  }
+}
+
+.particle-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 0;
+    overflow: hidden;
+}
+
+.particle {
+  position: absolute;
+  bottom: -20px;
+  background-color: hsl(var(--primary) / 0.5);
+  border-radius: 50%;
+  animation-name: rise;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}

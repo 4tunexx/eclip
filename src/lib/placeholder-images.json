@@ -1,0 +1,10 @@
+{
+  "placeholderImages": [
+    {
+      "id": "player-stats-avatar",
+      "description": "A skull avatar for the player statistics card",
+      "imageUrl": "https://i.postimg.cc/13BvM2sP/mines-avatar.png",
+      "imageHint": "skull icon"
+    }
+  ]
+}
