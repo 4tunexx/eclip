@@ -9,7 +9,10 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "db:introspect": "drizzle-kit introspect",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "node scripts/run-migrations.js"
   },
   "dependencies": {
     "@genkit-ai/google-genai": "^1.20.0",

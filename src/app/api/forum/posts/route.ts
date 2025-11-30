@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import { forumPosts, forumThreads } from '@/lib/db/schema';
+import { forumPosts, forumThreads, users } from '@/lib/db/schema';
 import { getCurrentUser } from '@/lib/auth';
 import { eq } from 'drizzle-orm';
 import { z } from 'zod';
@@ -91,20 +91,34 @@ export async function GET(request: NextRequest) {
     }
 
     // Get posts for thread
-    const posts = await db.select({
-      post: forumPosts,
-      author: {
-        id: forumPosts.authorId,
-        username: forumPosts.authorId,
-      },
-    })
+    let posts = await db.select({ post: forumPosts, author: users })
       .from(forumPosts)
+      .innerJoin(users, eq(forumPosts.authorId, users.id))
       .where(eq(forumPosts.threadId, threadId))
-      .orderBy(forumPosts.createdAt);
+      .orderBy(forumPosts.createdAt as any);
 
-    // TODO: Join with users table to get author info
+    let formatted = posts.map(({ post, author }: any) => ({
+      id: post.id,
+      content: post.content,
+      author: { id: author.id, username: author.username, avatarUrl: author.avatarUrl, role: author.role },
+      createdAt: (post.createdAt as Date).toISOString(),
+      updatedAt: (post.updatedAt as Date | null)?.toISOString?.() || null,
+    }))
 
-    return NextResponse.json({ posts });
+    // Attach rep for posts
+    try {
+      const postgresMod = await import('postgres')
+      const sql = postgresMod.default(process.env.DATABASE_URL!, { max: 1 })
+      const keys = formatted.map(p => `rep_post_${p.id}`)
+      if (keys.length) {
+        const rows = await sql.unsafe('SELECT "key","value" FROM "public"."KeyValueConfig" WHERE "key" = ANY($1::text[])', [keys])
+        const repMap = new Map(rows.map((r:any)=>[r.key, parseInt((r.value||'0'),10)||0]))
+        formatted = formatted.map(p => ({ ...p, rep: repMap.get(`rep_post_${p.id}`) || 0 }))
+      }
+      await sql.end({ timeout: 5 })
+    } catch {}
+
+    return NextResponse.json({ posts: formatted });
   } catch (error) {
     console.error('Error fetching posts:', error);
     return NextResponse.json(

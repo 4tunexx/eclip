@@ -76,7 +76,14 @@ export function RegisterForm() {
     <div className="pt-4">
       <form onSubmit={handleSubmit}>
         <CardContent className="grid gap-4">
-          <Button type="button" variant="outline" className="w-full" disabled>
+          <Button
+            type="button"
+            variant="outline"
+            className="w-full"
+            onClick={() => {
+              window.location.href = '/api/auth/steam';
+            }}
+          >
             <SteamIcon className="mr-2 h-5 w-5" />
             Sign up with Steam
           </Button>

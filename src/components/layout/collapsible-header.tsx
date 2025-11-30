@@ -7,10 +7,15 @@ import { Button } from '@/components/ui/button';
 import { Logo } from '@/components/icons/logo';
 import { cn } from '@/lib/utils';
 import { AuthDialog } from '@/components/auth/AuthDialog';
+import { useUser } from '@/hooks/use-user';
+import { UserAvatar } from '@/components/user-avatar';
+import { UserName } from '@/components/user-name';
 
 export function CollapsibleHeader() {
   const [isOpen, setIsOpen] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
+  const { user } = useUser();
+  const isAdmin = (((user as any)?.isAdmin as boolean) || (((user as any)?.role || '').toUpperCase() === 'ADMIN')) ?? false;
 
   useEffect(() => {
     setIsMounted(true);
@@ -36,15 +41,20 @@ export function CollapsibleHeader() {
     >
       <div
         className={cn(
-          'absolute top-0 left-1/2 -translate-x-1/2 transition-transform duration-300 ease-in-out',
-           isOpen ? 'translate-y-2' : '-translate-y-8'
+          'fixed top-2 left-1/2 -translate-x-1/2 z-[60] transition-transform duration-300 ease-in-out',
+          'translate-y-0'
         )}
       >
         <button
           onClick={() => setIsOpen(!isOpen)}
-          className="p-2 rounded-full bg-background/50 backdrop-blur-sm"
+          aria-label="Toggle"
+          className={cn(
+            'w-8 h-8 rounded-full bg-muted/60 backdrop-blur-sm ring-1 ring-border shadow-md flex items-center justify-center hover:bg-muted/80',
+            'animate-up-down-slow transition-opacity',
+            isOpen && 'opacity-0 pointer-events-none'
+          )}
         >
-          {isOpen ? <ChevronUp className="h-5 w-5 text-primary" /> : <ChevronDown className="h-5 w-5 text-primary" />}
+          <ChevronDown className="h-4 w-4 text-green-500" />
         </button>
       </div>
 
@@ -62,17 +72,17 @@ export function CollapsibleHeader() {
             {/* Center empty for spacing */}
         </div>
         <div className="w-1/3 flex justify-end items-center gap-2">
-            <AuthDialog
-                defaultTab="login"
-                trigger={<Button variant="ghost">Login</Button>}
-            />
-            <AuthDialog
-                defaultTab="register"
-                trigger={<Button>Register</Button>}
-            />
-            <Button asChild variant="outline">
-                <Link href="/dashboard">Dashboard</Link>
-            </Button>
+            {user ? (
+              <Button variant="ghost" className="flex items-center gap-2">
+                <UserAvatar avatarUrl={user.avatarUrl || ''} username={user.username || ''} className="h-8 w-8" />
+                <UserName username={user.username} role={isAdmin ? 'ADMIN' : (user as any).role} className="hidden md:inline" />
+              </Button>
+            ) : (
+              <>
+                <AuthDialog defaultTab="login" trigger={<Button variant="ghost">Login</Button>} />
+                <AuthDialog defaultTab="register" trigger={<Button>Register</Button>} />
+              </>
+            )}
         </div>
       </header>
     </div>

@@ -4,6 +4,7 @@ import { cookies } from 'next/headers';
 import { db } from './db';
 import { users, sessions } from './db/schema';
 import { eq } from 'drizzle-orm';
+import postgres from 'postgres';
 
 import { config } from './config';
 
@@ -22,22 +23,63 @@ export async function createSession(userId: string) {
   const token = jwt.sign({ userId }, JWT_SECRET, { expiresIn: '7d' });
   const expiresAt = new Date(Date.now() + SESSION_EXPIRY);
 
-  const [session] = await db.insert(sessions).values({
-    userId,
-    token,
-    expiresAt,
-  }).returning();
+  try {
+    const [session] = await db.insert(sessions).values({
+      userId,
+      token,
+      expiresAt,
+    }).returning();
 
-  // Set HTTP-only cookie
-  (await cookies()).set('session', token, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
-    expires: expiresAt,
-    path: '/',
-  });
+    (await cookies()).set('session', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      expires: expiresAt,
+      path: '/',
+    });
 
-  return session;
+    return session;
+  } catch {
+    // Fallback to legacy public."Session" table
+    const sql = postgres(process.env.DATABASE_URL!, { max: 1 });
+    try {
+      const cols = await sql.unsafe(
+        'SELECT column_name FROM information_schema.columns WHERE table_schema = $1 AND table_name = $2;',
+        ['public', 'Session']
+      );
+      const set = new Set(cols.map((c: any) => c.column_name));
+      const idCol = set.has('id') ? '"id", ' : '';
+      const userIdCol = set.has('user_id') ? '"user_id"' : (set.has('userId') ? '"userId"' : null);
+      const tokenCol = set.has('token') ? '"token"' : null;
+      const expiresCol = set.has('expires_at') ? '"expires_at"' : (set.has('expiresAt') ? '"expiresAt"' : null);
+      const createdCol = set.has('created_at') ? '"created_at"' : (set.has('createdAt') ? '"createdAt"' : null);
+
+      if (userIdCol && tokenCol) {
+        const fields = `${idCol}${userIdCol}, ${tokenCol}${expiresCol ? ', ' + expiresCol : ''}${createdCol ? ', ' + createdCol : ''}`;
+        const values = `${idCol ? 'gen_random_uuid(), ' : ''}$1, $2${expiresCol ? ', $3' : ''}${createdCol ? ', NOW()' : ''}`;
+        const params: any[] = [userId, token];
+        if (expiresCol) params.push(expiresAt);
+        await sql.unsafe(
+          `INSERT INTO "public"."Session" (${fields}) VALUES (${values});`,
+          params
+        );
+      }
+
+      (await cookies()).set('session', token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        expires: expiresAt,
+        path: '/',
+      });
+
+      await sql.end({ timeout: 5 });
+      return { userId, token, expiresAt } as any;
+    } catch (e) {
+      try { await sql.end({ timeout: 5 }); } catch {}
+      throw e;
+    }
+  }
 }
 
 export async function getSession(): Promise<{ userId: string } | null> {
@@ -50,18 +92,45 @@ export async function getSession(): Promise<{ userId: string } | null> {
 
   try {
     const decoded = jwt.verify(token, JWT_SECRET) as { userId: string };
-    
-    // Verify session exists in DB and is not expired
-    const [session] = await db.select()
-      .from(sessions)
-      .where(eq(sessions.token, token))
-      .limit(1);
-
-    if (!session || new Date(session.expiresAt) < new Date()) {
-      return null;
+    // Verify session exists (drizzle or legacy) and is not expired
+    try {
+      const [session] = await db.select()
+        .from(sessions)
+        .where(eq(sessions.token, token))
+        .limit(1);
+      if (!session || new Date(session.expiresAt) < new Date()) {
+        return null;
+      }
+      return { userId: decoded.userId };
+    } catch {
+      const sql = postgres(process.env.DATABASE_URL!, { max: 1 });
+      try {
+        const cols = await sql.unsafe(
+          'SELECT column_name FROM information_schema.columns WHERE table_schema = $1 AND table_name = $2;',
+          ['public', 'Session']
+        );
+        const set = new Set(cols.map((c: any) => c.column_name));
+        const tokenCol = set.has('token') ? '"token"' : null;
+        const expiresCol = set.has('expires_at') ? '"expires_at"' : (set.has('expiresAt') ? '"expiresAt"' : null);
+        const userIdCol = set.has('user_id') ? '"user_id"' : (set.has('userId') ? '"userId"' : null);
+        if (!tokenCol || !userIdCol) {
+          await sql.end({ timeout: 5 });
+          return null;
+        }
+        const rows = await sql.unsafe(
+          `SELECT ${userIdCol} AS user_id${expiresCol ? ', ' + expiresCol + ' AS expires_at' : ''} FROM "public"."Session" WHERE ${tokenCol} = $1 LIMIT 1;`,
+          [token]
+        );
+        await sql.end({ timeout: 5 });
+        if (!rows.length) return null;
+        const expiresAtLegacy = rows[0].expires_at ? new Date(rows[0].expires_at) : new Date(Date.now() + SESSION_EXPIRY);
+        if (expiresAtLegacy < new Date()) return null;
+        return { userId: rows[0].user_id };
+      } catch {
+        try { await sql.end({ timeout: 5 }); } catch {}
+        return null;
+      }
     }
-
-    return { userId: decoded.userId };
   } catch {
     return null;
   }
@@ -73,12 +142,38 @@ export async function getCurrentUser() {
     return null;
   }
 
-  const [user] = await db.select()
-    .from(users)
-    .where(eq(users.id, session.userId))
-    .limit(1);
+  try {
+    const [user] = await db.select()
+      .from(users)
+      .where(eq(users.id, session.userId))
+      .limit(1);
+    if (user) return user as any;
+  } catch {}
 
-  return user || null;
+  // Fallback: legacy public."User" table
+  try {
+    const postgresMod = await import('postgres');
+    const sql = postgresMod.default(process.env.DATABASE_URL!, { max: 1 });
+    try {
+      const rows = await sql.unsafe('SELECT "id", "email", "username", "avatarUrl", "role", "coins" FROM "public"."User" WHERE "id" = $1 LIMIT 1;', [session.userId]);
+      await sql.end({ timeout: 5 });
+      if (rows.length) {
+        const u: any = rows[0];
+        return {
+          id: u.id,
+          email: u.email,
+          username: u.username,
+          avatarUrl: u.avatarUrl || null,
+          role: u.role || 'USER',
+          coins: u.coins || '0',
+        } as any;
+      }
+    } catch {
+      try { await sql.end({ timeout: 5 }); } catch {}
+    }
+  } catch {}
+
+  return null;
 }
 
 export async function logout() {

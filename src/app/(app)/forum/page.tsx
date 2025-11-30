@@ -6,6 +6,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Button } from "@/components/ui/button";
 import { UserAvatar } from "@/components/user-avatar";
 import Link from "next/link";
+import { UserName } from "@/components/user-name";
 import { MessageSquarePlus, Loader2 } from "lucide-react";
 
 export default function ForumPage() {
@@ -114,8 +115,8 @@ export default function ForumPage() {
                             <div className="font-medium hover:text-primary transition-colors">
                               <Link href="#">{thread.title}</Link>
                             </div>
-                            <div className="text-sm text-muted-foreground">
-                              by <Link href="#" className="hover:text-primary">{thread.author?.username || 'Unknown'}</Link>
+                            <div className="text-sm">
+                              by <Link href="#"><UserName username={thread.author?.username || 'Unknown'} role={thread.author?.role} /></Link>
                             </div>
                           </TableCell>
                           <TableCell className="text-center">{thread.replies}</TableCell>
@@ -124,7 +125,7 @@ export default function ForumPage() {
                             {thread.lastPost ? (
                               <div className="flex flex-col items-end">
                                 <span>
-                                  by <Link href="#" className="hover:text-primary">{thread.lastPost.author?.username || 'Unknown'}</Link>
+                                  by <Link href="#"><UserName username={thread.lastPost.author?.username || 'Unknown'} role={thread.lastPost.author?.role} /></Link>
                                 </span>
                                 <span className="text-xs text-muted-foreground">
                                   {new Date(thread.lastPost.date).toLocaleDateString()}

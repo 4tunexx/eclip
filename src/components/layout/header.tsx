@@ -24,11 +24,15 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { UserAvatar } from '@/components/user-avatar';
+import { UserName } from '@/components/user-name';
 import { SidebarTrigger } from '@/components/ui/sidebar';
-import { currentUser } from '@/lib/placeholder-data';
+import { useUser } from '@/hooks/use-user';
 import { Logo } from '../icons/logo';
 
 export function Header() {
+  const { user } = useUser();
+  const coins = Number(user?.coins ?? 0);
+  const isAdmin = ((user as any)?.isAdmin as boolean) || (((user as any)?.role || '').toUpperCase() === 'ADMIN');
   return (
     <header className="sticky top-0 z-30 flex h-16 items-center justify-between gap-4 border-b bg-background/80 px-4 backdrop-blur-sm md:px-6">
       {/* Left Section */}
@@ -54,7 +58,7 @@ export function Header() {
 
         <div className="flex items-center gap-2">
           <div className="hidden md:flex items-center gap-2 rounded-md bg-secondary px-3 py-1.5 text-sm">
-            <span className="font-bold text-primary">{currentUser.coins.toFixed(2)}</span>
+            <span className="font-bold text-primary">{coins.toFixed(2)}</span>
             <span className="text-muted-foreground">Coins</span>
           </div>
 
@@ -76,11 +80,17 @@ export function Header() {
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" className="flex items-center gap-2">
               <UserAvatar
-                avatarUrl={currentUser.avatarUrl}
-                username={currentUser.username}
+                avatarUrl={user?.avatarUrl || ''}
+                username={user?.username || ''}
                 className="h-8 w-8"
               />
-              <span className="hidden md:inline">{currentUser.username}</span>
+              {user && (
+                <UserName
+                  username={user.username}
+                  role={isAdmin ? 'ADMIN' : (user as any)?.role}
+                  className="hidden md:inline"
+                />
+              )}
               <ChevronDown className="h-4 w-4 hidden md:inline" />
             </Button>
           </DropdownMenuTrigger>
@@ -96,7 +106,7 @@ export function Header() {
             <DropdownMenuItem asChild>
               <Link href="#"><Settings className="mr-2" />Settings</Link>
             </DropdownMenuItem>
-            {currentUser.isAdmin && (
+            {isAdmin && (
                <DropdownMenuItem asChild>
                  <Link href="/admin"><Shield className="mr-2" />Admin Panel</Link>
                </DropdownMenuItem>

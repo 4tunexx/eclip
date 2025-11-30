@@ -12,18 +12,20 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // TODO: Implement Steam OpenID authentication
-    // This should:
-    // 1. Redirect to Steam OpenID login
-    // 2. Handle the return callback
-    // 3. Get SteamID from response
-    // 4. Create or link user account
-    // 5. Create session
+    const realm = config.steam.realm!;
+    const returnTo = config.steam.returnUrl!;
 
-    // Placeholder
-    return NextResponse.json({
-      error: 'Steam authentication not yet implemented',
-    }, { status: 501 });
+    const params = new URLSearchParams({
+      'openid.ns': 'http://specs.openid.net/auth/2.0',
+      'openid.mode': 'checkid_setup',
+      'openid.return_to': returnTo,
+      'openid.realm': realm,
+      'openid.claimed_id': 'http://specs.openid.net/auth/2.0/identifier_select',
+      'openid.identity': 'http://specs.openid.net/auth/2.0/identifier_select',
+    });
+
+    const redirectUrl = `https://steamcommunity.com/openid/login?${params.toString()}`;
+    return NextResponse.redirect(redirectUrl);
   } catch (error) {
     console.error('Steam auth error:', error);
     return NextResponse.json(

@@ -1,17 +1,20 @@
 import { NextResponse } from 'next/server';
 import { verifyEnvironmentVariables } from '@/lib/verify-env';
 import { db } from '@/lib/db';
+import postgres from 'postgres';
 
 export async function GET() {
   try {
     const envCheck = verifyEnvironmentVariables();
     
-    // Test database connection
+    // Test database connection (raw ping to avoid schema mismatches)
     let dbConnected = false;
     try {
-      const { users } = await import('@/lib/db/schema');
-      await db.select().from(users).limit(1);
+      const url = process.env.DATABASE_URL!;
+      const sql = postgres(url, { max: 1 });
+      await sql`select 1`;
       dbConnected = true;
+      await sql.end({ timeout: 5 });
     } catch (error) {
       console.error('Database connection error:', error);
     }

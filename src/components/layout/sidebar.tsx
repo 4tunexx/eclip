@@ -28,7 +28,8 @@ import {
 } from 'lucide-react';
 import { Logo } from '../icons/logo';
 import { UserAvatar } from '../user-avatar';
-import { currentUser } from '@/lib/placeholder-data';
+import { useUser } from '@/hooks/use-user';
+import { UserName } from '@/components/user-name';
 import { Progress } from '../ui/progress';
 import { Badge } from '../ui/badge';
 
@@ -58,6 +59,8 @@ function SidebarLogo() {
 
 export function AppSidebar() {
   const pathname = usePathname();
+  const { user } = useUser();
+  const isAdmin = (((user as any)?.isAdmin as boolean) || (((user as any)?.role || '').toUpperCase() === 'ADMIN')) ?? false;
 
   const isActive = (href: string) => pathname === href;
 
@@ -73,19 +76,23 @@ export function AppSidebar() {
         <SidebarGroup className="group-data-[collapsible=icon]:hidden">
             <div className="p-2 flex flex-col items-center text-center gap-2">
                 <UserAvatar 
-                    avatarUrl={currentUser.avatarUrl} 
-                    username={currentUser.username} 
-                    frameUrl={currentUser.equippedFrame}
+                    avatarUrl={user?.avatarUrl || ''}
+                    username={user?.username || ''}
+                    frameUrl={undefined}
                     className="w-16 h-16"
                 />
                 <div>
-                    <p className="font-semibold">{currentUser.username}</p>
-                    <p className="text-xs text-muted-foreground">Level {currentUser.level}</p>
+                    {user ? (
+                      <UserName username={user.username} role={isAdmin ? 'ADMIN' : (user as any).role} className="font-semibold" />
+                    ) : (
+                      <p className="font-semibold">Guest</p>
+                    )}
+                    <p className="text-xs text-muted-foreground">Level {Number((user as any)?.level ?? 1)}</p>
                 </div>
-                <Progress value={(currentUser.xp / (currentUser.level * 100)) * 100} className="h-1 w-full" />
+                <Progress value={((Number((user as any)?.xp ?? 0)) / (Number((user as any)?.level ?? 1) * 100)) * 100} className="h-1 w-full" />
                 <div className="flex items-center gap-2">
-                    <Badge variant="outline" className="border-primary text-primary">{currentUser.rank}</Badge>
-                    <Badge variant="secondary">{currentUser.mmr} MMR</Badge>
+                    <Badge variant="outline" className="border-primary text-primary">{(user as any)?.rank ?? 'Bronze'}</Badge>
+                    <Badge variant="secondary">{(user as any)?.mmr ?? 1000} MMR</Badge>
                 </div>
             </div>
         </SidebarGroup>
@@ -110,8 +117,8 @@ export function AppSidebar() {
               </SidebarMenuButton>
             </SidebarMenuItem>
           ))}
-          {currentUser.isAdmin && (
-             <SidebarMenuItem>
+          {isAdmin && (
+              <SidebarMenuItem>
                 <SidebarMenuButton asChild isActive={pathname.startsWith('/admin')} tooltip="Admin" className="justify-start transition-transform duration-200 hover:scale-105">
                     <Link href="/admin">
                         <Shield />
