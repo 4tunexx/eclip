@@ -58,13 +58,18 @@ export async function GET(request: NextRequest) {
       // Create session and set cookie
       const session = await createSession(userId);
       
-      // Create redirect response
-      const response = NextResponse.redirect(new URL('/dashboard?steam=ok', request.url));
+      console.log('[Steam Auth] Created session:', { userId, token: session.token.substring(0, 20) + '...', expiresAt: session.expiresAt });
       
-      // Set cookie on response
-      response.cookies.set('session', session.token, {
+      // Create redirect response to dashboard
+      const redirectUrl = new URL('/dashboard', request.url);
+      const response = NextResponse.redirect(redirectUrl);
+      
+      // Set cookie on response - don't set domain to allow it to work on any subdomain
+      response.cookies.set({
+        name: 'session',
+        value: session.token,
         httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
+        secure: true, // Always use secure in production
         sameSite: 'lax',
         expires: session.expiresAt,
         path: '/',
@@ -88,13 +93,18 @@ export async function GET(request: NextRequest) {
         if (userId) {
           const session = await createSession(userId);
           
-          // Create redirect response
-          const response = NextResponse.redirect(new URL('/dashboard?steam=ok', request.url));
+          console.log('[Steam Auth Legacy] Created session:', { userId, token: session.token.substring(0, 20) + '...', expiresAt: session.expiresAt });
           
-          // Set cookie on response
-          response.cookies.set('session', session.token, {
+          // Create redirect response to dashboard
+          const redirectUrl = new URL('/dashboard', request.url);
+          const response = NextResponse.redirect(redirectUrl);
+          
+          // Set cookie on response - don't set domain to allow it to work on any subdomain
+          response.cookies.set({
+            name: 'session',
+            value: session.token,
             httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
+            secure: true, // Always use secure in production
             sameSite: 'lax',
             expires: session.expiresAt,
             path: '/',
