@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import {
   Bell,
   MessageSquare,
@@ -30,9 +31,18 @@ import { useUser } from '@/hooks/use-user';
 import { Logo } from '../icons/logo';
 
 export function Header() {
+  const router = useRouter();
   const { user } = useUser();
   const coins = Number(user?.coins ?? 0);
   const isAdmin = ((user as any)?.isAdmin as boolean) || (((user as any)?.role || '').toUpperCase() === 'ADMIN');
+
+  const handleLogout = async () => {
+    try {
+      await fetch('/api/auth/logout', { method: 'POST', credentials: 'same-origin' });
+    } catch {}
+    router.push('/');
+    router.refresh();
+  };
   return (
     <header className="sticky top-0 z-30 flex h-16 items-center justify-between gap-4 border-b bg-background/80 px-4 backdrop-blur-sm md:px-6">
       {/* Left Section */}
@@ -112,8 +122,8 @@ export function Header() {
                </DropdownMenuItem>
             )}
             <DropdownMenuSeparator />
-            <DropdownMenuItem asChild>
-                <Link href="/"><LogOut className="mr-2" />Log out</Link>
+            <DropdownMenuItem onClick={handleLogout} className="cursor-pointer">
+              <LogOut className="mr-2" />Log out
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
