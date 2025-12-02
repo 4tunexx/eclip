@@ -13,7 +13,16 @@ export const config = {
   },
   steam: {
     apiKey: process.env.STEAM_API_KEY,
-    realm: process.env.STEAM_REALM || 'http://localhost:3000',
+    // Derive realm from return URL if not explicitly set
+    realm: (() => {
+      const explicit = process.env.STEAM_REALM;
+      if (explicit) return explicit;
+      const ret = process.env.STEAM_RETURN_URL;
+      try {
+        if (ret) return new URL(ret).origin;
+      } catch {}
+      return 'http://localhost:3000';
+    })(),
     returnUrl: process.env.STEAM_RETURN_URL || 'http://localhost:3000/api/auth/steam/return',
   },
   gcp: {
@@ -45,6 +54,7 @@ export const config = {
     user: process.env.EMAIL_USER || 'noreply@eclip.pro',
     password: process.env.EMAIL_PASSWORD || process.env.EMAIL_PASS,
     supportEmail: process.env.SUPPORT_EMAIL || 'support@eclip.pro',
+    verifyUrl: process.env.EMAIL_VERIFY_URL, // Full verify endpoint base
   },
   cloudinary: {
     cloudName: process.env.CLOUDINARY_CLOUD_NAME,

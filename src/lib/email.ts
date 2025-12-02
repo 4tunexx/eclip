@@ -1,16 +1,18 @@
 import nodemailer from 'nodemailer';
 import { config } from './config';
 
-// Create reusable transporter
-const transporter = nodemailer.createTransport({
-  host: 'send.one.com',
-  port: 465,
-  secure: true, // true for 465, false for other ports
-  auth: {
-    user: config.email.user,
-    pass: config.email.password,
-  },
-});
+// Create reusable transporter - prefer EMAIL_SERVER URL if provided
+const transporter = config.email.server
+  ? nodemailer.createTransport(config.email.server)
+  : nodemailer.createTransport({
+      host: 'mailout.one.com',
+      port: 465,
+      secure: true, // true for 465, false for other ports
+      auth: {
+        user: config.email.user,
+        pass: config.email.password,
+      },
+    });
 
 export interface EmailOptions {
   to: string;
@@ -20,27 +22,37 @@ export interface EmailOptions {
 }
 
 export async function sendEmail(options: EmailOptions): Promise<void> {
-  if (!config.email.password || !config.email.user) {
-    console.warn('Email credentials not configured, skipping send');
+  // Allow either EMAIL_SERVER URL OR user/password
+  if (!config.email.server && (!config.email.password || !config.email.user)) {
+    console.warn('[Email] Credentials not configured - User:', config.email.user, 'Password:', !!config.email.password);
+    console.warn('[Email] Skipping email send to:', options.to);
     return;
   }
 
   try {
-    await transporter.sendMail({
+    console.log('[Email] Sending email to:', options.to, 'from:', config.email.from);
+    const result = await transporter.sendMail({
       from: config.email.from,
       to: options.to,
       subject: options.subject,
       html: options.html,
       text: options.text || options.html.replace(/<[^>]*>/g, ''),
     });
+    console.log('[Email] Email sent successfully:', result.messageId);
   } catch (error) {
-    console.error('Error sending email:', error);
+    console.error('[Email] Error sending email:', error);
     throw error;
   }
 }
 
 export async function sendVerificationEmail(email: string, token: string, username: string) {
-  const verificationUrl = `${config.api.baseUrl}/api/auth/verify-email?token=${token}`;
+  console.log('[Email] Attempting to send verification email to:', email);
+  console.log('[Email] Config check - server:', !!config.email.server, 'user:', config.email.user, 'password configured:', !!config.email.password);
+
+  // Prefer EMAIL_VERIFY_URL if present; else fallback to API base URL
+  const base = config.email.verifyUrl || `${config.api.baseUrl}/api/auth/verify-email`;
+  const verificationUrl = `${base}?token=${token}`;
+  console.log('[Email] Verification URL:', verificationUrl);
   
   const html = `
     <!DOCTYPE html>
@@ -80,11 +92,17 @@ export async function sendVerificationEmail(email: string, token: string, userna
     </html>
   `;
 
-  await sendEmail({
-    to: email,
-    subject: 'Verify your Eclip.pro email address',
-    html,
-  });
+  try {
+    await sendEmail({
+      to: email,
+      subject: 'Verify your Eclip.pro email address',
+      html,
+    });
+    console.log('[Email] Verification email sent successfully to:', email);
+  } catch (error) {
+    console.error('[Email] Failed to send verification email:', error);
+    throw error;
+  }
 }
 
 export async function sendPasswordResetEmail(email: string, token: string, username: string) {

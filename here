@@ -1,0 +1,10 @@
+SESSION_SECRET
+All Environments: Asjasjkakjdkahdlklasfli15452
+
+EMAIL_SERVER: smtp://noreply@eclip.pro:ek6UB9Q$uayqyed@mailout.one.com:465
+
+EMAIL_FROM: noreply@eclip.pro
+
+EMAIL_VERIFY_URL: https://eclip.pro/api/auth/verify-email
+
+STEAM_RETURN_URL: https://eclip.pro/api/auth/steam/return

@@ -8,6 +8,7 @@ import { createSession } from '@/lib/auth';
 
 export async function GET(request: NextRequest) {
   try {
+    console.log('[Steam Auth] Processing return from Steam');
     const url = new URL(request.url);
     const params = url.searchParams;
 
@@ -17,22 +18,29 @@ export async function GET(request: NextRequest) {
     }
     openidParams.set('openid.mode', 'check_authentication');
 
+    console.log('[Steam Auth] Verifying with Steam...');
+
     const verifyResp = await fetch('https://steamcommunity.com/openid/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: openidParams.toString(),
     });
     const verifyText = await verifyResp.text();
+    console.log('[Steam Auth] Verification response:', verifyText.substring(0, 100));
+    
     if (!/is_valid\s*:\s*true/.test(verifyText)) {
+      console.error('[Steam Auth] Verification failed');
       return NextResponse.redirect(new URL('/?steam=invalid', request.url));
     }
 
     const claimedId = params.get('openid.claimed_id') || '';
     const match = claimedId.match(/\/id\/(\d+)/) || claimedId.match(/\/openid\/id\/(\d+)/) || claimedId.match(/(\d{17})/);
     if (!match) {
+      console.error('[Steam Auth] Could not extract Steam ID from:', claimedId);
       return NextResponse.redirect(new URL('/?steam=missingid', request.url));
     }
     const steamId = match[1];
+    console.log('[Steam Auth] Extracted Steam ID:', steamId);
 
     // Try drizzle users table first
     try {

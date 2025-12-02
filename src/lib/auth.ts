@@ -86,12 +86,15 @@ export async function getSession(): Promise<{ userId: string } | null> {
   const cookieStore = await cookies();
   const token = cookieStore.get('session')?.value;
 
+  console.log('[Auth] getSession called - token present:', !!token);
+
   if (!token) {
     return null;
   }
 
   try {
     const decoded = jwt.verify(token, JWT_SECRET) as { userId: string };
+    console.log('[Auth] Token decoded successfully, userId:', decoded.userId);
     // Verify session exists (drizzle or legacy) and is not expired
     try {
       const [session] = await db.select()

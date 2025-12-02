@@ -111,11 +111,13 @@ export async function POST(request: NextRequest) {
     }
 
     // Send email verification
+    console.log('[Register] Attempting to send verification email to:', createdUser!.email);
     try {
       const { sendVerificationEmail } = await import('@/lib/email');
       await sendVerificationEmail(createdUser!.email, emailVerificationToken, createdUser!.username);
+      console.log('[Register] Verification email sent successfully');
     } catch (error) {
-      console.error('Failed to send verification email:', error);
+      console.error('[Register] Failed to send verification email:', error);
       // Continue even if email fails
     }
 

@@ -14,6 +14,7 @@ export async function GET(request: NextRequest) {
 
     const realm = config.steam.realm!;
     const returnTo = config.steam.returnUrl!;
+    console.log('[Steam Auth] Using realm:', realm, 'returnTo:', returnTo);
 
     const params = new URLSearchParams({
       'openid.ns': 'http://specs.openid.net/auth/2.0',

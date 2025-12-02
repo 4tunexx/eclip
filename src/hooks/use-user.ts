@@ -14,16 +14,20 @@ export function useUser() {
 
   const fetchUser = async (signal?: AbortSignal) => {
     try {
+      console.log('[useUser] Fetching user from /api/auth/me');
       const response = await fetch('/api/auth/me', {
         method: 'GET',
         cache: 'no-store',
         credentials: 'same-origin',
         signal,
       });
+      console.log('[useUser] Response status:', response.status);
       if (response.ok) {
         const data = await response.json();
+        console.log('[useUser] User data received:', data);
         setUser(data);
       } else {
+        console.log('[useUser] Auth failed, clearing user');
         setUser(null);
       }
     } catch (error) {
