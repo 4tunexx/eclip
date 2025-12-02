@@ -56,23 +56,19 @@ export async function GET(request: NextRequest) {
       }
       
       // Create session and set cookie
-      await createSession(userId);
+      const session = await createSession(userId);
       
       // Create redirect response
       const response = NextResponse.redirect(new URL('/dashboard?steam=ok', request.url));
       
-      // Ensure cookie is set on response
-      const cookieStore = await (await import('next/headers')).cookies();
-      const sessionCookie = cookieStore.get('session');
-      if (sessionCookie) {
-        response.cookies.set('session', sessionCookie.value, {
-          httpOnly: true,
-          secure: process.env.NODE_ENV === 'production',
-          sameSite: 'lax',
-          expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-          path: '/',
-        });
-      }
+      // Set cookie on response
+      response.cookies.set('session', session.token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        expires: session.expiresAt,
+        path: '/',
+      });
       
       return response;
     } catch {
@@ -90,23 +86,19 @@ export async function GET(request: NextRequest) {
         }
         await sql.end({ timeout: 5 });
         if (userId) {
-          await createSession(userId);
+          const session = await createSession(userId);
           
           // Create redirect response
           const response = NextResponse.redirect(new URL('/dashboard?steam=ok', request.url));
           
-          // Ensure cookie is set on response
-          const cookieStore = await (await import('next/headers')).cookies();
-          const sessionCookie = cookieStore.get('session');
-          if (sessionCookie) {
-            response.cookies.set('session', sessionCookie.value, {
-              httpOnly: true,
-              secure: process.env.NODE_ENV === 'production',
-              sameSite: 'lax',
-              expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-              path: '/',
-            });
-          }
+          // Set cookie on response
+          response.cookies.set('session', session.token, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'lax',
+            expires: session.expiresAt,
+            path: '/',
+          });
           
           return response;
         }

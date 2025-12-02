@@ -38,7 +38,7 @@ export async function createSession(userId: string) {
       path: '/',
     });
 
-    return session;
+    return { ...session, token, expiresAt };
   } catch {
     // Fallback to legacy public."Session" table
     const sql = postgres(process.env.DATABASE_URL!, { max: 1 });
@@ -74,7 +74,7 @@ export async function createSession(userId: string) {
       });
 
       await sql.end({ timeout: 5 });
-      return { userId, token, expiresAt } as any;
+      return { userId, token, expiresAt };
     } catch (e) {
       try { await sql.end({ timeout: 5 }); } catch {}
       throw e;
