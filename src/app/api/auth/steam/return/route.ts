@@ -54,8 +54,27 @@ export async function GET(request: NextRequest) {
         }).returning();
         userId = u.id as string;
       }
+      
+      // Create session and set cookie
       await createSession(userId);
-      return NextResponse.redirect(new URL('/dashboard?steam=ok', request.url));
+      
+      // Create redirect response
+      const response = NextResponse.redirect(new URL('/dashboard?steam=ok', request.url));
+      
+      // Ensure cookie is set on response
+      const cookieStore = await (await import('next/headers')).cookies();
+      const sessionCookie = cookieStore.get('session');
+      if (sessionCookie) {
+        response.cookies.set('session', sessionCookie.value, {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === 'production',
+          sameSite: 'lax',
+          expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+          path: '/',
+        });
+      }
+      
+      return response;
     } catch {
       // Fallback: legacy public."User"
       const sql = postgres(process.env.DATABASE_URL!, { max: 1 });
@@ -72,7 +91,24 @@ export async function GET(request: NextRequest) {
         await sql.end({ timeout: 5 });
         if (userId) {
           await createSession(userId);
-          return NextResponse.redirect(new URL('/dashboard?steam=ok', request.url));
+          
+          // Create redirect response
+          const response = NextResponse.redirect(new URL('/dashboard?steam=ok', request.url));
+          
+          // Ensure cookie is set on response
+          const cookieStore = await (await import('next/headers')).cookies();
+          const sessionCookie = cookieStore.get('session');
+          if (sessionCookie) {
+            response.cookies.set('session', sessionCookie.value, {
+              httpOnly: true,
+              secure: process.env.NODE_ENV === 'production',
+              sameSite: 'lax',
+              expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+              path: '/',
+            });
+          }
+          
+          return response;
         }
         return NextResponse.redirect(new URL('/?steam=ok', request.url));
       } catch (e) {
