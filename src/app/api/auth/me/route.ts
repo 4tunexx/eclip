@@ -9,8 +9,11 @@ export async function GET() {
   try {
     const user = await getCurrentUser();
     if (!user) {
+      console.log('[API/Auth/Me] No user found (401)');
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
     }
+
+    console.log('[API/Auth/Me] User authenticated:', user.id);
 
     // Try Drizzle profile first
     let profile: any = null;

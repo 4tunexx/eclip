@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { users } from '@/lib/db/schema';
-import { hashPassword } from '@/lib/auth';
+import { hashPassword, createSession } from '@/lib/auth';
 import { eq } from 'drizzle-orm';
 import { z } from 'zod';
 import postgres from 'postgres';
@@ -119,7 +119,10 @@ export async function POST(request: NextRequest) {
       // Continue even if email fails
     }
 
-    return NextResponse.json({
+    // Create session for the new user
+    const session = await createSession(createdUser!.id);
+
+    const response = NextResponse.json({
       success: true,
       user: {
         id: createdUser!.id,
@@ -128,6 +131,19 @@ export async function POST(request: NextRequest) {
       },
       message: 'Registration successful. Please check your email to verify your account.',
     });
+
+    // Set cookie on response
+    response.cookies.set({
+      name: 'session',
+      value: session.token,
+      httpOnly: true,
+      secure: true,
+      sameSite: 'lax',
+      expires: session.expiresAt,
+      path: '/',
+    });
+
+    return response;
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(

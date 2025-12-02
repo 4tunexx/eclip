@@ -34,8 +34,9 @@ export async function POST(request: NextRequest) {
         );
       }
 
-      await createSession(user.id);
-      return NextResponse.json({
+      const session = await createSession(user.id);
+      
+      const response = NextResponse.json({
         success: true,
         user: {
           id: user.id,
@@ -49,6 +50,19 @@ export async function POST(request: NextRequest) {
           isAdmin: user.role === 'ADMIN',
         },
       });
+      
+      // Set cookie on response
+      response.cookies.set({
+        name: 'session',
+        value: session.token,
+        httpOnly: true,
+        secure: true,
+        sameSite: 'lax',
+        expires: session.expiresAt,
+        path: '/',
+      });
+      
+      return response;
     } catch (drizzleErr) {}
 
     // Fallback to legacy public."User"
@@ -68,8 +82,9 @@ export async function POST(request: NextRequest) {
       }
 
       await sql.end({ timeout: 5 });
-      await createSession(u.id);
-      return NextResponse.json({
+      const session = await createSession(u.id);
+      
+      const response = NextResponse.json({
         success: true,
         user: {
           id: u.id,
@@ -83,6 +98,19 @@ export async function POST(request: NextRequest) {
           isAdmin: (u.role || '').toUpperCase() === 'ADMIN',
         },
       });
+      
+      // Set cookie on response
+      response.cookies.set({
+        name: 'session',
+        value: session.token,
+        httpOnly: true,
+        secure: true,
+        sameSite: 'lax',
+        expires: session.expiresAt,
+        path: '/',
+      });
+      
+      return response;
     } catch (legacyErr) {
       try { await sql.end({ timeout: 5 }); } catch {}
       throw legacyErr;
