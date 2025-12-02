@@ -24,7 +24,8 @@ import {
   BookUser,
   Settings,
   Shield,
-  LifeBuoy
+  LifeBuoy,
+  AlertTriangle
 } from 'lucide-react';
 import { Logo } from '../icons/logo';
 import { UserAvatar } from '../user-avatar';
@@ -32,6 +33,7 @@ import { useUser } from '@/hooks/use-user';
 import { UserName } from '@/components/user-name';
 import { Progress } from '../ui/progress';
 import { Badge } from '../ui/badge';
+import { useClient } from '@/components/client/ClientContext';
 
 const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, disabled: false },
@@ -60,6 +62,7 @@ function SidebarLogo() {
 export function AppSidebar() {
   const pathname = usePathname();
   const { user } = useUser();
+  const { isClientConnected, setClientOpen } = useClient();
   const isAdmin = (((user as any)?.isAdmin as boolean) || (((user as any)?.role || '').toUpperCase() === 'ADMIN')) ?? false;
 
   const isActive = (href: string) => pathname === href;
@@ -132,6 +135,39 @@ export function AppSidebar() {
 
       <SidebarFooter className="p-2">
         <SidebarSeparator />
+        
+        {/* AC Client Status */}
+        <div className="px-2 pb-2">
+          <button
+            onClick={() => setClientOpen(true)}
+            className={`w-full p-3 rounded-lg border transition-all duration-300 hover:scale-105 ${
+              isClientConnected 
+                ? 'border-primary/50 bg-primary/10 hover:bg-primary/20' 
+                : 'border-red-500/20 bg-red-500/5 hover:bg-red-500/10'
+            }`}
+          >
+            <div className="flex items-center gap-3">
+              <div className="relative">
+                <Shield className={`w-5 h-5 ${isClientConnected ? 'text-primary' : 'text-red-500'}`} />
+                <div className={`absolute -bottom-0.5 -right-0.5 w-2 h-2 rounded-full border border-background ${
+                  isClientConnected ? 'bg-primary animate-pulse' : 'bg-red-500'
+                }`}></div>
+              </div>
+              <div className="flex-1 text-left group-data-[collapsible=icon]:hidden">
+                <div className={`text-xs font-bold ${isClientConnected ? 'text-primary' : 'text-red-500'}`}>
+                  {isClientConnected ? 'PROTECTED' : 'UNSECURED'}
+                </div>
+                <div className="text-[10px] text-muted-foreground">
+                  {isClientConnected ? 'AC Client Active' : 'Click to launch'}
+                </div>
+              </div>
+              {!isClientConnected && (
+                <AlertTriangle className="w-4 h-4 text-red-500 group-data-[collapsible=icon]:hidden" />
+              )}
+            </div>
+          </button>
+        </div>
+        
         <SidebarMenu>
             {bottomNavItems.map((item) => (
             <SidebarMenuItem key={item.label}>

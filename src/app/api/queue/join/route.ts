@@ -40,6 +40,16 @@ export async function POST() {
       );
     }
 
+    // TODO: When Windows .exe client is ready, verify AC is active
+    // const redis = await getRedis();
+    // const heartbeat = await redis.get(`ac:heartbeat:${user.id}`);
+    // if (!heartbeat) {
+    //   return NextResponse.json(
+    //     { error: 'Anti-cheat client must be running' },
+    //     { status: 403 }
+    //   );
+    // }
+
     // Create queue ticket
     const [ticket] = await db.insert(queueTickets).values({
       userId: user.id,

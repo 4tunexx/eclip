@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Swords, Loader2, Shield, Globe, Map, Clock, AlertTriangle, Power } from "lucide-react";
@@ -185,7 +185,7 @@ export default function PlayPage() {
           <h1 className="text-4xl font-bold mb-2">Play</h1>
           <p className="text-muted-foreground">Select game mode and region</p>
         </div>
-        <Badge variant="outline" className="border-primary/50 bg-primary/10 text-primary px-4 py-2">
+        <Badge variant="outline" className="border-green-500/50 bg-green-500/10 text-green-500 px-4 py-2">
           <Shield className="w-4 h-4 mr-2" />
           SECURE CONNECTION ACTIVE
         </Badge>

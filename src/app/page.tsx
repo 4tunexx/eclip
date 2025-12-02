@@ -1,3 +1,7 @@
+'use client';
+
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
@@ -11,9 +15,25 @@ import Particles from '@/components/particles';
 import { HeroBanner } from '@/components/layout/hero-banner';
 import { CountingNumber } from '@/components/counting-number';
 import { CollapsibleHeader } from '@/components/layout/collapsible-header';
+import { useUser } from '@/hooks/use-user';
 
 
 export default function LandingPage() {
+  const router = useRouter();
+  const { user, isLoading } = useUser();
+
+  // Redirect authenticated users to dashboard
+  useEffect(() => {
+    if (!isLoading && user) {
+      router.push('/dashboard');
+    }
+  }, [user, isLoading, router]);
+
+  // Show nothing while checking auth or redirecting
+  if (isLoading || user) {
+    return null;
+  }
+
   return (
     <div className="flex min-h-screen flex-col bg-transparent font-body custom-crosshair">
       <Particles />
