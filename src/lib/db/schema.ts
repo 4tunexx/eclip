@@ -4,12 +4,14 @@
 import { pgTable, text, timestamp, uuid, integer, decimal, boolean, jsonb, pgEnum } from 'drizzle-orm/pg-core';
 
 // Enums
-export const userRoleEnum = pgEnum('user_role', ['USER', 'VIP', 'MOD', 'ADMIN']);
+export const userRoleEnum = pgEnum('user_role', ['USER', 'VIP', 'INSIDER', 'MODERATOR', 'ADMIN']);
 export const matchStatusEnum = pgEnum('match_status', ['PENDING', 'READY', 'LIVE', 'FINISHED', 'CANCELLED']);
 export const queueStatusEnum = pgEnum('queue_status', ['WAITING', 'MATCHED', 'CANCELLED']);
 export const cosmeticTypeEnum = pgEnum('cosmetic_type', ['Frame', 'Banner', 'Badge', 'Title']);
 export const rarityEnum = pgEnum('rarity', ['Common', 'Rare', 'Epic', 'Legendary']);
 export const missionTypeEnum = pgEnum('mission_type', ['DAILY', 'WEEKLY', 'ACHIEVEMENT']);
+export const missionCategoryEnum = pgEnum('mission_category', ['DAILY', 'PLATFORM', 'INGAME']);
+export const achievementCategoryEnum = pgEnum('achievement_category', ['LEVEL', 'ESR', 'COMBAT', 'SOCIAL', 'PLATFORM', 'COMMUNITY']);
 
 // Users table
 export const users = pgTable('users', {
@@ -25,6 +27,10 @@ export const users = pgTable('users', {
   rank: text('rank').default('Bronze').notNull(),
   coins: decimal('coins', { precision: 10, scale: 2 }).default('0').notNull(),
   role: userRoleEnum('role').default('USER').notNull(),
+  roleColor: text('role_color').default('#FFFFFF'),
+  esrRating: integer('esr_rating').default(1000).notNull(),
+  rankTier: text('rank_tier').default('Beginner').notNull(),
+  rankDivision: integer('rank_division').default(1).notNull(),
   emailVerified: boolean('email_verified').default(false).notNull(),
   emailVerificationToken: text('email_verification_token'),
   passwordResetToken: text('password_reset_token'),
@@ -129,6 +135,10 @@ export const missions = pgTable('missions', {
   title: text('title').notNull(),
   description: text('description'),
   type: missionTypeEnum('type').notNull(),
+  category: missionCategoryEnum('category').default('PLATFORM').notNull(),
+  isDaily: boolean('is_daily').default(false).notNull(),
+  metricName: text('metric_name'),
+  resetInterval: text('reset_interval'), // 'daily', 'weekly'
   objectiveType: text('objective_type').notNull(), // 'PLAY_MATCHES', 'GET_KILLS', etc.
   objectiveValue: integer('objective_value').notNull(),
   rewardXp: integer('reward_xp').default(0),
@@ -157,12 +167,17 @@ export const achievements = pgTable('achievements', {
   id: uuid('id').primaryKey().defaultRandom(),
   title: text('title').notNull(),
   description: text('description'),
+  category: achievementCategoryEnum('category').default('PLATFORM'),
+  metricType: text('metric_type'),
   objectiveType: text('objective_type').notNull(),
   objectiveValue: integer('objective_value').notNull(),
+  progressRequired: integer('progress_required'),
   rewardXp: integer('reward_xp').default(0),
   rewardCoins: decimal('reward_coins', { precision: 10, scale: 2 }).default('0'),
   rewardCosmeticId: uuid('reward_cosmetic_id').references(() => cosmetics.id),
+  badgeRewardId: uuid('badge_reward_id').references(() => cosmetics.id),
   iconUrl: text('icon_url'),
+  isRepeatable: boolean('is_repeatable').default(false),
   createdAt: timestamp('created_at').defaultNow().notNull(),
 });
 
@@ -266,5 +281,63 @@ export const transactions = pgTable('transactions', {
   description: text('description'),
   referenceId: uuid('reference_id'), // Related match, mission, etc.
   createdAt: timestamp('created_at').defaultNow().notNull(),
+});
+
+// Achievement Progress Tracking
+export const achievementProgress = pgTable('achievement_progress', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  userId: uuid('user_id').references(() => users.id, { onDelete: 'cascade' }).notNull(),
+  achievementId: uuid('achievement_id').references(() => achievements.id, { onDelete: 'cascade' }).notNull(),
+  currentProgress: integer('current_progress').default(0).notNull(),
+  unlockedAt: timestamp('unlocked_at'),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+});
+
+// Role Permissions Matrix
+export const rolePermissions = pgTable('role_permissions', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  role: text('role').notNull(),
+  permission: text('permission').notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+});
+
+// ESR Thresholds / Ranking Tiers
+export const esrThresholds = pgTable('esr_thresholds', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  tier: text('tier').notNull().unique(),
+  minEsr: integer('min_esr').notNull(),
+  maxEsr: integer('max_esr').notNull(),
+  color: text('color').notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+});
+
+// Level Thresholds
+export const levelThresholds = pgTable('level_thresholds', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  level: integer('level').notNull().unique(),
+  requiredXp: integer('required_xp').notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+});
+
+// User Metrics (for real-time tracking)
+export const userMetrics = pgTable('user_metrics', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  userId: uuid('user_id').references(() => users.id, { onDelete: 'cascade' }).notNull().unique(),
+  winsToday: integer('wins_today').default(0),
+  matchesToday: integer('matches_today').default(0),
+  assistsToday: integer('assists_today').default(0),
+  hsKillsToday: integer('hs_kills_today').default(0),
+  dashboardVisitToday: boolean('dashboard_visit_today').default(false),
+  killsTotal: integer('kills_total').default(0),
+  hsKills: integer('hs_kills').default(0),
+  clutchesWon: integer('clutches_won').default(0),
+  bombPlants: integer('bomb_plants').default(0),
+  bombDefuses: integer('bomb_defuses').default(0),
+  assistsTotal: integer('assists_total').default(0),
+  damageTotal: integer('damage_total').default(0),
+  acesDone: integer('aces_done').default(0),
+  lastResetAt: timestamp('last_reset_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
 
