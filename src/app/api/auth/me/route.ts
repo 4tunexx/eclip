@@ -7,6 +7,11 @@ import postgres from 'postgres';
 
 export async function GET() {
   try {
+    const cookieStore = await import('next/headers').then(m => m.cookies());
+    const allCookies = (await cookieStore).getAll();
+    const sessionCookie = (await cookieStore).get('session');
+    console.log('[API/Auth/Me] Cookies count:', allCookies.length, 'hasSession:', !!sessionCookie);
+
     const user = await getCurrentUser();
     if (!user) {
       console.log('[API/Auth/Me] No user found (401)');

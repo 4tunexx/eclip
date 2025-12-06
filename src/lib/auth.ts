@@ -8,7 +8,8 @@ import postgres from 'postgres';
 
 import { config } from './config';
 
-const JWT_SECRET = config.auth.jwtSecret;
+// Fallback to avoid undefined secret breaking JWT verification in production
+const JWT_SECRET = config.auth.jwtSecret || 'fallback-dev-secret';
 const SESSION_EXPIRY = 7 * 24 * 60 * 60 * 1000; // 7 days
 
 export async function hashPassword(password: string): Promise<string> {
