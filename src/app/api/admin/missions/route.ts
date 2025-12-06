@@ -1,23 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import { missions, rolePermissions } from '@/lib/db/schema';
+import { missions } from '@/lib/db/schema';
 import { getCurrentUser } from '@/lib/auth';
-import { eq, and } from 'drizzle-orm';
-import { v4 as uuidv4 } from 'uuid';
-
-async function checkAdminPermission(userId: string) {
-  const [perm] = await db.select()
-    .from(rolePermissions)
-    .where(
-      and(
-        eq(rolePermissions.userId, userId),
-        eq(rolePermissions.permission, 'manage_missions')
-      )
-    )
-    .limit(1);
-
-  return !!perm;
-}
+import { eq } from 'drizzle-orm';
+import { randomUUID } from 'crypto';
 
 /**
  * GET /api/admin/missions
@@ -30,12 +16,11 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const hasPermission = await checkAdminPermission(user.id);
-    if (!hasPermission) {
+    if (user.role !== 'ADMIN') {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    const allMissions = await db.select().from(missions);
+    const allMissions = await db.select().from(missions).execute();
 
     return NextResponse.json(allMissions);
   } catch (error) {
@@ -58,29 +43,31 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const hasPermission = await checkAdminPermission(user.id);
-    if (!hasPermission) {
+    if (user.role !== 'ADMIN') {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
     const missionData = await request.json();
 
-    const [created] = await db.insert(missions)
+    const createdResult = await db.insert(missions)
       .values({
-        id: uuidv4(),
+        id: randomUUID(),
         title: missionData.title,
         description: missionData.description,
         category: missionData.category,
+        requirementType: missionData.requirementType,
+        requirementValue: missionData.requirementValue,
+        target: missionData.target || 1,
         isDaily: missionData.isDaily || false,
         isActive: true,
-        metricName: missionData.metricName,
-        objectiveValue: missionData.objectiveValue,
         rewardXp: missionData.rewardXp || 0,
-        rewardCoins: missionData.rewardCoins || '0',
-        resetInterval: missionData.resetInterval || 'never',
-        createdAt: new Date(),
+        rewardCoins: missionData.rewardCoins || 0,
+        rewardCosmeticId: missionData.rewardCosmeticId || null,
       })
-      .returning();
+      .returning()
+      .execute();
+
+    const created = createdResult[0];
 
     return NextResponse.json(created, { status: 201 });
   } catch (error) {
@@ -103,8 +90,7 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const hasPermission = await checkAdminPermission(user.id);
-    if (!hasPermission) {
+    if (user.role !== 'ADMIN') {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
@@ -112,25 +98,32 @@ export async function PUT(request: NextRequest) {
     const missionId = url.pathname.split('/').pop();
     const missionData = await request.json();
 
-    const [updated] = await db.update(missions)
+    const updatedResult = await db.update(missions)
       .set({
         title: missionData.title,
         description: missionData.description,
         category: missionData.category,
+        requirementType: missionData.requirementType,
+        requirementValue: missionData.requirementValue,
+        target: missionData.target,
         isDaily: missionData.isDaily,
         isActive: missionData.isActive,
-        metricName: missionData.metricName,
-        objectiveValue: missionData.objectiveValue,
         rewardXp: missionData.rewardXp,
         rewardCoins: missionData.rewardCoins,
-        resetInterval: missionData.resetInterval,
+        rewardCosmeticId: missionData.rewardCosmeticId,
         updatedAt: new Date(),
       })
       .where(eq(missions.id, missionId!))
-      .returning();
+      .returning()
+      .execute();
+
+    const updated = updatedResult[0];
 
     if (!updated) {
-      return NextResponse.json({ error: 'Mission not found' }, { status: 404 });
+      return NextResponse.json(
+        { error: 'Mission not found' },
+        { status: 404 }
+      );
     }
 
     return NextResponse.json(updated);
@@ -154,24 +147,29 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const hasPermission = await checkAdminPermission(user.id);
-    if (!hasPermission) {
+    if (user.role !== 'ADMIN') {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
     const url = new URL(request.url);
     const missionId = url.pathname.split('/').pop();
 
-    const [updated] = await db.update(missions)
+    const updatedResult = await db.update(missions)
       .set({
         isActive: false,
         updatedAt: new Date(),
       })
       .where(eq(missions.id, missionId!))
-      .returning();
+      .returning()
+      .execute();
+
+    const updated = updatedResult[0];
 
     if (!updated) {
-      return NextResponse.json({ error: 'Mission not found' }, { status: 404 });
+      return NextResponse.json(
+        { error: 'Mission not found' },
+        { status: 404 }
+      );
     }
 
     return NextResponse.json({ success: true });

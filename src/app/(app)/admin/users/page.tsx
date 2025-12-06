@@ -89,7 +89,7 @@ export default function UsersPage() {
                               <TableRow>
                                   <TableHead>Player</TableHead>
                                   <TableHead>Email</TableHead>
-                                  <TableHead>MMR</TableHead>
+                                  <TableHead>ESR</TableHead>
                                   <TableHead>Rank</TableHead>
                                   <TableHead>Role</TableHead>
                                   <TableHead>Status</TableHead>
@@ -117,7 +117,7 @@ export default function UsersPage() {
                                         </div>
                                     </TableCell>
                                     <TableCell className="text-sm text-muted-foreground">{user.email}</TableCell>
-                                    <TableCell className="font-semibold text-primary">{user.mmr}</TableCell>
+                                    <TableCell className="font-semibold text-primary">{(user as any).esr}</TableCell>
                                     <TableCell>
                                         <Badge variant="outline" className="border-primary text-primary">{user.rank}</Badge>
                                     </TableCell>

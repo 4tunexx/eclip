@@ -18,7 +18,7 @@ export function useUser() {
       const response = await fetch('/api/auth/me', {
         method: 'GET',
         cache: 'no-store',
-        credentials: 'same-origin',
+        credentials: 'include',
         signal,
       });
       console.log('[useUser] Response status:', response.status);

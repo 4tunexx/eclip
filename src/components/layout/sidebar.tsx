@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useState } from 'react';
 import {
   Sidebar,
   SidebarContent,
@@ -25,7 +26,12 @@ import {
   Settings,
   Shield,
   LifeBuoy,
-  AlertTriangle
+  AlertTriangle,
+  Coins,
+  ChevronDown,
+  Plus,
+  Minus,
+  DollarSign
 } from 'lucide-react';
 import { Logo } from '../icons/logo';
 import { UserAvatar } from '../user-avatar';
@@ -34,6 +40,10 @@ import { UserName } from '@/components/user-name';
 import { Progress } from '../ui/progress';
 import { Badge } from '../ui/badge';
 import { useClient } from '@/components/client/ClientContext';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { getRoleColor, getRoleBgColor, getRoleLabel } from '@/lib/role-colors';
 
 const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, disabled: false },
@@ -61,11 +71,51 @@ function SidebarLogo() {
 
 export function AppSidebar() {
   const pathname = usePathname();
-  const { user } = useUser();
+  const { user, refetch } = useUser();
   const { isClientConnected, setClientOpen } = useClient();
   const isAdmin = (((user as any)?.isAdmin as boolean) || (((user as any)?.role || '').toUpperCase() === 'ADMIN')) ?? false;
+  const [coinsOpen, setCoinsOpen] = useState(false);
+  const [coinAmount, setCoinAmount] = useState('1000');
+  const [isLoading, setIsLoading] = useState(false);
 
   const isActive = (href: string) => pathname === href;
+
+  const handleCoinsAction = async (action: 'add' | 'remove' | 'set') => {
+    if (!user?.id) return;
+    
+    setIsLoading(true);
+    try {
+      const amount = parseInt(coinAmount);
+      if (isNaN(amount) || amount < 0) {
+        alert('Please enter a valid amount');
+        return;
+      }
+
+      const response = await fetch('/api/admin/coins', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: user.id,
+          amount,
+          action
+        }),
+        credentials: 'include',
+      });
+
+      if (response.ok) {
+        await refetch();
+        alert(`Successfully ${action === 'set' ? 'set' : action === 'add' ? 'added' : 'removed'} ${amount} coins`);
+      } else {
+        const data = await response.json();
+        alert(data.error || 'Failed to update coins');
+      }
+    } catch (error) {
+      console.error('Error updating coins:', error);
+      alert('Failed to update coins');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <Sidebar collapsible="icon">
@@ -92,13 +142,91 @@ export function AppSidebar() {
                     )}
                     <p className="text-xs text-muted-foreground">Level {Number((user as any)?.level ?? 1)}</p>
                 </div>
+                
+                {/* Role Color Badge */}
+                {user && (
+                  <div
+                    style={{
+                      backgroundColor: getRoleBgColor(isAdmin ? 'ADMIN' : (user as any).role),
+                      color: getRoleColor(isAdmin ? 'ADMIN' : (user as any).role),
+                    }}
+                    className="px-3 py-1 rounded-full text-xs font-semibold"
+                  >
+                    {getRoleLabel(isAdmin ? 'ADMIN' : (user as any).role)}
+                  </div>
+                )}
+                
                 <Progress value={((Number((user as any)?.xp ?? 0)) / (Number((user as any)?.level ?? 1) * 100)) * 100} className="h-1 w-full" />
                 <div className="flex items-center gap-2">
                     <Badge variant="outline" className="border-primary text-primary">{(user as any)?.rank ?? 'Bronze'}</Badge>
-                    <Badge variant="secondary">{(user as any)?.mmr ?? 1000} MMR</Badge>
+                    <Badge variant="secondary">{(user as any)?.esr ?? 1000} ESR</Badge>
                 </div>
             </div>
         </SidebarGroup>
+
+        {/* Admin Coins Management */}
+        {isAdmin && (
+          <SidebarGroup className="group-data-[collapsible=icon]:hidden">
+            <Collapsible open={coinsOpen} onOpenChange={setCoinsOpen}>
+              <CollapsibleTrigger asChild>
+                <Button variant="ghost" className="w-full justify-between p-2 h-auto">
+                  <div className="flex items-center gap-2">
+                    <Coins className="w-4 h-4 text-yellow-500" />
+                    <span className="text-sm font-medium">
+                      {Number((user as any)?.coins ?? 0).toLocaleString()} Coins
+                    </span>
+                  </div>
+                  <ChevronDown className={`w-4 h-4 transition-transform ${coinsOpen ? 'rotate-180' : ''}`} />
+                </Button>
+              </CollapsibleTrigger>
+              <CollapsibleContent className="p-2 space-y-2">
+                <Input 
+                  type="number" 
+                  placeholder="Amount" 
+                  value={coinAmount}
+                  onChange={(e) => setCoinAmount(e.target.value)}
+                  className="h-8 text-sm"
+                  disabled={isLoading}
+                />
+                <div className="grid grid-cols-3 gap-1">
+                  <Button 
+                    size="sm" 
+                    variant="outline" 
+                    className="h-8 text-xs"
+                    onClick={() => handleCoinsAction('add')}
+                    disabled={isLoading}
+                  >
+                    <Plus className="w-3 h-3 mr-1" />
+                    Add
+                  </Button>
+                  <Button 
+                    size="sm" 
+                    variant="outline" 
+                    className="h-8 text-xs"
+                    onClick={() => handleCoinsAction('remove')}
+                    disabled={isLoading}
+                  >
+                    <Minus className="w-3 h-3 mr-1" />
+                    Remove
+                  </Button>
+                  <Button 
+                    size="sm" 
+                    variant="outline" 
+                    className="h-8 text-xs"
+                    onClick={() => handleCoinsAction('set')}
+                    disabled={isLoading}
+                  >
+                    <DollarSign className="w-3 h-3 mr-1" />
+                    Set
+                  </Button>
+                </div>
+                <p className="text-[10px] text-muted-foreground text-center">
+                  Quick admin coin management
+                </p>
+              </CollapsibleContent>
+            </Collapsible>
+          </SidebarGroup>
+        )}
         
         <SidebarSeparator />
 

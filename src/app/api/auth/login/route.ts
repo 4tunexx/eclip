@@ -15,6 +15,8 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const validated = loginSchema.parse(body);
 
+    console.log('[Login] Attempting login for:', validated.email);
+
     // Try Drizzle users first
     try {
       const [user] = await db.select()
@@ -23,17 +25,21 @@ export async function POST(request: NextRequest) {
         .limit(1);
 
       if (!user || !user.passwordHash) {
+        console.log('[Login] User not found in Drizzle schema');
         throw new Error('not-found');
       }
 
+      console.log('[Login] User found in Drizzle, verifying password...');
       const isValid = await verifyPassword(validated.password, user.passwordHash);
       if (!isValid) {
+        console.log('[Login] Invalid password');
         return NextResponse.json(
           { error: 'Invalid email or password' },
           { status: 401 }
         );
       }
 
+      console.log('[Login] Password valid, creating session...');
       const session = await createSession(user.id);
       
       const response = NextResponse.json({
@@ -45,7 +51,7 @@ export async function POST(request: NextRequest) {
           level: user.level,
           xp: Number(user.xp),
           rank: user.rank,
-          mmr: user.mmr,
+          esr: (user as any).esr,
           coins: Number(user.coins),
           isAdmin: user.role === 'ADMIN',
         },
@@ -56,14 +62,17 @@ export async function POST(request: NextRequest) {
         name: 'session',
         value: session.token,
         httpOnly: true,
-        secure: true,
+        secure: process.env.NODE_ENV === 'production',
         sameSite: 'lax',
         expires: session.expiresAt,
         path: '/',
       });
       
+      console.log('[Login] Login successful!');
       return response;
-    } catch (drizzleErr) {}
+    } catch (drizzleErr) {
+      console.log('[Login] Drizzle lookup failed, trying legacy table...');
+    }
 
     // Fallback to legacy public."User"
     const postgresMod = await import('postgres');
@@ -93,7 +102,7 @@ export async function POST(request: NextRequest) {
           level: 1,
           xp: 0,
           rank: 'Bronze',
-          mmr: 1000,
+          esr: 1000,
           coins: Number(u.coins || 0),
           isAdmin: (u.role || '').toUpperCase() === 'ADMIN',
         },
@@ -104,12 +113,13 @@ export async function POST(request: NextRequest) {
         name: 'session',
         value: session.token,
         httpOnly: true,
-        secure: true,
+        secure: process.env.NODE_ENV === 'production',
         sameSite: 'lax',
         expires: session.expiresAt,
         path: '/',
       });
       
+      console.log('[Login] Login successful (legacy)!');
       return response;
     } catch (legacyErr) {
       try { await sql.end({ timeout: 5 }); } catch {}

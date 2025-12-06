@@ -9,7 +9,7 @@ export const MOCK_USER: User = {
   xp: 850,
   xpToNextLevel: 1000,
   rank: RankTier.DIAMOND,
-  mmr: 1850,
+  esr: 1850,
   coins: 125.50,
   isVerified: true,
   isSteamLinked: true,

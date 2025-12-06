@@ -21,6 +21,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Link from "next/link";
 import { useUser } from '@/hooks/use-user';
+import { getRoleColor, getRoleBgColor } from '@/lib/role-colors';
 
 export default function ProfilePage() {
   const { user, isLoading: userLoading } = useUser();
@@ -97,9 +98,20 @@ export default function ProfilePage() {
                     <div className="flex-1 text-center md:text-left">
                         <h1 className="font-headline text-4xl font-bold">{user.username}</h1>
                         <p className="text-primary font-semibold">{user.title || 'Eclip.pro Player'}</p>
+                        {user.role && (
+                          <div
+                            style={{
+                              backgroundColor: getRoleBgColor(user.role),
+                              color: getRoleColor(user.role),
+                            }}
+                            className="inline-block px-3 py-1 rounded-full text-sm font-semibold mt-2"
+                          >
+                            {user.role}
+                          </div>
+                        )}
                         <div className="flex items-center justify-center md:justify-start gap-2 mt-2">
                              <Badge variant="outline" className="border-primary text-primary text-lg">{user.rank}</Badge>
-                             <Badge variant="secondary" className="text-lg">{user.mmr} MMR</Badge>
+                                  <Badge variant="secondary" className="text-lg">{(user as any).esr} ESR</Badge>
                         </div>
                     </div>
                     <Button variant="outline">

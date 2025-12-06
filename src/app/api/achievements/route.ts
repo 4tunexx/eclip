@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import { achievements, achievementProgress, users } from '@/lib/db/schema';
+import { achievements, userAchievements } from '@/lib/db/schema';
 import { getCurrentUser } from '@/lib/auth';
 import { eq, and } from 'drizzle-orm';
 
@@ -18,18 +18,18 @@ export async function GET(request: NextRequest) {
     const url = new URL(request.url);
     const category = url.searchParams.get('category');
 
-    let query = db.select().from(achievements).where(eq(achievements.isActive, true));
+    const achievementsQuery = category
+      ? db.select().from(achievements).where(eq(achievements.category, category))
+      : db.select().from(achievements);
 
-    if (category) {
-      query = query.where(eq(achievements.category, category));
-    }
-
-    const allAchievements = await query;
+    const allAchievements = await achievementsQuery.execute();
 
     // Get user's progress for each achievement
-    const progressData = await db.select()
-      .from(achievementProgress)
-      .where(eq(achievementProgress.userId, user.id));
+    const progressData = await db
+      .select()
+      .from(userAchievements)
+      .where(eq(userAchievements.userId, user.id))
+      .execute();
 
     const progressMap = new Map(progressData.map(p => [p.achievementId, p]));
 
@@ -70,10 +70,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    const [achievement] = await db.select()
+    // Get achievement
+    const achievementResult = await db
+      .select()
       .from(achievements)
-      .where(eq(achievements.id, achievementId));
+      .where(eq(achievements.id, achievementId))
+      .execute();
 
+    const achievement = achievementResult[0];
     if (!achievement) {
       return NextResponse.json(
         { error: 'Achievement not found' },
@@ -82,83 +86,72 @@ export async function POST(request: NextRequest) {
     }
 
     // Get or create progress record
-    const [existingProgress] = await db.select()
-      .from(achievementProgress)
-      .where(
-        and(
-          eq(achievementProgress.userId, userId),
-          eq(achievementProgress.achievementId, achievementId)
-        )
-      )
-      .limit(1);
+    const existingProgressResult = await db
+      .select()
+      .from(userAchievements)
+      .where(and(
+        eq(userAchievements.userId, userId),
+        eq(userAchievements.achievementId, achievementId)
+      ))
+      .limit(1)
+      .execute();
 
-    let progressRecord;
-    const newProgress = Math.min(progress, achievement.progressRequired);
-    const shouldUnlock = newProgress >= achievement.progressRequired && 
-                        (!existingProgress || !existingProgress.unlockedAt);
+    const existingProgress = existingProgressResult[0];
+
+    const target = achievement.target || 1;
+    const newProgress = Math.min(progress, target);
+    const shouldUnlock = newProgress >= target && (!existingProgress || !existingProgress.unlockedAt);
 
     if (existingProgress) {
-      const updatedProgress = Math.min(
-        existingProgress.progress + progress,
-        achievement.progressRequired
-      );
+      const updatedProgress = Math.min((existingProgress.progress || 0) + progress, target);
 
-      await db.update(achievementProgress)
+      await db
+        .update(userAchievements)
         .set({
           progress: updatedProgress,
           unlockedAt: shouldUnlock ? new Date() : existingProgress.unlockedAt,
           updatedAt: new Date(),
         })
-        .where(
-          and(
-            eq(achievementProgress.userId, userId),
-            eq(achievementProgress.achievementId, achievementId)
-          )
-        );
+        .where(and(
+          eq(userAchievements.userId, userId),
+          eq(userAchievements.achievementId, achievementId)
+        ))
+        .execute();
 
-      progressRecord = {
-        ...existingProgress,
-        progress: updatedProgress,
-        unlockedAt: shouldUnlock ? new Date() : existingProgress.unlockedAt,
-      };
+      return NextResponse.json({
+        success: true,
+        progress: {
+          ...existingProgress,
+          progress: updatedProgress,
+          unlockedAt: shouldUnlock ? new Date() : existingProgress.unlockedAt,
+        },
+        unlocked: shouldUnlock,
+      });
     } else {
-      const [created] = await db.insert(achievementProgress)
+      const createdResult = await db
+        .insert(userAchievements)
         .values({
           userId,
           achievementId,
           progress: newProgress,
           unlockedAt: shouldUnlock ? new Date() : null,
         })
-        .returning();
+        .returning()
+        .execute();
 
-      progressRecord = created;
+      const created = createdResult[0];
+
+      return NextResponse.json({
+        success: true,
+        progress: created,
+        unlocked: shouldUnlock,
+      });
     }
-
-    // Grant badge reward if achievement just unlocked
-    if (shouldUnlock && achievement.badgeRewardId) {
-      await grantBadge(userId, achievement.badgeRewardId);
-    }
-
-    return NextResponse.json({
-      success: true,
-      progress: progressRecord,
-      unlocked: shouldUnlock,
-    });
   } catch (error) {
     console.error('Error tracking achievement:', error);
     return NextResponse.json(
       { error: 'Failed to track achievement' },
       { status: 500 }
     );
-  }
-}
-
-async function grantBadge(userId: string, badgeId: string) {
-  try {
-    // Add badge to user's collection (implementation depends on badge system)
-    console.log(`Badge ${badgeId} granted to user ${userId}`);
-    // TODO: Implement badge granting logic
-  } catch (error) {
-    console.error('Error granting badge:', error);
   }
 }

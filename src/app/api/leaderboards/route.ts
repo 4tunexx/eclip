@@ -5,17 +5,17 @@ import { desc } from 'drizzle-orm';
 
 export async function GET() {
   try {
-    // Get top players by MMR
+    // Get top players by ESR
     const topPlayers = await db.select({
       id: users.id,
       username: users.username,
       avatarUrl: users.avatarUrl,
       rank: users.rank,
-      mmr: users.mmr,
+      esr: users.esr,
       level: users.level,
     })
       .from(users)
-      .orderBy(desc(users.mmr))
+      .orderBy(desc(users.esr))
       .limit(100);
 
     return NextResponse.json({ players: topPlayers });

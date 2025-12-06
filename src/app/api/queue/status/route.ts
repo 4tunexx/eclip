@@ -36,7 +36,7 @@ export async function GET() {
       ticketId: ticket.id,
       joinedAt: ticket.joinedAt.toISOString(),
       region: ticket.region,
-      mmr: ticket.mmrAtJoin,
+      esr: ticket.esrAtJoin,
     });
   } catch (error) {
     console.error('Error checking queue status:', error);

@@ -52,7 +52,7 @@ export async function POST(request: NextRequest) {
         emailVerified: false,
         level: 1,
         xp: 0,
-        mmr: 1000,
+        esr: 1000,
         rank: 'Bronze',
         coins: '0',
         role: 'USER',

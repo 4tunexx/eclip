@@ -24,7 +24,7 @@ export async function GET(request: NextRequest) {
       email: users.email,
       username: users.username,
       level: users.level,
-      mmr: users.mmr,
+      esr: users.esr,
       rank: users.rank,
       coins: users.coins,
       role: users.role,

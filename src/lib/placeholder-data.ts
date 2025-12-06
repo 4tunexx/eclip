@@ -2,11 +2,11 @@ import type { User, Match, Player, NewsArticle, ForumActivity, Cosmetic, Mission
 import { Gamepad2, Trophy, BarChart, MessageSquare, Video } from 'lucide-react';
 
 export const topPlayers: Player[] = [
-  { id: '1', username: 'Zythex', steamId: '76561197960265728', avatarUrl: 'https://picsum.photos/seed/avatar1/200/200', rank: 'Immortal', mmr: 3200, equippedFrame: 'https://i.postimg.cc/PqYp5d7C/frame-legendary.png' },
-  { id: '2', username: 'Vortex', steamId: '76561197960265729', avatarUrl: 'https://picsum.photos/seed/avatar2/200/200', rank: 'Immortal', mmr: 3150 },
-  { id: '3', username: 'Crimson', steamId: '76561197960265730', avatarUrl: 'https://picsum.photos/seed/avatar3/200/200', rank: 'Grandmaster', mmr: 2980 },
-  { id: '4', username: 'Pulse', steamId: '76561197960265731', avatarUrl: 'https://picsum.photos/seed/avatar4/200/200', rank: 'Grandmaster', mmr: 2950 },
-  { id: '5', username: 'Shade', steamId: '76561197960265732', avatarUrl: 'https://picsum.photos/seed/avatar5/200/200', rank: 'Master', mmr: 2800 },
+    { id: '1', username: 'Zythex', steamId: '76561197960265728', avatarUrl: 'https://picsum.photos/seed/avatar1/200/200', rank: 'Immortal', esr: 3200, equippedFrame: 'https://i.postimg.cc/PqYp5d7C/frame-legendary.png' },
+    { id: '2', username: 'Vortex', steamId: '76561197960265729', avatarUrl: 'https://picsum.photos/seed/avatar2/200/200', rank: 'Immortal', esr: 3150 },
+    { id: '3', username: 'Crimson', steamId: '76561197960265730', avatarUrl: 'https://picsum.photos/seed/avatar3/200/200', rank: 'Grandmaster', esr: 2980 },
+    { id: '4', username: 'Pulse', steamId: '76561197960265731', avatarUrl: 'https://picsum.photos/seed/avatar4/200/200', rank: 'Grandmaster', esr: 2950 },
+    { id: '5', username: 'Shade', steamId: '76561197960265732', avatarUrl: 'https://picsum.photos/seed/avatar5/200/200', rank: 'Master', esr: 2800 },
 ];
 
 export const currentUser: User = {
@@ -16,7 +16,7 @@ export const currentUser: User = {
   level: 42,
   xp: 1250,
   rank: 'Diamond I',
-  mmr: 1850,
+    esr: 1850,
   coins: 1337.42,
   isAdmin: true,
   equippedFrame: 'https://i.postimg.cc/PqYp5d7C/frame-legendary.png',
@@ -33,8 +33,8 @@ export const recentMatches: Match[] = [
         result: 'Win',
         date: '2 hours ago',
         players: [
-            { id: '1', steamId: '76561197960265733', username: 'n3o', avatarUrl: 'https://picsum.photos/seed/p1/200/200', rank: 'Diamond I', mmr: 1850, kills: 24, deaths: 15, assists: 5, hsPercentage: 62, mvps: 4, adr: 98.5 },
-            { id: '2', steamId: '76561197960265734', username: 'Shadow', avatarUrl: 'https://picsum.photos/seed/p2/200/200', rank: 'Platinum II', mmr: 1600, kills: 18, deaths: 16, assists: 3, hsPercentage: 45, mvps: 2, adr: 75.1 },
+            { id: '1', steamId: '76561197960265733', username: 'n3o', avatarUrl: 'https://picsum.photos/seed/p1/200/200', rank: 'Diamond I', esr: 1850, kills: 24, deaths: 15, assists: 5, hsPercentage: 62, mvps: 4, adr: 98.5 },
+            { id: '2', steamId: '76561197960265734', username: 'Shadow', avatarUrl: 'https://picsum.photos/seed/p2/200/200', rank: 'Platinum II', esr: 1600, kills: 18, deaths: 16, assists: 3, hsPercentage: 45, mvps: 2, adr: 75.1 },
         ]
     },
     {
@@ -45,8 +45,8 @@ export const recentMatches: Match[] = [
         result: 'Loss',
         date: '5 hours ago',
         players: [
-            { id: '1', steamId: '76561197960265733', username: 'n3o', avatarUrl: 'https://picsum.photos/seed/p1/200/200', rank: 'Diamond I', mmr: 1850, kills: 19, deaths: 20, assists: 2, hsPercentage: 55, mvps: 2, adr: 82.3 },
-            { id: '3', steamId: '76561197960265735', username: 'Ghost', avatarUrl: 'https://picsum.photos/seed/p3/200/200', rank: 'Diamond III', mmr: 1950, kills: 28, deaths: 15, assists: 6, hsPercentage: 71, mvps: 5, adr: 110.7 },
+            { id: '1', steamId: '76561197960265733', username: 'n3o', avatarUrl: 'https://picsum.photos/seed/p1/200/200', rank: 'Diamond I', esr: 1850, kills: 19, deaths: 20, assists: 2, hsPercentage: 55, mvps: 2, adr: 82.3 },
+            { id: '3', steamId: '76561197960265735', username: 'Ghost', avatarUrl: 'https://picsum.photos/seed/p3/200/200', rank: 'Diamond III', esr: 1950, kills: 28, deaths: 15, assists: 6, hsPercentage: 71, mvps: 5, adr: 110.7 },
         ]
     },
     {
@@ -57,8 +57,8 @@ export const recentMatches: Match[] = [
         result: 'Win',
         date: '1 day ago',
         players: [
-            { id: '1', steamId: '76561197960265733', username: 'n3o', avatarUrl: 'https://picsum.photos/seed/p1/200/200', rank: 'Platinum IV', mmr: 1780, kills: 28, deaths: 10, assists: 4, hsPercentage: 68, mvps: 6, adr: 115.2 },
-            { id: '4', steamId: '76561197960265736', username: 'Reaper', avatarUrl: 'https://picsum.photos/seed/p4/200/200', rank: 'Gold III', mmr: 1300, kills: 12, deaths: 18, assists: 1, hsPercentage: 30, mvps: 1, adr: 60.9 },
+            { id: '1', steamId: '76561197960265733', username: 'n3o', avatarUrl: 'https://picsum.photos/seed/p1/200/200', rank: 'Platinum IV', esr: 1780, kills: 28, deaths: 10, assists: 4, hsPercentage: 68, mvps: 6, adr: 115.2 },
+            { id: '4', steamId: '76561197960265736', username: 'Reaper', avatarUrl: 'https://picsum.photos/seed/p4/200/200', rank: 'Gold III', esr: 1300, kills: 12, deaths: 18, assists: 1, hsPercentage: 30, mvps: 1, adr: 60.9 },
         ]
     }
 ];
@@ -101,8 +101,8 @@ export const newsArticles: NewsArticle[] = [
     },
     { 
         id: 'n3', 
-        title: 'Community Spotlight: MMR Distribution Analysis',
-        excerpt: 'A deep dive into the player skill ratings from last season. Where do you stand?',
+        title: 'Community Spotlight: ESR Distribution Analysis',
+        excerpt: 'A deep dive into the Eclip Skill Rating spread from last season. Where do you stand?',
         date: '1 week ago',
         icon: BarChart,
     },

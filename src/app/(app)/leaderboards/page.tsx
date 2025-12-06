@@ -6,6 +6,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { UserAvatar } from "@/components/user-avatar";
 import { Badge } from "@/components/ui/badge";
 import { Loader2 } from "lucide-react";
+import { getRoleColor, getRoleBgColor } from "@/lib/role-colors";
 
 export default function LeaderboardsPage() {
   const [players, setPlayers] = useState<any[]>([]);
@@ -52,7 +53,7 @@ export default function LeaderboardsPage() {
               <TableRow>
                 <TableHead>Rank</TableHead>
                 <TableHead>Player</TableHead>
-                <TableHead>MMR</TableHead>
+                <TableHead>ESR</TableHead>
                 <TableHead>Tier</TableHead>
                 <TableHead>Level</TableHead>
               </TableRow>
@@ -75,10 +76,22 @@ export default function LeaderboardsPage() {
                           username={player.username}
                           className="h-10 w-10"
                         />
-                        <span className="font-medium">{player.username}</span>
+                        <div className="flex flex-col">
+                          <span className="font-medium">{player.username}</span>
+                          {player.role && (
+                            <span
+                              style={{
+                                color: getRoleColor(player.role),
+                              }}
+                              className="text-xs font-semibold"
+                            >
+                              {player.role}
+                            </span>
+                          )}
+                        </div>
                       </div>
                     </TableCell>
-                    <TableCell className="font-semibold text-primary">{player.mmr}</TableCell>
+                    <TableCell className="font-semibold text-primary">{(player as any).esr}</TableCell>
                     <TableCell>
                       <Badge variant="outline" className="border-primary text-primary">
                         {player.rank}

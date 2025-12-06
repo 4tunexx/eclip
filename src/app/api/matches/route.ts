@@ -46,7 +46,7 @@ export async function GET(request: NextRequest) {
           username: user.username,
           avatarUrl: user.avatarUrl,
           rank: user.rank,
-          mmr: user.mmr,
+          esr: (user as any).esr,
           kills: player.kills || 0,
           deaths: player.deaths || 0,
           assists: player.assists || 0,

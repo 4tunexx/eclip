@@ -6,7 +6,7 @@ import { eq, and, inArray } from 'drizzle-orm';
 // Matchmaker - finds 10 players and creates a match
 export async function POST() {
   try {
-    // Get waiting queue tickets grouped by region and similar MMR
+    // Get waiting queue tickets grouped by region and similar ESR
     const waitingTickets = await db.select()
       .from(queueTickets)
       .where(eq(queueTickets.status, 'WAITING'))
@@ -20,7 +20,7 @@ export async function POST() {
     }
 
     // Group by region (for now, just take first 10)
-    // TODO: Implement proper MMR-based matching
+    // TODO: Implement proper ESR-based matching
     const selectedTickets = waitingTickets.slice(0, 10);
 
     // Create match

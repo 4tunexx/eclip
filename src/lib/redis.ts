@@ -31,17 +31,17 @@ export async function closeRedis() {
 }
 
 // Helper functions for queue management
-export async function addToQueue(userId: string, mmr: number, region: string) {
+export async function addToQueue(userId: string, esr: number, region: string) {
   const client = await getRedisClient();
   if (!client) return;
 
   await client.zAdd('queue:waiting', {
-    score: mmr,
+    score: esr,
     value: userId,
   });
 
   await client.hSet(`queue:user:${userId}`, {
-    mmr: mmr.toString(),
+    esr: esr.toString(),
     region,
     joinedAt: Date.now().toString(),
   });
@@ -55,14 +55,14 @@ export async function removeFromQueue(userId: string) {
   await client.del(`queue:user:${userId}`);
 }
 
-export async function getQueuePlayers(mmrRange: [number, number], limit: number = 10) {
+export async function getQueuePlayers(esrRange: [number, number], limit: number = 10) {
   const client = await getRedisClient();
   if (!client) return [];
 
   const players = await client.zRangeByScoreWithScores(
     'queue:waiting',
-    mmrRange[0],
-    mmrRange[1],
+    esrRange[0],
+    esrRange[1],
     {
       LIMIT: {
         offset: 0,
@@ -73,7 +73,7 @@ export async function getQueuePlayers(mmrRange: [number, number], limit: number 
 
   return players.map(p => ({
     userId: p.value,
-    mmr: p.score,
+    esr: p.score,
   }));
 }
 

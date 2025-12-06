@@ -47,8 +47,8 @@ export async function POST() {
 async function createMatch(tickets: any[]) {
   if (tickets.length < 10) return;
 
-  // Sort by MMR to balance teams
-  const sorted = [...tickets].sort((a, b) => a.mmrAtJoin - b.mmrAtJoin);
+  // Sort by ESR to balance teams
+  const sorted = [...tickets].sort((a, b) => a.esrAtJoin - b.esrAtJoin);
   const team1 = [sorted[0], sorted[3], sorted[5], sorted[7], sorted[9]];
   const team2 = [sorted[1], sorted[2], sorted[4], sorted[6], sorted[8]];
 

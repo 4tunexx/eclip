@@ -17,7 +17,7 @@ INSERT INTO users (
   email_verified, 
   level, 
   xp, 
-  mmr, 
+  esr, 
   rank, 
   coins,
   created_at,

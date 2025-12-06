@@ -31,7 +31,7 @@ export interface User {
   xp: number;
   xpToNextLevel: number;
   rank: RankTier;
-  mmr: number;
+  esr: number;
   coins: number;
   isVerified: boolean;
   isSteamLinked: boolean;

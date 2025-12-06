@@ -81,7 +81,7 @@ export async function GET() {
       level: (user as any).level ?? 1,
       xp: Number((user as any).xp ?? 0),
       rank: (user as any).rank ?? 'Bronze',
-      mmr: (user as any).mmr ?? 1000,
+      esr: (user as any).esr ?? 1000,
       coins: Number((user as any).coins ?? 0),
       isAdmin: ((user as any).role || '').toUpperCase() === 'ADMIN',
       emailVerified: Boolean((user as any).emailVerified ?? (profile?.emailVerifiedAt ? true : false)),

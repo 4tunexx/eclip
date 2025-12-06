@@ -55,7 +55,7 @@ export async function GET(request: NextRequest) {
           emailVerified: true,
           level: 1,
           xp: 0,
-          mmr: 1000,
+          esr: 1000,
           rank: 'Bronze',
           coins: '0',
           role: 'USER',

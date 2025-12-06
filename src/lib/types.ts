@@ -7,7 +7,7 @@ export type User = {
   level: number;
   xp: number;
   rank: string;
-  mmr: number;
+  esr: number;
   coins: number;
   isAdmin?: boolean;
   equippedFrame?: string;
@@ -20,7 +20,7 @@ export type Player = {
   username: string;
   avatarUrl: string;
   rank: string;
-  mmr: number;
+  esr: number;
   steamId?: string;
   equippedFrame?: string;
 };

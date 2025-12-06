@@ -9,9 +9,9 @@ const updateUserSchema = z.object({
   coins: z.number().optional(),
   xp: z.number().optional(),
   level: z.number().optional(),
-  mmr: z.number().optional(),
+  esr: z.number().optional(),
   rank: z.string().optional(),
-  role: z.enum(['USER', 'VIP', 'MOD', 'ADMIN']).optional(),
+  role: z.enum(['USER', 'VIP', 'INSIDER', 'MOD', 'MODERATOR', 'ADMIN']).optional(),
 });
 
 export async function GET(
@@ -101,7 +101,7 @@ export async function PATCH(
     if (updates.coins !== undefined) updateData.coins = updates.coins.toString();
     if (updates.xp !== undefined) updateData.xp = updates.xp;
     if (updates.level !== undefined) updateData.level = updates.level;
-    if (updates.mmr !== undefined) updateData.mmr = updates.mmr;
+    if (updates.esr !== undefined) updateData.esr = updates.esr;
     if (updates.rank !== undefined) updateData.rank = updates.rank;
     if (updates.role !== undefined) updateData.role = updates.role;
     updateData.updatedAt = new Date();

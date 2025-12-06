@@ -103,7 +103,7 @@ export default function LandingPage() {
                     />
                     <h3 className="font-bold">{player.username}</h3>
                     <div className="text-sm text-muted-foreground">
-                        MMR: <span className="font-semibold text-primary">{player.mmr}</span>
+                      ESR: <span className="font-semibold text-primary">{(player as any).esr}</span>
                     </div>
                     <Badge variant="outline" className="mt-2 border-accent text-accent">{player.rank}</Badge>
                 </CardContent>

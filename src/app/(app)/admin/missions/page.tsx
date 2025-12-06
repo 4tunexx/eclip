@@ -18,6 +18,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { MISSION_REQUIREMENT_TYPE_OPTIONS } from '@/lib/constants/requirement-types';
 
 interface Mission {
   id: string;
@@ -25,6 +26,8 @@ interface Mission {
   description: string;
   category: string;
   isDaily: boolean;
+  requirementType?: string;
+  requirementValue?: number;
   objectiveValue: number;
   rewardXp: number;
   rewardCoins: string;
@@ -39,6 +42,8 @@ export default function MissionsAdmin() {
   const [formData, setFormData] = useState<Partial<Mission>>({
     category: 'PLATFORM',
     isDaily: false,
+    requirementType: 'KILLS',
+    requirementValue: 1,
     objectiveValue: 1,
     rewardXp: 100,
     rewardCoins: '0',
@@ -85,6 +90,8 @@ export default function MissionsAdmin() {
       setFormData({
         category: 'PLATFORM',
         isDaily: false,
+        requirementType: 'KILLS',
+        requirementValue: 1,
         objectiveValue: 1,
         rewardXp: 100,
         rewardCoins: '0',
@@ -154,6 +161,32 @@ export default function MissionsAdmin() {
           </SelectContent>
         </Select>
 
+        <Select
+          value={formData.requirementType || 'KILLS'}
+          onValueChange={(val) => setFormData({ ...formData, requirementType: val })}
+        >
+          <SelectTrigger className="bg-gray-800 border-gray-700">
+            <SelectValue placeholder="Select requirement type" />
+          </SelectTrigger>
+          <SelectContent>
+            {MISSION_REQUIREMENT_TYPE_OPTIONS.map((option) => (
+              <SelectItem key={option.value} value={option.value}>
+                {option.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        <Input
+          placeholder="Requirement Value"
+          type="number"
+          value={formData.requirementValue || 1}
+          onChange={(e) =>
+            setFormData({ ...formData, requirementValue: parseInt(e.target.value) || 1 })
+          }
+          className="bg-gray-800 border-gray-700"
+        />
+
         <Input
           placeholder="Objective Value"
           type="number"
@@ -189,6 +222,8 @@ export default function MissionsAdmin() {
                 setFormData({
                   category: 'PLATFORM',
                   isDaily: false,
+                  requirementType: 'KILLS',
+                  requirementValue: 1,
                   objectiveValue: 1,
                   rewardXp: 100,
                   rewardCoins: '0',
@@ -209,7 +244,8 @@ export default function MissionsAdmin() {
             <TableRow className="border-gray-800 bg-gray-800">
               <TableHead>Title</TableHead>
               <TableHead>Category</TableHead>
-              <TableHead>Objective</TableHead>
+              <TableHead>Requirement Type</TableHead>
+              <TableHead>Requirement Value</TableHead>
               <TableHead>XP Reward</TableHead>
               <TableHead>Coin Reward</TableHead>
               <TableHead>Active</TableHead>
@@ -225,7 +261,12 @@ export default function MissionsAdmin() {
                     {mission.category}
                   </span>
                 </TableCell>
-                <TableCell>{mission.objectiveValue}</TableCell>
+                <TableCell className="text-sm">
+                  <span className="bg-green-900 text-green-200 px-2 py-1 rounded">
+                    {mission.requirementType || 'N/A'}
+                  </span>
+                </TableCell>
+                <TableCell className="font-mono text-sm">{mission.requirementValue || mission.objectiveValue}</TableCell>
                 <TableCell>{mission.rewardXp}</TableCell>
                 <TableCell>{mission.rewardCoins}</TableCell>
                 <TableCell>{mission.isActive ? '✅' : '❌'}</TableCell>

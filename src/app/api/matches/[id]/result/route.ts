@@ -94,16 +94,16 @@ export async function POST(
             const newXP = Number(user.xp) + xpReward;
             const newLevel = Math.floor(newXP / 200) + 1;
 
-            // Update MMR (simple ELO-like calculation)
-            const mmrChange = isWinner ? 25 : -15;
-            const newMMR = Math.max(0, user.mmr + mmrChange);
+            // Update ESR (simple ELO-like calculation)
+            const esrChange = isWinner ? 25 : -15;
+            const newESR = Math.max(0, (user as any).esr + esrChange);
 
             // Update user
             await tx.update(users)
               .set({
                 xp: newXP,
                 level: newLevel,
-                mmr: newMMR,
+                esr: newESR,
                 coins: (Number(user.coins) + coinReward).toString(),
                 updatedAt: new Date(),
               })

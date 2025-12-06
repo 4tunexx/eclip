@@ -18,13 +18,16 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { ACHIEVEMENT_REQUIREMENT_TYPE_OPTIONS } from '@/lib/constants/requirement-types';
 
 interface Achievement {
   id: string;
   title: string;
   description: string;
   category: string;
-  metricType: string;
+  requirementType?: string;
+  requirementValue?: number;
+  metricType?: string;
   progressRequired: number;
   isRepeatable: boolean;
   isActive: boolean;
@@ -37,7 +40,8 @@ export default function AchievementsAdmin() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [formData, setFormData] = useState<Partial<Achievement>>({
     category: 'LEVEL',
-    metricType: 'level_milestone',
+    requirementType: 'LEVEL_REACH',
+    requirementValue: 1,
     progressRequired: 1,
     isRepeatable: false,
   });
@@ -82,7 +86,8 @@ export default function AchievementsAdmin() {
       await fetchAchievements();
       setFormData({
         category: 'LEVEL',
-        metricType: 'level_milestone',
+        requirementType: 'LEVEL_REACH',
+        requirementValue: 1,
         progressRequired: 1,
         isRepeatable: false,
       });
@@ -154,10 +159,29 @@ export default function AchievementsAdmin() {
           </SelectContent>
         </Select>
 
+        <Select
+          value={formData.requirementType || 'LEVEL_REACH'}
+          onValueChange={(val) => setFormData({ ...formData, requirementType: val })}
+        >
+          <SelectTrigger className="bg-gray-800 border-gray-700">
+            <SelectValue placeholder="Select requirement type" />
+          </SelectTrigger>
+          <SelectContent>
+            {ACHIEVEMENT_REQUIREMENT_TYPE_OPTIONS.map((option) => (
+              <SelectItem key={option.value} value={option.value}>
+                {option.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
         <Input
-          placeholder="Metric Type"
-          value={formData.metricType || ''}
-          onChange={(e) => setFormData({ ...formData, metricType: e.target.value })}
+          placeholder="Requirement Value"
+          type="number"
+          value={formData.requirementValue || 1}
+          onChange={(e) =>
+            setFormData({ ...formData, requirementValue: parseInt(e.target.value) || 1 })
+          }
           className="bg-gray-800 border-gray-700"
         />
 
@@ -189,7 +213,8 @@ export default function AchievementsAdmin() {
                 setEditingId(null);
                 setFormData({
                   category: 'LEVEL',
-                  metricType: 'level_milestone',
+                  requirementType: 'LEVEL_REACH',
+                  requirementValue: 1,
                   progressRequired: 1,
                   isRepeatable: false,
                 });
@@ -209,8 +234,8 @@ export default function AchievementsAdmin() {
             <TableRow className="border-gray-800 bg-gray-800">
               <TableHead>Title</TableHead>
               <TableHead>Category</TableHead>
-              <TableHead>Metric Type</TableHead>
-              <TableHead>Progress</TableHead>
+              <TableHead>Requirement Type</TableHead>
+              <TableHead>Requirement Value</TableHead>
               <TableHead>Repeatable</TableHead>
               <TableHead>Active</TableHead>
               <TableHead>Actions</TableHead>
@@ -225,8 +250,12 @@ export default function AchievementsAdmin() {
                     {achievement.category}
                   </span>
                 </TableCell>
-                <TableCell>{achievement.metricType}</TableCell>
-                <TableCell>{achievement.progressRequired}</TableCell>
+                <TableCell className="text-sm">
+                  <span className="bg-purple-800 text-purple-100 px-2 py-1 rounded">
+                    {achievement.requirementType || achievement.metricType || 'N/A'}
+                  </span>
+                </TableCell>
+                <TableCell className="font-mono text-sm">{achievement.requirementValue || achievement.progressRequired}</TableCell>
                 <TableCell>{achievement.isRepeatable ? '✅' : '❌'}</TableCell>
                 <TableCell>{achievement.isActive ? '✅' : '❌'}</TableCell>
                 <TableCell className="space-x-2">

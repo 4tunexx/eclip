@@ -31,7 +31,7 @@ export default function SupportPage() {
   const faqs = [
     {
       question: "How does the ranking system work?",
-      answer: "Our ranking system is based on an MMR (Matchmaking Rating) score. You gain or lose MMR based on match outcomes and your performance. Your rank is determined by your current MMR range.",
+      answer: "Our ranking system is based on ESR (Eclip Skill Rating). You gain or lose ESR based on match outcomes and your performance. Your rank is determined by your current ESR range.",
     },
     {
       question: "How do I earn coins?",

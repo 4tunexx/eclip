@@ -19,21 +19,26 @@ export async function GET(request: NextRequest) {
     const category = url.searchParams.get('category');
     const isDaily = url.searchParams.get('daily') === 'true';
 
-    let query = db.select().from(missions).where(eq(missions.isActive, true));
-
+    const filters = [eq(missions.isActive, true)];
     if (category) {
-      query = query.where(eq(missions.category, category));
+      filters.push(eq(missions.category, category));
     }
     if (isDaily) {
-      query = query.where(eq(missions.isDaily, true));
+      filters.push(eq(missions.isDaily, true));
     }
 
-    const allMissions = await query;
+    const allMissions = await db
+      .select()
+      .from(missions)
+      .where(filters.length > 1 ? and(...filters) : filters[0])
+      .execute();
 
     // Get user's progress for each mission
-    const progressData = await db.select()
+    const progressData = await db
+      .select()
       .from(userMissionProgress)
-      .where(eq(userMissionProgress.userId, user.id));
+      .where(eq(userMissionProgress.userId, user.id))
+      .execute();
 
     const progressMap = new Map(progressData.map(p => [p.missionId, p]));
 
@@ -73,7 +78,8 @@ export async function POST(request: NextRequest) {
     }
 
     // Get or create progress record
-    const existingProgress = await db.select()
+    const existingProgress = await db
+      .select()
       .from(userMissionProgress)
       .where(
         and(
@@ -81,27 +87,32 @@ export async function POST(request: NextRequest) {
           eq(userMissionProgress.missionId, missionId)
         )
       )
-      .limit(1);
+      .limit(1)
+      .execute();
 
-    const mission = await db.select()
+    const mission = await db
+      .select()
       .from(missions)
       .where(eq(missions.id, missionId))
-      .limit(1);
+      .limit(1)
+      .execute();
 
     if (!mission[0]) {
       return NextResponse.json({ error: 'Mission not found' }, { status: 404 });
     }
+
+    const missionTarget = mission[0].target ?? 0;
 
     let progressRecord;
 
     if (existingProgress[0]) {
       // Update existing
       const newProgress = Math.min(
-        existingProgress[0].progress + progress,
-        mission[0].objectiveValue
+        (existingProgress[0].progress || 0) + progress,
+        missionTarget
       );
 
-      const isCompleted = newProgress >= mission[0].objectiveValue;
+      const isCompleted = newProgress >= missionTarget;
 
       await db.update(userMissionProgress)
         .set({
@@ -115,7 +126,8 @@ export async function POST(request: NextRequest) {
             eq(userMissionProgress.userId, user.id),
             eq(userMissionProgress.missionId, missionId)
           )
-        );
+        )
+        .execute();
 
       progressRecord = { ...existingProgress[0], progress: newProgress, completed: isCompleted };
 
@@ -125,8 +137,8 @@ export async function POST(request: NextRequest) {
       }
     } else {
       // Create new
-      const newProgress = Math.min(progress, mission[0].objectiveValue);
-      const isCompleted = newProgress >= mission[0].objectiveValue;
+      const newProgress = Math.min(progress, missionTarget);
+      const isCompleted = newProgress >= missionTarget;
 
       const [created] = await db.insert(userMissionProgress)
         .values({
@@ -136,7 +148,8 @@ export async function POST(request: NextRequest) {
           completed: isCompleted,
           completedAt: isCompleted ? new Date() : null,
         })
-        .returning();
+        .returning()
+        .execute();
 
       progressRecord = created;
 
@@ -164,18 +177,19 @@ export async function POST(request: NextRequest) {
 async function grantMissionRewards(userId: string, mission: any) {
   try {
     // Add XP and coins to user
-    const [currentUser] = await db.select().from(users).where(eq(users.id, userId));
+    const [currentUser] = await db.select().from(users).where(eq(users.id, userId)).execute();
 
     if (currentUser) {
       const newXp = currentUser.xp + (mission.rewardXp || 0);
-      const newCoins = parseFloat(currentUser.coins || 0) + parseFloat(mission.rewardCoins || 0);
+      const newCoins = parseFloat(String(currentUser.coins ?? '0')) + Number(mission.rewardCoins ?? 0);
 
       await db.update(users)
         .set({
           xp: newXp,
           coins: newCoins.toString(),
         })
-        .where(eq(users.id, userId));
+        .where(eq(users.id, userId))
+        .execute();
     }
   } catch (error) {
     console.error('Error granting mission rewards:', error);

@@ -3,20 +3,20 @@ import { db } from '@/lib/db';
 import { achievements, rolePermissions } from '@/lib/db/schema';
 import { getCurrentUser } from '@/lib/auth';
 import { eq, and } from 'drizzle-orm';
-import { v4 as uuidv4 } from 'uuid';
+import { randomUUID } from 'crypto';
 
 async function checkAdminPermission(userId: string) {
-  const [perm] = await db.select()
+  const permResult = await db.select()
     .from(rolePermissions)
     .where(
       and(
-        eq(rolePermissions.userId, userId),
-        eq(rolePermissions.permission, 'manage_achievements')
+        eq(rolePermissions.role, 'ADMIN')
       )
     )
-    .limit(1);
+    .limit(1)
+    .execute();
 
-  return !!perm;
+  return !!permResult.length;
 }
 
 /**
@@ -30,12 +30,11 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const hasPermission = await checkAdminPermission(user.id);
-    if (!hasPermission) {
+    if (user.role !== 'ADMIN') {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    const allAchievements = await db.select().from(achievements);
+    const allAchievements = await db.select().from(achievements).execute();
 
     return NextResponse.json(allAchievements);
   } catch (error) {
@@ -58,28 +57,32 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const hasPermission = await checkAdminPermission(user.id);
-    if (!hasPermission) {
+    if (user.role !== 'ADMIN') {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
     const achievementData = await request.json();
 
-    const [created] = await db.insert(achievements)
+    const createdResult = await db.insert(achievements)
       .values({
-        id: uuidv4(),
-        title: achievementData.title,
+        id: randomUUID(),
+        code: achievementData.code,
+        name: achievementData.name,
         description: achievementData.description,
         category: achievementData.category,
-        metricType: achievementData.metricType,
-        progressRequired: achievementData.progressRequired,
-        badgeRewardId: achievementData.badgeRewardId || null,
-        isRepeatable: achievementData.isRepeatable || false,
+        requirementType: achievementData.requirementType,
+        requirementValue: achievementData.requirementValue,
+        target: achievementData.target || 1,
+        points: achievementData.points || 0,
+        rewardXp: achievementData.rewardXp || 0,
+        rewardBadgeId: achievementData.rewardBadgeId || null,
+        isSecret: achievementData.isSecret || false,
         isActive: true,
-        iconUrl: achievementData.iconUrl || null,
-        createdAt: new Date(),
       })
-      .returning();
+      .returning()
+      .execute();
+
+    const created = createdResult[0];
 
     return NextResponse.json(created, { status: 201 });
   } catch (error) {
@@ -102,8 +105,7 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const hasPermission = await checkAdminPermission(user.id);
-    if (!hasPermission) {
+    if (user.role !== 'ADMIN') {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
@@ -111,21 +113,25 @@ export async function PUT(request: NextRequest) {
     const achievementId = url.pathname.split('/').pop();
     const achievementData = await request.json();
 
-    const [updated] = await db.update(achievements)
+    const updatedResult = await db.update(achievements)
       .set({
-        title: achievementData.title,
+        name: achievementData.name,
         description: achievementData.description,
         category: achievementData.category,
-        metricType: achievementData.metricType,
-        progressRequired: achievementData.progressRequired,
-        badgeRewardId: achievementData.badgeRewardId,
-        isRepeatable: achievementData.isRepeatable,
+        requirementType: achievementData.requirementType,
+        requirementValue: achievementData.requirementValue,
+        target: achievementData.target,
+        points: achievementData.points,
+        rewardXp: achievementData.rewardXp,
+        rewardBadgeId: achievementData.rewardBadgeId,
+        isSecret: achievementData.isSecret,
         isActive: achievementData.isActive,
-        iconUrl: achievementData.iconUrl,
-        updatedAt: new Date(),
       })
       .where(eq(achievements.id, achievementId!))
-      .returning();
+      .returning()
+      .execute();
+
+    const updated = updatedResult[0];
 
     if (!updated) {
       return NextResponse.json(
@@ -155,21 +161,22 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const hasPermission = await checkAdminPermission(user.id);
-    if (!hasPermission) {
+    if (user.role !== 'ADMIN') {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
     const url = new URL(request.url);
     const achievementId = url.pathname.split('/').pop();
 
-    const [updated] = await db.update(achievements)
+    const updatedResult = await db.update(achievements)
       .set({
         isActive: false,
-        updatedAt: new Date(),
       })
       .where(eq(achievements.id, achievementId!))
-      .returning();
+      .returning()
+      .execute();
+
+    const updated = updatedResult[0];
 
     if (!updated) {
       return NextResponse.json(

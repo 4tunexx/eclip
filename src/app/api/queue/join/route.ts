@@ -55,7 +55,7 @@ export async function POST() {
       userId: user.id,
       status: 'WAITING',
       region: 'EU', // TODO: Get from user settings
-      mmrAtJoin: user.mmr,
+      esrAtJoin: (user as any).esr,
     }).returning();
 
     // TODO: Start matchmaker process
