@@ -73,9 +73,9 @@ export default function MissionsPage() {
   };
 
   const MissionCard = ({ mission }: { mission: Mission }) => {
-    const progressPercent = mission.userProgress 
-      ? (mission.userProgress.progress / mission.objectiveValue) * 100 
-      : 0;
+    const current = mission.userProgress?.progress || 0;
+    const objective = mission.objectiveValue || 1;
+    const progressPercent = Math.min((current / objective) * 100, 100);
     const isCompleted = mission.userProgress?.completed || false;
 
     return (

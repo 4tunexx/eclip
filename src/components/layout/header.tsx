@@ -163,32 +163,44 @@ export function Header() {
               ) : (
                 <ScrollArea className="h-72">
                   <div className="space-y-2 p-2">
-                    {notifications.map((notif) => (
-                      <div
-                        key={notif.id}
-                        className="flex items-start gap-3 p-3 rounded-lg hover:bg-accent/50 transition-colors group"
-                      >
-                        <div className="flex-1 pt-0.5">
-                          <p className="font-medium text-sm">{notif.title}</p>
-                          {notif.message && (
-                            <p className="text-xs text-muted-foreground line-clamp-2">{notif.message}</p>
+                    {notifications.map((notif) => {
+                      const notifData = notif.data ? (typeof notif.data === 'string' ? JSON.parse(notif.data) : notif.data) : {};
+                      const redirectUrl = notifData.redirectTo || '/profile';
+                      
+                      return (
+                        <div
+                          key={notif.id}
+                          className="flex items-start gap-3 p-3 rounded-lg hover:bg-accent/50 transition-colors group cursor-pointer"
+                          onClick={() => {
+                            handleMarkAsRead(notif.id);
+                            window.location.href = redirectUrl;
+                          }}
+                        >
+                          <div className="flex-1 pt-0.5">
+                            <p className="font-medium text-sm">{notif.title}</p>
+                            {notif.message && (
+                              <p className="text-xs text-muted-foreground line-clamp-2">{notif.message}</p>
+                            )}
+                            <p className="text-xs text-muted-foreground mt-1">
+                              {new Date(notif.createdAt).toLocaleDateString()}
+                            </p>
+                          </div>
+                          {!notif.read && (
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleMarkAsRead(notif.id);
+                              }}
+                            >
+                              <Check className="h-3 w-3" />
+                            </Button>
                           )}
-                          <p className="text-xs text-muted-foreground mt-1">
-                            {new Date(notif.createdAt).toLocaleDateString()}
-                          </p>
                         </div>
-                        {!notif.read && (
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
-                            onClick={() => handleMarkAsRead(notif.id)}
-                          >
-                            <Check className="h-3 w-3" />
-                          </Button>
-                        )}
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </ScrollArea>
               )}

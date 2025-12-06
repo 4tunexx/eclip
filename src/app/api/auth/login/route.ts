@@ -40,6 +40,7 @@ export async function POST(request: NextRequest) {
         email: users.email,
         username: users.username,
         passwordHash: users.passwordHash,
+        emailVerified: users.emailVerified,
         level: users.level,
         xp: users.xp,
         esr: users.esr,
@@ -63,6 +64,14 @@ export async function POST(request: NextRequest) {
         return NextResponse.json(
           { error: 'Invalid email or password' },
           { status: 401 }
+        );
+      }
+
+      if (!(user as any).emailVerified) {
+        console.log('[Login] Email not verified');
+        return NextResponse.json(
+          { error: 'Please verify your email before signing in.' },
+          { status: 403 }
         );
       }
 
@@ -110,6 +119,7 @@ export async function POST(request: NextRequest) {
             email: users.email,
             username: users.username,
             passwordHash: users.passwordHash,
+            emailVerified: users.emailVerified,
             level: users.level,
             xp: users.xp,
             esr: users.esr,

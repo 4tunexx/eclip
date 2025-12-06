@@ -6,6 +6,19 @@ import { users } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
 import { createSession } from '@/lib/auth';
 
+async function fetchSteamAvatar(steamId: string): Promise<string | null> {
+  if (!config.steam.apiKey) return null;
+  try {
+    const resp = await fetch(`https://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/?key=${config.steam.apiKey}&steamids=${steamId}`);
+    const data = await resp.json();
+    const avatar = data?.response?.players?.[0]?.avatarfull;
+    return avatar || null;
+  } catch (err) {
+    console.warn('[Steam Auth] Failed to fetch Steam avatar', err);
+    return null;
+  }
+}
+
 export async function GET(request: NextRequest) {
   try {
     console.log('[Steam Auth] Processing return from Steam');
@@ -46,6 +59,7 @@ export async function GET(request: NextRequest) {
     try {
       const [existing] = await db.select().from(users).where(eq(users.steamId, steamId)).limit(1);
       let userId = existing?.id as string | undefined;
+      let avatarUrl = existing?.avatar as string | undefined;
       if (!userId) {
         const [u] = await db.insert(users).values({
           email: `${steamId}@steam.local`,
@@ -61,6 +75,17 @@ export async function GET(request: NextRequest) {
           role: 'USER',
         }).returning();
         userId = u.id as string;
+        avatarUrl = (u as any)?.avatar || null;
+      }
+
+      // Sync Steam avatar if we have none or a temp placeholder
+      if (!avatarUrl) {
+        const steamAvatar = await fetchSteamAvatar(steamId);
+        if (steamAvatar) {
+          await db.update(users)
+            .set({ avatar: steamAvatar })
+            .where(eq(users.id, userId));
+        }
       }
       
       // Create session and set cookie
@@ -96,6 +121,12 @@ export async function GET(request: NextRequest) {
             [steamId, `steam_${steamId.slice(-6)}`, `E-${steamId}`, 1000, '0.00']
           );
           userId = ins[0].id;
+        }
+        const steamAvatar = await fetchSteamAvatar(steamId);
+        if (steamAvatar) {
+          try {
+            await sql.unsafe('UPDATE "public"."User" SET "avatar" = $1 WHERE "id" = $2;', [steamAvatar, userId]);
+          } catch {}
         }
         await sql.end({ timeout: 5 });
         if (userId) {

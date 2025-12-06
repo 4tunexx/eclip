@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import { cosmetics, userInventory, users, transactions } from '@/lib/db/schema';
+import { cosmetics, userInventory, users, transactions, notifications } from '@/lib/db/schema';
 import { getCurrentUser } from '@/lib/auth';
 import { eq, and } from 'drizzle-orm';
 import { z } from 'zod';
@@ -79,7 +79,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Transaction: Deduct coins, add to inventory, create transaction record
+    // Transaction: Deduct coins, add to inventory, create transaction record, and create notification
     try {
       await db.transaction(async (tx) => {
         await tx.update(users)
@@ -94,6 +94,27 @@ export async function POST(request: NextRequest) {
           amount: (-price).toString(),
           description: `Purchased ${(cosmetic as any).name}`,
           referenceId: (cosmetic as any).id,
+        });
+
+        // Create notification for cosmetic purchase
+        const notificationType = (cosmetic as any).type === 'Frame' 
+          ? 'COSMETIC_FRAME_PURCHASED' 
+          : (cosmetic as any).type === 'Banner'
+          ? 'COSMETIC_BANNER_PURCHASED'
+          : 'COSMETIC_PURCHASED';
+
+        await tx.insert(notifications).values({
+          userId: user.id,
+          type: notificationType,
+          title: `${(cosmetic as any).name} Acquired!`,
+          message: `You've purchased ${(cosmetic as any).name}. Visit your profile to equip it!`,
+          data: JSON.stringify({
+            cosmeticId: (cosmetic as any).id,
+            cosmeticName: (cosmetic as any).name,
+            cosmeticType: (cosmetic as any).type,
+            redirectTo: `/profile?tab=settings`,
+          }),
+          read: false,
         });
       });
     } catch (drizzleErr) {

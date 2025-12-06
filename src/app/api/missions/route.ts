@@ -1,10 +1,10 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { missions, userMissionProgress } from '@/lib/db/schema';
 import { getCurrentUser } from '@/lib/auth';
-import { eq } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
     const user = await getCurrentUser();
     if (!user) {
@@ -14,11 +14,19 @@ export async function GET() {
       );
     }
 
-    // Get active missions (daily and weekly)
+    const url = new URL(request.url);
+    const dailyOnly = url.searchParams.get('daily') === 'true';
+
+    // Get active missions (optionally filter daily)
+    const filters = [eq(missions.isActive, true)];
+    if (dailyOnly) {
+      filters.push(eq(missions.isDaily, true));
+    }
+
     const activeMissions = await db
       .select()
       .from(missions)
-      .where(eq(missions.isActive, true))
+      .where(filters.length > 1 ? and(...filters) : filters[0])
       .execute();
 
     // Get user progress for all missions
@@ -32,35 +40,31 @@ export async function GET() {
       userProgress.map(p => [p.missionId, p])
     );
 
-    // Combine missions with progress
+    // Normalize shape for UI expectations
     const missionsWithProgress = activeMissions.map(mission => {
       const progress = progressMap.get(mission.id);
       return {
         id: mission.id,
         title: mission.title,
         description: mission.description,
-        type: mission.isDaily ? 'DAILY' : 'STANDARD',
-        objectiveType: mission.requirementType,
+        category: mission.category,
+        isDaily: mission.isDaily,
         objectiveValue: mission.target,
         rewardXp: mission.rewardXp,
-        rewardCoins: Number(mission.rewardCoins),
-        progress: progress?.progress || 0,
-        total: mission.target,
-        completed: progress?.completed || false,
-        reward: mission.rewardCoins 
-          ? `${Number(mission.rewardCoins)} Coins`
-          : `${mission.rewardXp} XP`,
+        rewardCoins: mission.rewardCoins,
+        userProgress: progress
+          ? {
+              missionId: progress.missionId,
+              progress: progress.progress ?? 0,
+              completed: progress.completed ?? false,
+              completedAt: progress.completedAt,
+            }
+          : null,
       };
     });
 
-    // Separate daily and weekly
-    const dailyMissions = missionsWithProgress.filter(m => m.type === 'DAILY');
-    const weeklyMissions = missionsWithProgress.filter(m => m.type !== 'DAILY');
-
-    return NextResponse.json({
-      daily: dailyMissions,
-      weekly: weeklyMissions,
-    });
+    // If daily filter requested, return array; otherwise return all active missions array
+    return NextResponse.json(missionsWithProgress);
   } catch (error) {
     console.error('Error fetching missions:', error);
     return NextResponse.json(

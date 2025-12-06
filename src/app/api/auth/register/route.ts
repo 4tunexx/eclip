@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { users } from '@/lib/db/schema';
 import { hashPassword, createSession } from '@/lib/auth';
+import { sendVerificationEmail } from '@/lib/email';
 import { eq } from 'drizzle-orm';
 import { z } from 'zod';
 
@@ -66,7 +67,7 @@ export async function POST(request: NextRequest) {
         rank: 'Bronze',
         coins: '0',
         role: 'USER',
-        steamId: crypto.randomUUID(), // placeholder to satisfy NOT NULL
+        steamId: `temp-${crypto.randomUUID()}`, // placeholder until user links Steam
         eclipId: crypto.randomUUID(), // unique as well
       }).returning({ id: users.id, email: users.email, username: users.username });
       createdUser = { id: user.id, email: user.email, username: user.username };
@@ -111,6 +112,7 @@ export async function POST(request: NextRequest) {
             rank: 'Bronze',
             coins: '0',
             role: 'USER',
+            steamId: `temp-${crypto.randomUUID()}`,
           }).returning({ id: users.id, email: users.email, username: users.username });
           createdUser = { id: user.id, email: user.email, username: user.username };
         } catch (retryErr) {
@@ -126,27 +128,19 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Failed to create user' }, { status: 500 });
     }
 
-    const session = await createSession(createdUser.id);
-    const response = NextResponse.json({
+    // Send verification email (best-effort)
+    try {
+      await sendVerificationEmail(createdUser.email, emailVerificationToken, createdUser.username);
+    } catch (err) {
+      console.error('[Register] Failed to send verification email:', err);
+    }
+
+    // Do not auto-login until email is verified
+    return NextResponse.json({
       success: true,
-      user: {
-        id: createdUser.id,
-        email: createdUser.email,
-        username: createdUser.username,
-      },
+      requiresEmailVerification: true,
+      message: 'Account created. Please verify your email to continue.',
     });
-
-    response.cookies.set({
-      name: 'session',
-      value: session.token,
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      expires: session.expiresAt,
-      path: '/',
-    });
-
-    return response;
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(

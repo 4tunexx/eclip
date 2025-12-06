@@ -1,16 +1,16 @@
 'use client';
 
 import Link from 'next/link';
-import { 
-  Gamepad2, 
-  Trophy, 
-  BarChart, 
-  Shield,
-  Users,
+import {
+  AlertCircle,
+  BarChart,
+  Gamepad2,
   Gem,
   LayoutGrid,
   Settings,
-  AlertCircle,
+  Shield,
+  Trophy,
+  Users,
 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
@@ -22,198 +22,107 @@ export default function AdminIndexPage() {
         <p className="text-muted-foreground">Manage all platform content and systems</p>
       </div>
 
-      {/* Quick Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Total Users</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">1,234</div>
-            <p className="text-xs text-muted-foreground">Active accounts</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Matches Played</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">5,678</div>
-            <p className="text-xs text-muted-foreground">Total matches</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Cosmetics</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">48</div>
-            <p className="text-xs text-muted-foreground">Items available</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">System Health</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-green-500">100%</div>
-            <p className="text-xs text-muted-foreground">All services online</p>
-          </CardContent>
-        </Card>
+        {[{
+          title: 'Total Users', value: '1,234', hint: 'Active accounts'
+        }, {
+          title: 'Matches Played', value: '5,678', hint: 'Total matches'
+        }, {
+          title: 'Cosmetics', value: '48', hint: 'Items available'
+        }, {
+          title: 'System Health', value: '100%', hint: 'All services online', positive: true
+        }].map((stat) => (
+          <Card key={stat.title}>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">{stat.title}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className={`text-2xl font-bold ${stat.positive ? 'text-green-500' : ''}`}>{stat.value}</div>
+              <p className="text-xs text-muted-foreground">{stat.hint}</p>
+            </CardContent>
+          </Card>
+        ))}
       </div>
 
-      {/* Requirement-Based Systems */}
       <div>
         <h2 className="text-2xl font-bold mb-4">Requirement-Based Systems</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <Link href="/admin/missions">
-            <Card className="hover:bg-accent/50 cursor-pointer transition-colors">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Gamepad2 className="w-5 h-5" />
-                  Missions
-                </CardTitle>
-                <CardDescription>Create and manage daily/platform missions</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <p className="text-xs text-muted-foreground">16 requirement types • Track user progress</p>
-              </CardContent>
-            </Card>
-          </Link>
-
-          <Link href="/admin/achievements">
-            <Card className="hover:bg-accent/50 cursor-pointer transition-colors">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Trophy className="w-5 h-5" />
-                  Achievements
-                </CardTitle>
-                <CardDescription>Define achievement unlock conditions</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <p className="text-xs text-muted-foreground">16 requirement types • Unlock rewards</p>
-              </CardContent>
-            </Card>
-          </Link>
-
-          <Link href="/admin/badges">
-            <Card className="hover:bg-accent/50 cursor-pointer transition-colors">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <BarChart className="w-5 h-5" />
-                  Badges
-                </CardTitle>
-                <CardDescription>Manage cosmetic badges and rewards</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <p className="text-xs text-muted-foreground">6 requirement types • 4 rarities</p>
-              </CardContent>
-            </Card>
-          </Link>
-
-          <Link href="/admin/esr-tiers">
-            <Card className="hover:bg-accent/50 cursor-pointer transition-colors">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <LayoutGrid className="w-5 h-5" />
-                  ESR Tiers
-                </CardTitle>
-                <CardDescription>Configure ESR tier thresholds</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <p className="text-xs text-muted-foreground">15 tiers • 5 ranks × 3 divisions</p>
-              </CardContent>
-            </Card>
-          </Link>
+          <AdminCard
+            href="/admin/missions"
+            icon={<Gamepad2 className="w-5 h-5" />}
+            title="Missions"
+            description="Create and manage daily/platform missions"
+            hint="16 requirement types · Track user progress"
+          />
+          <AdminCard
+            href="/admin/achievements"
+            icon={<Trophy className="w-5 h-5" />}
+            title="Achievements"
+            description="Define achievement unlock conditions"
+            hint="16 requirement types · Unlock rewards"
+          />
+          <AdminCard
+            href="/admin/badges"
+            icon={<BarChart className="w-5 h-5" />}
+            title="Badges"
+            description="Manage cosmetic badges and rewards"
+            hint="6 requirement types · 4 rarities"
+          />
+          <AdminCard
+            href="/admin/esr-tiers"
+            icon={<LayoutGrid className="w-5 h-5" />}
+            title="ESR Tiers"
+            description="Configure ESR tier thresholds"
+            hint="5 ranks × 3 divisions"
+          />
         </div>
       </div>
 
-      {/* Core Management */}
       <div>
         <h2 className="text-2xl font-bold mb-4">Core Management</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <Link href="/admin/users">
-            <Card className="hover:bg-accent/50 cursor-pointer transition-colors">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Users className="w-5 h-5" />
-                  Users
-                </CardTitle>
-                <CardDescription>Manage user accounts and permissions</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <p className="text-xs text-muted-foreground">View all users • Edit roles • Ban/unban</p>
-              </CardContent>
-            </Card>
-          </Link>
-
-          <Link href="/admin/matches">
-            <Card className="hover:bg-accent/50 cursor-pointer transition-colors">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Gamepad2 className="w-5 h-5" />
-                  Matches
-                </CardTitle>
-                <CardDescription>Track and manage match records</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <p className="text-xs text-muted-foreground">View matches • Manage results • Stats</p>
-              </CardContent>
-            </Card>
-          </Link>
-
-          <Link href="/admin/cosmetics">
-            <Card className="hover:bg-accent/50 cursor-pointer transition-colors">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Gem className="w-5 h-5" />
-                  Cosmetics
-                </CardTitle>
-                <CardDescription>Create and manage cosmetic items</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <p className="text-xs text-muted-foreground">Frames • Banners • Badges • Titles</p>
-              </CardContent>
-            </Card>
-          </Link>
-
-          <Link href="/admin/anti-cheat">
-            <Card className="hover:bg-accent/50 cursor-pointer transition-colors">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Shield className="w-5 h-5" />
-                  Anti-Cheat
-                </CardTitle>
-                <CardDescription>Monitor and manage AC system</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <p className="text-xs text-muted-foreground">Review logs • Manage suspicions • Ban users</p>
-              </CardContent>
-            </Card>
-          </Link>
+          <AdminCard
+            href="/admin/users"
+            icon={<Users className="w-5 h-5" />}
+            title="Users"
+            description="Manage user accounts and permissions"
+            hint="View users · Edit roles · Ban/unban"
+          />
+          <AdminCard
+            href="/admin/matches"
+            icon={<Gamepad2 className="w-5 h-5" />}
+            title="Matches"
+            description="Track and manage match records"
+            hint="View matches · Manage results"
+          />
+          <AdminCard
+            href="/admin/cosmetics"
+            icon={<Gem className="w-5 h-5" />}
+            title="Cosmetics"
+            description="Create and manage cosmetic items"
+            hint="Frames · Banners · Badges · Titles"
+          />
+          <AdminCard
+            href="/admin/anti-cheat"
+            icon={<Shield className="w-5 h-5" />}
+            title="Anti-Cheat"
+            description="Monitor and manage AC system"
+            hint="Review logs · Manage suspicions"
+          />
         </div>
       </div>
 
-      {/* Settings */}
       <div>
         <h2 className="text-2xl font-bold mb-4">Configuration</h2>
-        <Link href="/admin/config">
-          <Card className="hover:bg-accent/50 cursor-pointer transition-colors">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Settings className="w-5 h-5" />
-                Site Configuration
-              </CardTitle>
-              <CardDescription>Manage global platform settings and appearance</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p className="text-xs text-muted-foreground">Logo • Banner • Maintenance • Economy settings</p>
-            </CardContent>
-          </Card>
-        </Link>
+        <AdminCard
+          href="/admin/config"
+          icon={<Settings className="w-5 h-5" />}
+          title="Site Configuration"
+          description="Manage global platform settings and appearance"
+          hint="Logo · Banner · Maintenance · Economy"
+        />
       </div>
 
-      {/* System Info */}
       <Card className="border-l-4 border-primary">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -222,23 +131,52 @@ export default function AdminIndexPage() {
           </CardTitle>
         </CardHeader>
         <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div>
-            <p className="text-sm font-semibold text-muted-foreground">Database</p>
-            <p className="text-xl font-bold text-green-500">✓ Connected</p>
-            <p className="text-xs text-muted-foreground">Neon PostgreSQL</p>
-          </div>
-          <div>
-            <p className="text-sm font-semibold text-muted-foreground">Tables</p>
-            <p className="text-xl font-bold">26/26</p>
-            <p className="text-xs text-muted-foreground">All tables present</p>
-          </div>
-          <div>
-            <p className="text-sm font-semibold text-muted-foreground">Migrations</p>
-            <p className="text-xl font-bold text-green-500">✓ Latest</p>
-            <p className="text-xs text-muted-foreground">All migrations applied</p>
-          </div>
+          {[{
+            label: 'Database', value: 'Connected', detail: 'Neon PostgreSQL', highlight: true
+          }, {
+            label: 'Tables', value: '26/26', detail: 'All tables present'
+          }, {
+            label: 'Migrations', value: 'Latest', detail: 'All migrations applied', highlight: true
+          }].map((item) => (
+            <div key={item.label}>
+              <p className="text-sm font-semibold text-muted-foreground">{item.label}</p>
+              <p className={`text-xl font-bold ${item.highlight ? 'text-green-500' : ''}`}>{item.value}</p>
+              <p className="text-xs text-muted-foreground">{item.detail}</p>
+            </div>
+          ))}
         </CardContent>
       </Card>
     </div>
+  );
+}
+
+function AdminCard({
+  href,
+  icon,
+  title,
+  description,
+  hint,
+}: {
+  href: string;
+  icon: React.ReactNode;
+  title: string;
+  description: string;
+  hint: string;
+}) {
+  return (
+    <Link href={href}>
+      <Card className="hover:bg-accent/50 cursor-pointer transition-colors">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            {icon}
+            {title}
+          </CardTitle>
+          <CardDescription>{description}</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <p className="text-xs text-muted-foreground">{hint}</p>
+        </CardContent>
+      </Card>
+    </Link>
   );
 }

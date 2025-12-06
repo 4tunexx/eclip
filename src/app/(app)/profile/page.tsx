@@ -23,7 +23,7 @@ import Link from "next/link";
 import { useUser } from '@/hooks/use-user';
 import { getRoleColor, getRoleBgColor } from '@/lib/role-colors';
 import { getDefaultBannerDataUrl } from '@/lib/cosmetic-generator';
-import { getRankFromESR, formatRank } from '@/lib/rank-calculator';
+import { getRankFromESR, formatRank, getProgressToNextDivision } from '@/lib/rank-calculator';
 
 export default function ProfilePage() {
   const { user, isLoading: userLoading } = useUser();
@@ -110,6 +110,41 @@ export default function ProfilePage() {
 
   const totalXP = user.level ? (user.level - 1) * 200 + user.xp : user.xp;
   const nextLevelXP = user.level ? user.level * 200 : 200;
+  const levelProgress = Math.min(100, ((user.xp || 0) / nextLevelXP) * 100);
+  const rankProgress = getProgressToNextDivision((user as any)?.esr || 0);
+
+  const activityFeed = [
+    ...matches.slice(0, 8).map((match) => ({
+      id: `match-${match.id}`,
+      title: `Played on ${match.map || 'unknown map'}`,
+      subtitle: `${match.result || 'Result'} · ${match.score || 'N/A'}`,
+      date: match.date ? new Date(match.date) : null,
+      icon: <Gamepad2 className="h-4 w-4" />, 
+      color: match.result === 'Win' ? 'text-emerald-400 bg-emerald-500/10' : 'text-yellow-400 bg-yellow-500/10',
+    })),
+    ...achievements
+      .filter((a) => a.userProgress?.unlockedAt)
+      .map((a) => ({
+        id: `ach-${a.id}`,
+        title: `Unlocked achievement: ${a.name}`,
+        subtitle: a.description || 'Achievement unlocked',
+        date: new Date(a.userProgress.unlockedAt),
+        icon: <Trophy className="h-4 w-4" />, 
+        color: 'text-yellow-400 bg-yellow-500/10',
+      })),
+    ...badges
+      .filter((b) => b.earnedAt)
+      .map((b) => ({
+        id: `badge-${b.id}`,
+        title: `Earned badge: ${b.name}`,
+        subtitle: b.category || 'Badge earned',
+        date: new Date(b.earnedAt),
+        icon: <Star className="h-4 w-4" />, 
+        color: 'text-primary bg-primary/10',
+      })),
+  ]
+    .filter((item) => item.date)
+    .sort((a, b) => (b.date as any) - (a.date as any));
 
   return (
     <div className="p-4 md:p-8">
@@ -139,12 +174,26 @@ export default function ProfilePage() {
             </div>
             <div className="relative p-6 -mt-24">
                 <div className="flex flex-col md:flex-row items-center md:items-end gap-6">
-                    <UserAvatar 
-                        avatarUrl={user.avatarUrl}
-                        username={user.username}
-                        frameUrl={user.equippedFrame}
-                        className="w-40 h-40 rounded-full border-4 border-background"
-                    />
+                    <div 
+                      className="relative w-44 h-44 flex items-center justify-center"
+                      style={{
+                        background: `conic-gradient(white ${levelProgress}%, rgba(255,255,255,0.1) ${levelProgress}% 100%)`,
+                        borderRadius: '9999px',
+                        padding: '6px'
+                      }}
+                    >
+                      <div className="bg-card rounded-full p-1 w-full h-full flex items-center justify-center">
+                        <UserAvatar 
+                            avatarUrl={user.avatarUrl}
+                            username={user.username}
+                            frameUrl={user.equippedFrame}
+                            className="w-40 h-40 rounded-full border-4 border-background"
+                        />
+                      </div>
+                      <div className="absolute bottom-2 text-xs font-semibold text-white drop-shadow-sm">
+                        Level {user.level || 1}
+                      </div>
+                    </div>
                     <div className="flex-1 text-center md:text-left">
                         <h1 className="font-headline text-4xl font-bold">{user.username}</h1>
                         <p className="text-primary font-semibold">{user.title || 'Eclip.pro Player'}</p>
@@ -173,12 +222,21 @@ export default function ProfilePage() {
                         </Link>
                     </Button>
                 </div>
-                <div className="mt-6">
-                    <div className="flex items-center justify-between text-sm mb-1">
-                        <span className="font-semibold">Level {user.level || 1}</span>
-                        <span className="text-muted-foreground">{user.xp || 0} / {nextLevelXP} XP</span>
+                <div className="mt-6 space-y-3">
+                    <div>
+                      <div className="flex items-center justify-between text-sm mb-1">
+                          <span className="font-semibold">Level {user.level || 1}</span>
+                          <span className="text-muted-foreground">{user.xp || 0} / {nextLevelXP} XP</span>
+                      </div>
+                      <Progress value={levelProgress} className="h-2" />
                     </div>
-                    <Progress value={((user.xp || 0) / nextLevelXP) * 100} className="h-2" />
+                    <div>
+                      <div className="flex items-center justify-between text-sm mb-1">
+                        <span className="font-semibold text-emerald-400">Rank Progress</span>
+                        <span className="text-muted-foreground">{rankProgress.current} / {rankProgress.next} ESR</span>
+                      </div>
+                      <Progress value={rankProgress.percentage} className="h-2" indicatorClassName="bg-emerald-500" />
+                    </div>
                 </div>
             </div>
         </Card>
@@ -231,6 +289,34 @@ export default function ProfilePage() {
                             </div>
                         </div>
                     </CardContent>
+                </Card>
+                <Card className="mt-6 bg-card/60 backdrop-blur-lg border border-white/10">
+                  <CardHeader>
+                    <CardTitle>Activity Feed</CardTitle>
+                    <CardDescription>Latest matches, achievements, and badges.</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    {activityFeed.length === 0 ? (
+                      <p className="text-muted-foreground">No recent activity yet.</p>
+                    ) : (
+                      <div className="space-y-3">
+                        {activityFeed.slice(0, 12).map((item) => (
+                          <div key={item.id} className="flex items-start gap-3 p-3 rounded-lg bg-secondary/40 border border-border/40">
+                            <div className={`h-9 w-9 rounded-full flex items-center justify-center ${item.color}`}>
+                              {item.icon}
+                            </div>
+                            <div className="flex-1">
+                              <p className="font-semibold leading-tight">{item.title}</p>
+                              <p className="text-xs text-muted-foreground leading-tight">{item.subtitle}</p>
+                            </div>
+                            <div className="text-xs text-muted-foreground whitespace-nowrap">
+                              {item.date?.toLocaleDateString()}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </CardContent>
                 </Card>
             </TabsContent>
             <TabsContent value="matches" className="mt-6">
