@@ -22,7 +22,7 @@ export const users = pgTable('users', {
   avatarUrl: text('avatar_url'),
   level: integer('level').default(1).notNull(),
   xp: integer('xp').default(0).notNull(),
-  mmr: integer('mmr').default(1000).notNull(),
+  esr: integer('esr').default(1000).notNull(),
   rank: text('rank').default('Bronze').notNull(),
   coins: decimal('coins', { precision: 10, scale: 2 }).default('0').notNull(),
   role: userRoleEnum('role').default('USER').notNull(),

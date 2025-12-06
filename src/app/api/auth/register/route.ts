@@ -4,7 +4,6 @@ import { users } from '@/lib/db/schema';
 import { hashPassword, createSession } from '@/lib/auth';
 import { eq } from 'drizzle-orm';
 import { z } from 'zod';
-import postgres from 'postgres';
 
 const registerSchema = z.object({
   email: z.string().email(),
@@ -68,7 +67,7 @@ export async function POST(request: NextRequest) {
         emailVerified: false,
         level: 1,
         xp: 0,
-        mmr: 1000,
+        esr: 1000,
         rank: 'Bronze',
         coins: '0',
         role: 'USER',
@@ -111,7 +110,7 @@ export async function POST(request: NextRequest) {
             emailVerified: false,
             level: 1,
             xp: 0,
-            mmr: 1000,
+            esr: 1000,
             rank: 'Bronze',
             coins: '0',
             role: 'USER',

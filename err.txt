@@ -1,0 +1,46 @@
+09:50:19.901 Running build in Washington, D.C., USA (East) – iad1
+09:50:19.901 Build machine configuration: 2 cores, 8 GB
+09:50:20.037 Cloning github.com/4tunexx/eclip (Branch: master, Commit: 068ce5d)
+09:50:20.815 Cloning completed: 778.000ms
+09:50:21.460 Restored build cache from previous deployment (A5bPw26W1F6buPgKdZmo6YTf2ysr)
+09:50:26.420 Running "vercel build"
+09:50:27.140 Vercel CLI 49.0.0
+09:50:27.559 Installing dependencies...
+09:50:30.033 
+09:50:30.034 up to date in 2s
+09:50:30.034 
+09:50:30.035 214 packages are looking for funding
+09:50:30.035   run `npm fund` for details
+09:50:30.065 Detected Next.js version: 15.5.7
+09:50:30.076 Running "npm run build"
+09:50:30.185 
+09:50:30.185 > nextn@0.1.0 build
+09:50:30.185 > next build
+09:50:30.186 
+09:50:31.280    ▲ Next.js 15.5.7
+09:50:31.281 
+09:50:31.368    Creating an optimized production build ...
+09:50:43.184 Failed to compile.
+09:50:43.184 
+09:50:43.184 ./src/app/api/auth/register/route.ts
+09:50:43.184 Error:   [31mx[0m Expression expected
+09:50:43.185      ,-[[36;1;4m/vercel/path0/src/app/api/auth/register/route.ts[0m:168:1]
+09:50:43.185  [2m165[0m |     );
+09:50:43.185  [2m166[0m |   }
+09:50:43.185  [2m167[0m | }
+09:50:43.185  [2m168[0m |           );
+09:50:43.185      : [35;1m          ^[0m
+09:50:43.185  [2m169[0m |           const columnSet = new Set(tokenCols.map((c: any) => c.column_name));
+09:50:43.185  [2m170[0m |           if (columnSet.size > 0) {
+09:50:43.185  [2m171[0m |             if (columnSet.has('email') && columnSet.has('token')) {
+09:50:43.186      `----
+09:50:43.186 
+09:50:43.186 Caused by:
+09:50:43.186     Syntax Error
+09:50:43.186 
+09:50:43.186 Import trace for requested module:
+09:50:43.186 ./src/app/api/auth/register/route.ts
+09:50:43.187 
+09:50:43.191 
+09:50:43.191 > Build failed because of webpack errors
+09:50:43.223 Error: Command "npm run build" exited with 1
