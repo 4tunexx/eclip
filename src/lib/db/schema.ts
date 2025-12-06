@@ -12,26 +12,31 @@ export const missionTypeEnum = pgEnum('mission_type', ['DAILY', 'WEEKLY', 'ACHIE
 export const missionCategoryEnum = pgEnum('mission_category', ['DAILY', 'PLATFORM', 'INGAME']);
 export const achievementCategoryEnum = pgEnum('achievement_category', ['LEVEL', 'ESR', 'COMBAT', 'SOCIAL', 'PLATFORM', 'COMMUNITY']);
 
-// Users table
+// Users table (aligned to live DB columns)
 export const users = pgTable('users', {
   id: uuid('id').primaryKey().defaultRandom(),
-  email: text('email').notNull().unique(),
-  username: text('username').notNull().unique(),
+  email: text('email').unique(),
+  username: text('username').notNull(),
   passwordHash: text('password_hash'),
-  steamId: text('steam_id').unique(),
-  avatarUrl: text('avatar_url'),
-  level: integer('level').default(1).notNull(),
-  xp: integer('xp').default(0).notNull(),
-  esr: integer('esr').default(1000).notNull(),
-  rank: text('rank').default('Bronze').notNull(),
-  coins: decimal('coins', { precision: 10, scale: 2 }).default('0').notNull(),
-  role: userRoleEnum('role').default('USER').notNull(),
-  emailVerified: boolean('email_verified').default(false).notNull(),
+  steamId: text('steam_id').notNull(),
+  eclipId: text('eclip_id').unique(),
+  avatar: text('avatar'),
+  rankPoints: integer('rank_points'),
+  coins: decimal('coins', { precision: 12, scale: 2 }).default('0'),
+  roleColor: text('role_color'),
+  rankTier: text('rank_tier'),
+  rankDivision: integer('rank_division'),
+  level: integer('level').default(1),
+  xp: integer('xp').default(0),
+  esr: integer('esr').default(1000),
+  rank: text('rank').default('Bronze'),
+  role: text('role').default('USER'),
+  emailVerified: boolean('email_verified').default(false),
   emailVerificationToken: text('email_verification_token'),
   passwordResetToken: text('password_reset_token'),
   passwordResetExpires: timestamp('password_reset_expires'),
-  createdAt: timestamp('created_at').defaultNow().notNull(),
-  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+  createdAt: timestamp('created_at').defaultNow(),
+  updatedAt: timestamp('updated_at').defaultNow(),
 });
 
 // Sessions table
