@@ -23,6 +23,7 @@ import Link from "next/link";
 import { useUser } from '@/hooks/use-user';
 import { getRoleColor, getRoleBgColor } from '@/lib/role-colors';
 import { getDefaultBannerDataUrl } from '@/lib/cosmetic-generator';
+import { getRankFromESR, formatRank } from '@/lib/rank-calculator';
 
 export default function ProfilePage() {
   const { user, isLoading: userLoading } = useUser();
@@ -159,7 +160,9 @@ export default function ProfilePage() {
                           </div>
                         )}
                         <div className="flex items-center justify-center md:justify-start gap-2 mt-2">
-                             <Badge variant="outline" className="border-primary text-primary text-lg">{user.rank}</Badge>
+                             <Badge variant="outline" style={{ borderColor: getRankFromESR((user as any)?.esr || 1000).color }} className="text-lg">
+                               {formatRank((user as any)?.esr || 1000)}
+                             </Badge>
                                   <Badge variant="secondary" className="text-lg">{(user as any).esr} ESR</Badge>
                         </div>
                     </div>
@@ -395,7 +398,9 @@ export default function ProfilePage() {
                               <h3 className="font-semibold text-sm">Current Rank</h3>
                               <Trophy className="h-5 w-5 text-yellow-400 fill-yellow-400" />
                             </div>
-                            <p className="text-3xl font-bold text-primary">{user.rank || 'Unranked'}</p>
+                            <p className="text-3xl font-bold" style={{ color: getRankFromESR((user as any)?.esr || 1000).color }}>
+                              {formatRank((user as any)?.esr || 1000)}
+                            </p>
                             <p className="text-xs text-muted-foreground mt-1">Your competitive rank</p>
                           </div>
                           <div className="bg-secondary/60 border border-border rounded-lg p-4">

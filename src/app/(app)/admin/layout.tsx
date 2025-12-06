@@ -25,7 +25,7 @@ export default function AdminLayout({
       </div>
       
       <Tabs defaultValue="/admin/anti-cheat" className="w-full">
-        <TabsList className="grid w-full grid-cols-2 md:grid-cols-5">
+        <TabsList className="grid w-full grid-cols-1 sm:grid-cols-2 md:grid-cols-5 overflow-x-auto">
             {adminNav.map((item) => (
                 <TabsTrigger value={item.href} key={item.href} asChild disabled={item.disabled}>
                     <Link href={item.href}>

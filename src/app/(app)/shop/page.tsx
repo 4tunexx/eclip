@@ -242,15 +242,29 @@ export default function ShopPage() {
 }
 
 function ShopItemCard({ item, onPurchase, onEquip, purchasing, equipping, rarityColorMap }: any) {
+  // Generate cosmetic SVG URL based on type and rarity
+  const getCosmeticImageUrl = () => {
+    if (item.type === 'Frame') {
+      return `/api/cosmetics/generate/frame?rarity=${item.rarity?.toLowerCase() || 'common'}&username=${item.name}`;
+    } else if (item.type === 'Banner') {
+      return `/api/cosmetics/generate/banner?rarity=${item.rarity?.toLowerCase() || 'common'}&title=${item.name}`;
+    } else if (item.type === 'Badge') {
+      return `/api/cosmetics/generate/badge?rarity=${item.rarity?.toLowerCase() || 'common'}&label=${item.name}`;
+    }
+    return item.imageUrl; // Fallback to stored URL if exists
+  };
+
+  const cosmeticImageUrl = getCosmeticImageUrl();
+
   return (
     <Card className="bg-card/60 backdrop-blur-lg border border-white/10 overflow-hidden glow-card-hover flex flex-col">
-      {item.imageUrl && (
-        <CardHeader className="p-0 relative h-32">
-          <Image src={item.imageUrl} alt={item.name} fill style={{objectFit:"cover"}} sizes="100vw" className="opacity-80" />
+      {cosmeticImageUrl && (
+        <CardHeader className="p-0 relative h-32 bg-gradient-to-br from-card via-secondary to-card/50">
+          <Image src={cosmeticImageUrl} alt={item.name} fill style={{objectFit:"contain"}} sizes="100vw" className="opacity-90 p-2" />
           <div className="absolute inset-0 bg-gradient-to-t from-card via-card/50 to-transparent" />
         </CardHeader>
       )}
-      <CardContent className={`p-4 space-y-2 flex-grow ${!item.imageUrl ? 'pt-6' : ''}`}>
+      <CardContent className={`p-4 space-y-2 flex-grow ${!cosmeticImageUrl ? 'pt-6' : ''}`}>
         <div className="flex justify-between items-start">
           <h3 className="font-bold text-lg">{item.name}</h3>
           <Badge variant="outline" className={rarityColorMap[item.rarity as keyof typeof rarityColorMap]}>

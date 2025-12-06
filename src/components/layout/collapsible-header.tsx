@@ -54,7 +54,7 @@ export function CollapsibleHeader() {
             isOpen && 'opacity-0 pointer-events-none'
           )}
         >
-          <ChevronDown className="h-4 w-4 text-green-500" />
+          <ChevronDown className="h-4 w-4 text-foreground" />
         </button>
       </div>
 

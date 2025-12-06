@@ -44,6 +44,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { getRoleColor, getRoleBgColor, getRoleLabel } from '@/lib/role-colors';
+import { getRankFromESR, formatRank } from '@/lib/rank-calculator';
 
 const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, disabled: false },
@@ -158,8 +159,14 @@ export function AppSidebar() {
                 
                 <Progress value={((Number((user as any)?.xp ?? 0)) / (Number((user as any)?.level ?? 1) * 100)) * 100} className="h-1 w-full" />
                 <div className="flex items-center gap-2">
-                    <Badge variant="outline" className="border-primary text-primary">{(user as any)?.rank ?? 'Bronze'}</Badge>
-                    <Badge variant="secondary">{(user as any)?.esr ?? 1000} ESR</Badge>
+                    {user && (
+                      <>
+                        <Badge variant="outline" style={{ borderColor: getRankFromESR((user as any)?.esr ?? 1000).color }}>
+                          {formatRank((user as any)?.esr ?? 1000)}
+                        </Badge>
+                        <Badge variant="secondary">{(user as any)?.esr ?? 1000} ESR</Badge>
+                      </>
+                    )}
                 </div>
             </div>
         </SidebarGroup>
