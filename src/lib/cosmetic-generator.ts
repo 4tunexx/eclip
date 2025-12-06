@@ -4,8 +4,6 @@
  * No external images needed, fully CSS/SVG powered
  */
 
-import sharp from 'sharp';
-
 export interface FrameConfig {
   type: 'legendary' | 'epic' | 'rare' | 'common';
   username?: string;
