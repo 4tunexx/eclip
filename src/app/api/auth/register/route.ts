@@ -12,6 +12,22 @@ const registerSchema = z.object({
   password: z.string().min(8),
 });
 
+async function ensureMigrations() {
+  try {
+    const { migrate } = await import('drizzle-orm/postgres-js/migrator');
+    const { drizzle } = await import('drizzle-orm/postgres-js');
+    const postgresModule = await import('postgres');
+    
+    const client = postgresModule.default(process.env.DATABASE_URL!, { max: 1 });
+    const migrationDb = drizzle(client);
+    await migrate(migrationDb, { migrationsFolder: 'drizzle' });
+    await client.end({ timeout: 5 });
+    console.log('[Register] Auto-migrations completed');
+  } catch (err) {
+    console.error('[Register] Auto-migration failed:', err);
+  }
+}
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
@@ -59,54 +75,100 @@ export async function POST(request: NextRequest) {
       }).returning();
       createdUser = { id: user.id as string, email: user.email, username: user.username };
     } catch (drizzleError) {
-      // Fallback: legacy public."User" table and optional "EmailVerificationToken" table
-      const sql = postgres(process.env.DATABASE_URL!, { max: 1 });
-      try {
-        const existingEmail = await sql.unsafe(
-          'SELECT "id" FROM "public"."User" WHERE "email" = $1 LIMIT 1;',
-          [validated.email]
-        );
-        if (existingEmail.length) {
-          await sql.end({ timeout: 5 });
-          return NextResponse.json({ error: 'User with this email already exists' }, { status: 400 });
-        }
-        const existingName = await sql.unsafe(
-          'SELECT "id" FROM "public"."User" WHERE "username" = $1 LIMIT 1;',
-          [validated.username]
-        );
-        if (existingName.length) {
-          await sql.end({ timeout: 5 });
-          return NextResponse.json({ error: 'Username already taken' }, { status: 400 });
-        }
-        const inserted = await sql.unsafe(
-          'INSERT INTO "public"."User" ("id", "email", "username", "password", "role", "createdAt", "updatedAt") VALUES (gen_random_uuid(), $1, $2, $3, $4, NOW(), NOW()) RETURNING "id", "email", "username";',
-          [validated.email, validated.username, passwordHash, 'USER']
-        );
-        const userRow = inserted[0];
-        // Optional token storage
-        const tokenCols = await sql.unsafe(
-          'SELECT column_name FROM information_schema.columns WHERE table_schema = $1 AND table_name = $2;',
-          ['public', 'EmailVerificationToken']
-        );
-        const columnSet = new Set(tokenCols.map((c: any) => c.column_name));
-        if (columnSet.size > 0) {
-          if (columnSet.has('email') && columnSet.has('token')) {
-            await sql.unsafe(
-              'INSERT INTO "public"."EmailVerificationToken" ("email", "token", "createdAt") VALUES ($1, $2, NOW());',
-              [validated.email, emailVerificationToken]
-            );
-          } else if (columnSet.has('user_id') && columnSet.has('token')) {
-            await sql.unsafe(
-              'INSERT INTO "public"."EmailVerificationToken" ("user_id", "token", "createdAt") VALUES ($1, $2, NOW());',
-              [userRow.id, emailVerificationToken]
+      const errMsg = String(drizzleError);
+      if (errMsg.includes('does not exist')) {
+        console.log('[Register] Tables missing - running auto-migrations...');
+        await ensureMigrations();
+        
+        // Retry after migration
+        try {
+          const [existingUser] = await db.select()
+            .from(users)
+            .where(eq(users.email, validated.email))
+            .limit(1);
+          if (existingUser) {
+            return NextResponse.json(
+              { error: 'User with this email already exists' },
+              { status: 400 }
             );
           }
+          const [existingUsername] = await db.select()
+            .from(users)
+            .where(eq(users.username, validated.username))
+            .limit(1);
+          if (existingUsername) {
+            return NextResponse.json(
+              { error: 'Username already taken' },
+              { status: 400 }
+            );
+          }
+          const [user] = await db.insert(users).values({
+            email: validated.email,
+            username: validated.username,
+            passwordHash,
+            emailVerificationToken,
+            emailVerified: false,
+            level: 1,
+            xp: 0,
+            esr: 1000,
+            rank: 'Bronze',
+            coins: '0',
+            role: 'USER',
+          }).returning();
+          createdUser = { id: user.id as string, email: user.email, username: user.username };
+        } catch (retryErr) {
+          throw retryErr;
         }
-        createdUser = { id: userRow.id, email: userRow.email, username: userRow.username };
-        await sql.end({ timeout: 5 });
-      } catch (fallbackErr) {
-        try { await sql.end({ timeout: 5 }); } catch {}
-        throw fallbackErr;
+      } else {
+        // Fallback: legacy public."User" table and optional "EmailVerificationToken" table
+        const sql = postgres(process.env.DATABASE_URL!, { max: 1 });
+        try {
+          const existingEmail = await sql.unsafe(
+            'SELECT "id" FROM "public"."User" WHERE "email" = $1 LIMIT 1;',
+            [validated.email]
+          );
+          if (existingEmail.length) {
+            await sql.end({ timeout: 5 });
+            return NextResponse.json({ error: 'User with this email already exists' }, { status: 400 });
+          }
+          const existingName = await sql.unsafe(
+            'SELECT "id" FROM "public"."User" WHERE "username" = $1 LIMIT 1;',
+            [validated.username]
+          );
+          if (existingName.length) {
+            await sql.end({ timeout: 5 });
+            return NextResponse.json({ error: 'Username already taken' }, { status: 400 });
+          }
+          const inserted = await sql.unsafe(
+            'INSERT INTO "public"."User" ("id", "email", "username", "password", "role", "createdAt", "updatedAt") VALUES (gen_random_uuid(), $1, $2, $3, $4, NOW(), NOW()) RETURNING "id", "email", "username";',
+            [validated.email, validated.username, passwordHash, 'USER']
+          );
+          const userRow = inserted[0];
+          // Optional token storage
+          const tokenCols = await sql.unsafe(
+            'SELECT column_name FROM information_schema.columns WHERE table_schema = $1 AND table_name = $2;',
+            ['public', 'EmailVerificationToken']
+          );
+          const columnSet = new Set(tokenCols.map((c: any) => c.column_name));
+          if (columnSet.size > 0) {
+            if (columnSet.has('email') && columnSet.has('token')) {
+              await sql.unsafe(
+                'INSERT INTO "public"."EmailVerificationToken" ("email", "token", "createdAt") VALUES ($1, $2, NOW());',
+                [validated.email, emailVerificationToken]
+              );
+            } else if (columnSet.has('user_id') && columnSet.has('token')) {
+              await sql.unsafe(
+                'INSERT INTO "public"."EmailVerificationToken" ("user_id", "token", "createdAt") VALUES ($1, $2, NOW());',
+                [userRow.id, emailVerificationToken]
+              );
+            }
+          }
+          createdUser = { id: userRow.id, email: userRow.email, username: userRow.username };
+          await sql.end({ timeout: 5 });
+        } catch (fallbackErr) {
+          try { await sql.end({ timeout: 5 }); } catch {}
+          throw fallbackErr;
+        }
       }
     }
 
@@ -154,9 +216,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    console.error('Registration error:', error);
+    console.error('[Register] Error:', error);
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: 'Registration failed. Please try again.' },
       { status: 500 }
     );
   }
