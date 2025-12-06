@@ -22,12 +22,15 @@ export function useUser() {
         signal,
       });
       console.log('[useUser] Response status:', response.status);
+      
       if (response.ok) {
         const data = await response.json();
         console.log('[useUser] User data received:', data);
         setUser(data);
       } else {
-        console.log('[useUser] Auth failed, clearing user');
+        console.log('[useUser] Auth failed with status', response.status);
+        const errData = await response.json().catch(() => ({}));
+        console.log('[useUser] Error response:', errData);
         setUser(null);
       }
     } catch (error) {
@@ -35,7 +38,7 @@ export function useUser() {
       const msg = (error as any)?.message || '';
       const isAbort = name === 'AbortError' || /Failed to fetch/i.test(msg);
       if (!isAbort) {
-        console.error('Error fetching user:', error);
+        console.error('[useUser] Error fetching user:', error);
       }
       setUser(null);
     } finally {

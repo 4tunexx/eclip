@@ -30,14 +30,6 @@ export async function createSession(userId: string) {
       expiresAt,
     }).returning();
 
-    (await cookies()).set('session', token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      expires: expiresAt,
-      path: '/',
-    });
-
     return { ...session, token, expiresAt };
   } catch {
     // Fallback to legacy public."Session" table
@@ -65,14 +57,6 @@ export async function createSession(userId: string) {
         );
       }
 
-      (await cookies()).set('session', token, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
-        expires: expiresAt,
-        path: '/',
-      });
-
       await sql.end({ timeout: 5 });
       return { userId, token, expiresAt };
     } catch (e) {
@@ -95,43 +79,7 @@ export async function getSession(): Promise<{ userId: string } | null> {
   try {
     const decoded = jwt.verify(token, JWT_SECRET) as { userId: string };
     console.log('[Auth] Token decoded successfully, userId:', decoded.userId);
-    
-    // Verify session exists (drizzle or legacy) and is not expired
-    try {
-      const [session] = await db.select()
-        .from(sessions)
-        .where(eq(sessions.token, token))
-        .limit(1);
-      if (!session || new Date(session.expiresAt) < new Date()) {
-        return null;
-      }
-      return { userId: decoded.userId };
-    } catch {
-      // Fallback to legacy Session table
-      const sql = postgres(process.env.DATABASE_URL!, { max: 1 });
-      try {
-        const rows = await sql.unsafe(
-          'SELECT "userId", "expiresAt" FROM "public"."Session" WHERE "token" = $1 LIMIT 1;',
-          [token]
-        );
-        await sql.end({ timeout: 5 });
-        if (!rows.length) {
-          console.log('[Auth] No session found in legacy table');
-          return null;
-        }
-        const expiresAt = new Date(rows[0].expiresAt);
-        if (expiresAt < new Date()) {
-          console.log('[Auth] Session expired');
-          return null;
-        }
-        console.log('[Auth] Found session in legacy table, userId:', rows[0].userId);
-        return { userId: rows[0].userId };
-      } catch (e) {
-        console.log('[Auth] Error checking legacy session:', (e as any).message);
-        try { await sql.end({ timeout: 5 }); } catch {}
-        return null;
-      }
-    }
+    return { userId: decoded.userId };
   } catch (e) {
     console.log('[Auth] Error verifying token:', (e as any).message);
     return null;
