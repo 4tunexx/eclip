@@ -74,20 +74,6 @@ export async function GET() {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
-      level: (user as any).level ?? 1,
-      xp: Number((user as any).xp ?? 0),
-      rank: (user as any).rank ?? 'Bronze',
-      esr: (user as any).esr ?? 1000,
-      coins: Number((user as any).coins ?? 0),
-      isAdmin: ((user as any).role || '').toUpperCase() === 'ADMIN',
-      emailVerified: Boolean((user as any).emailVerified ?? (profile?.emailVerifiedAt ? true : false)),
-      title: profile?.title || null,
-      equippedFrame,
-      equippedBanner,
-      equippedBadge,
-      stats: profile?.stats || null,
-    });
-  } catch (error) {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
