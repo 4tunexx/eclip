@@ -37,28 +37,23 @@ export async function POST(request: NextRequest) {
     const emailVerificationToken = crypto.randomUUID();
 
     try {
-      // Check if user exists
-      const [existingUser] = await db.select({ id: users.id })
+      // Check duplicates
+      const [existingEmail] = await db.select({ id: users.id })
         .from(users)
         .where(eq(users.email, validated.email))
         .limit(1);
-      if (existingUser) {
-        return NextResponse.json(
-          { error: 'User with this email already exists' },
-          { status: 400 }
-        );
+      if (existingEmail) {
+        return NextResponse.json({ error: 'User with this email already exists' }, { status: 400 });
       }
       const [existingUsername] = await db.select({ id: users.id })
         .from(users)
         .where(eq(users.username, validated.username))
         .limit(1);
       if (existingUsername) {
-        return NextResponse.json(
-          { error: 'Username already taken' },
-          { status: 400 }
-        );
+        return NextResponse.json({ error: 'Username already taken' }, { status: 400 });
       }
-      
+
+      // Insert respecting live schema (steam_id NOT NULL)
       const [user] = await db.insert(users).values({
         email: validated.email,
         username: validated.username,
@@ -71,6 +66,8 @@ export async function POST(request: NextRequest) {
         rank: 'Bronze',
         coins: '0',
         role: 'USER',
+        steamId: crypto.randomUUID(), // placeholder to satisfy NOT NULL
+        eclipId: crypto.randomUUID(), // unique as well
       }).returning({ id: users.id, email: users.email, username: users.username });
       createdUser = { id: user.id, email: user.email, username: user.username };
     } catch (drizzleError) {

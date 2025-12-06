@@ -57,7 +57,7 @@ export async function GET() {
       id: (user as any).id,
       email: (user as any).email || null,
       username: (user as any).username || null,
-      avatarUrl: (user as any).avatar || null,
+      avatarUrl: (user as any).avatar || (user as any).avatarUrl || null,
       level: (user as any).level ?? 1,
       xp: Number((user as any).xp ?? 0),
       rank: (user as any).rank ?? 'Bronze',

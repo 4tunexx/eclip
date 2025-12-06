@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { randomUUID } from 'crypto';
 import { db } from '@/lib/db';
 import { users } from '@/lib/db/schema';
 import { hashPassword } from '@/lib/auth';
 import { eq } from 'drizzle-orm';
-import postgres from 'postgres';
 
 /**
  * POST /api/admin/setup-admin
@@ -17,6 +17,8 @@ export async function POST(request: NextRequest) {
     const adminEmail = 'admin@eclip.pro';
     const adminPassword = 'Admin123!';
     const adminUsername = 'admin';
+    const adminSteamId = `admin-steam-${randomUUID()}`;
+    const adminEclipId = `admin-eclip-${randomUUID()}`;
 
     console.log('[Admin Setup] Setting up admin user...');
 
@@ -55,6 +57,8 @@ export async function POST(request: NextRequest) {
           username: adminUsername,
           passwordHash,
           role: 'ADMIN',
+          steamId: adminSteamId,
+          eclipId: adminEclipId,
           level: 100,
           xp: 50000,
           esr: 5000,
@@ -107,6 +111,8 @@ export async function POST(request: NextRequest) {
               username: adminUsername,
               passwordHash,
               role: 'ADMIN',
+              steamId: adminSteamId,
+              eclipId: adminEclipId,
               level: 100,
               xp: 50000,
               esr: 5000,
