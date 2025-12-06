@@ -3,6 +3,8 @@
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { AlertCircle } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Select,
   SelectContent,
@@ -238,58 +240,71 @@ export default function MissionsAdmin() {
       </div>
 
       {/* Table */}
-      <div className="bg-gray-900 border border-gray-800 rounded-lg overflow-hidden">
-        <Table>
-          <TableHeader>
-            <TableRow className="border-gray-800 bg-gray-800">
-              <TableHead>Title</TableHead>
-              <TableHead>Category</TableHead>
-              <TableHead>Requirement Type</TableHead>
-              <TableHead>Requirement Value</TableHead>
-              <TableHead>XP Reward</TableHead>
-              <TableHead>Coin Reward</TableHead>
-              <TableHead>Active</TableHead>
-              <TableHead>Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {missions.map((mission) => (
-              <TableRow key={mission.id} className="border-gray-800">
-                <TableCell className="font-medium">{mission.title}</TableCell>
-                <TableCell>
-                  <span className="bg-blue-900 text-blue-200 px-2 py-1 rounded text-sm">
-                    {mission.category}
-                  </span>
-                </TableCell>
-                <TableCell className="text-sm">
-                  <span className="bg-green-900 text-green-200 px-2 py-1 rounded">
-                    {mission.requirementType || 'N/A'}
-                  </span>
-                </TableCell>
-                <TableCell className="font-mono text-sm">{mission.requirementValue || mission.objectiveValue}</TableCell>
-                <TableCell>{mission.rewardXp}</TableCell>
-                <TableCell>{mission.rewardCoins}</TableCell>
-                <TableCell>{mission.isActive ? '✅' : '❌'}</TableCell>
-                <TableCell className="space-x-2">
-                  <Button
-                    onClick={() => handleEdit(mission)}
-                    size="sm"
-                    className="bg-green-600 hover:bg-green-700"
-                  >
-                    Edit
-                  </Button>
-                  <Button
-                    onClick={() => handleDelete(mission.id)}
-                    size="sm"
-                    className="bg-red-600 hover:bg-red-700"
-                  >
-                    Delete
-                  </Button>
-                </TableCell>
+      <div className="border rounded-lg overflow-x-auto">
+        <div className="overflow-x-auto">
+          <Table>
+            <TableHeader>
+              <TableRow className="bg-muted/50">
+                <TableHead>Title</TableHead>
+                <TableHead>Category</TableHead>
+                <TableHead>Requirement</TableHead>
+                <TableHead className="text-right">Value</TableHead>
+                <TableHead className="text-right">XP</TableHead>
+                <TableHead className="text-right">Coins</TableHead>
+                <TableHead className="text-center">Active</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+            </TableHeader>
+            <TableBody>
+              {missions.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={8} className="text-center text-muted-foreground py-8">
+                    No missions yet. Create one to get started.
+                  </TableCell>
+                </TableRow>
+              ) : (
+                missions.map((mission) => (
+                  <TableRow key={mission.id}>
+                    <TableCell className="font-medium max-w-xs truncate">{mission.title}</TableCell>
+                    <TableCell>
+                      <span className="inline-flex items-center px-2 py-1 rounded text-xs font-semibold bg-blue-500/10 text-blue-700 dark:text-blue-200 border border-blue-200 dark:border-blue-800">
+                        {mission.category}
+                      </span>
+                    </TableCell>
+                    <TableCell className="text-sm">{mission.requirementType || 'N/A'}</TableCell>
+                    <TableCell className="text-right font-mono text-sm">{mission.requirementValue || mission.objectiveValue}</TableCell>
+                    <TableCell className="text-right">{mission.rewardXp}</TableCell>
+                    <TableCell className="text-right">{mission.rewardCoins}</TableCell>
+                    <TableCell className="text-center">
+                      {mission.isActive ? (
+                        <span className="text-green-600 dark:text-green-400">✓</span>
+                      ) : (
+                        <span className="text-muted-foreground">—</span>
+                      )}
+                    </TableCell>
+                    <TableCell className="text-right space-x-2">
+                      <Button
+                        onClick={() => handleEdit(mission)}
+                        size="sm"
+                        variant="outline"
+                      >
+                        Edit
+                      </Button>
+                      <Button
+                        onClick={() => handleDelete(mission.id)}
+                        size="sm"
+                        variant="outline"
+                        className="text-destructive hover:text-destructive"
+                      >
+                        Delete
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
+        </div>
       </div>
     </div>
   );

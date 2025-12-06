@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
 import {
   Bell,
   MessageSquare,
@@ -12,6 +13,8 @@ import {
   Settings,
   Shield,
   LayoutDashboard,
+  Check,
+  Trash2,
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -27,6 +30,7 @@ import { Badge } from '@/components/ui/badge';
 import { UserAvatar } from '@/components/user-avatar';
 import { UserName } from '@/components/user-name';
 import { SidebarTrigger } from '@/components/ui/sidebar';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { useUser } from '@/hooks/use-user';
 import { Logo } from '../icons/logo';
 
@@ -35,6 +39,57 @@ export function Header() {
   const { user } = useUser();
   const coins = Number(user?.coins ?? 0);
   const isAdmin = ((user as any)?.isAdmin as boolean) || (((user as any)?.role || '').toUpperCase() === 'ADMIN');
+  
+  const [notifications, setNotifications] = useState<any[]>([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [notificationsLoading, setNotificationsLoading] = useState(true);
+
+  useEffect(() => {
+    if (user?.id) {
+      fetchNotifications();
+    }
+  }, [user?.id]);
+
+  const fetchNotifications = async () => {
+    try {
+      const response = await fetch('/api/notifications?limit=5');
+      if (response.ok) {
+        const data = await response.json();
+        setNotifications(data.notifications || []);
+        setUnreadCount(data.unreadCount || 0);
+      }
+    } catch (error) {
+      console.error('Failed to fetch notifications:', error);
+    } finally {
+      setNotificationsLoading(false);
+    }
+  };
+
+  const handleMarkAsRead = async (notificationId: string) => {
+    try {
+      await fetch('/api/notifications', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ notificationId, read: true }),
+      });
+      await fetchNotifications();
+    } catch (error) {
+      console.error('Failed to mark notification as read:', error);
+    }
+  };
+
+  const handleClearAll = async () => {
+    try {
+      await fetch('/api/notifications', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ markAllAsRead: true }),
+      });
+      await fetchNotifications();
+    } catch (error) {
+      console.error('Failed to clear notifications:', error);
+    }
+  };
 
   const handleLogout = async () => {
     try {
@@ -43,6 +98,7 @@ export function Header() {
     router.push('/');
     router.refresh();
   };
+
   return (
     <header className="sticky top-0 z-30 flex h-16 items-center justify-between gap-4 border-b bg-background/80 px-4 backdrop-blur-sm md:px-6">
       {/* Left Section */}
@@ -72,15 +128,75 @@ export function Header() {
             <span className="text-muted-foreground">Coins</span>
           </div>
 
-          <Button variant="ghost" size="icon" className="relative">
-            <Bell className="h-5 w-5" />
-            <Badge className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full p-1 text-[10px]">
-              3
-            </Badge>
-            <span className="sr-only">Notifications</span>
-          </Button>
+          {/* Notifications */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" className="relative">
+                <Bell className="h-5 w-5" />
+                {unreadCount > 0 && (
+                  <Badge className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full p-0 text-[10px] bg-destructive">
+                    {unreadCount > 9 ? '9+' : unreadCount}
+                  </Badge>
+                )}
+                <span className="sr-only">Notifications</span>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-80">
+              <DropdownMenuLabel className="flex items-center justify-between">
+                <span>Notifications</span>
+                {unreadCount > 0 && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-6 text-xs"
+                    onClick={handleClearAll}
+                  >
+                    Mark all as read
+                  </Button>
+                )}
+              </DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              {notificationsLoading ? (
+                <div className="p-4 text-center text-sm text-muted-foreground">Loading...</div>
+              ) : notifications.length === 0 ? (
+                <div className="p-4 text-center text-sm text-muted-foreground">No notifications</div>
+              ) : (
+                <ScrollArea className="h-72">
+                  <div className="space-y-2 p-2">
+                    {notifications.map((notif) => (
+                      <div
+                        key={notif.id}
+                        className="flex items-start gap-3 p-3 rounded-lg hover:bg-accent/50 transition-colors group"
+                      >
+                        <div className="flex-1 pt-0.5">
+                          <p className="font-medium text-sm">{notif.title}</p>
+                          {notif.message && (
+                            <p className="text-xs text-muted-foreground line-clamp-2">{notif.message}</p>
+                          )}
+                          <p className="text-xs text-muted-foreground mt-1">
+                            {new Date(notif.createdAt).toLocaleDateString()}
+                          </p>
+                        </div>
+                        {!notif.read && (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                            onClick={() => handleMarkAsRead(notif.id)}
+                          >
+                            <Check className="h-3 w-3" />
+                          </Button>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </ScrollArea>
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
 
-          <Button variant="ghost" size="icon" className="relative">
+          {/* Messages - placeholder for future */}
+          <Button variant="ghost" size="icon" className="relative disabled opacity-50" disabled title="Messages coming soon">
             <MessageSquare className="h-5 w-5" />
             <span className="sr-only">Messages</span>
           </Button>

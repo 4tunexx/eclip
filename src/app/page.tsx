@@ -1,15 +1,14 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { topPlayers } from '@/lib/placeholder-data';
 import { Badge } from '@/components/ui/badge';
 import { Logo } from '@/components/icons/logo';
-import { Users, Gamepad2, Trophy } from 'lucide-react';
+import { Users, Gamepad2, Trophy, Loader2 } from 'lucide-react';
 import { UserAvatar } from '@/components/user-avatar';
 import Particles from '@/components/particles';
 import { HeroBanner } from '@/components/layout/hero-banner';
@@ -21,6 +20,9 @@ import { useUser } from '@/hooks/use-user';
 export default function LandingPage() {
   const router = useRouter();
   const { user, isLoading } = useUser();
+  const [stats, setStats] = useState<any>(null);
+  const [topPlayers, setTopPlayers] = useState<any[]>([]);
+  const [statsLoading, setStatsLoading] = useState(true);
 
   // Redirect authenticated users to dashboard
   useEffect(() => {
@@ -28,6 +30,35 @@ export default function LandingPage() {
       router.push('/dashboard');
     }
   }, [user, isLoading, router]);
+
+  // Fetch real stats and top players
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setStatsLoading(true);
+        const [statsRes, playersRes] = await Promise.all([
+          fetch('/api/stats/public'),
+          fetch('/api/leaderboards/public?limit=5'),
+        ]);
+
+        if (statsRes.ok) {
+          const statsData = await statsRes.json();
+          setStats(statsData);
+        }
+
+        if (playersRes.ok) {
+          const playersData = await playersRes.json();
+          setTopPlayers(playersData.players || []);
+        }
+      } catch (error) {
+        console.error('Failed to fetch landing page data:', error);
+      } finally {
+        setStatsLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
 
   // Show nothing while checking auth or redirecting
   if (isLoading || user) {
@@ -54,7 +85,11 @@ export default function LandingPage() {
                     </CardHeader>
                     <CardContent>
                         <div className="text-2xl font-bold">
-                           <CountingNumber targetValue={12345} />
+                           {statsLoading ? (
+                             <Loader2 className="h-6 w-6 animate-spin" />
+                           ) : (
+                             <CountingNumber targetValue={stats?.onlinePlayers || 0} />
+                           )}
                         </div>
                         <p className="text-xs text-muted-foreground">Currently in queue or in-game</p>
                     </CardContent>
@@ -66,7 +101,11 @@ export default function LandingPage() {
                     </CardHeader>
                     <CardContent>
                         <div className="text-2xl font-bold">
-                           <CountingNumber targetValue={1204} />
+                           {statsLoading ? (
+                             <Loader2 className="h-6 w-6 animate-spin" />
+                           ) : (
+                             <CountingNumber targetValue={stats?.activeMatches || 0} />
+                           )}
                         </div>
                         <p className="text-xs text-muted-foreground">5v5 competitive matches live now</p>
                     </CardContent>
@@ -78,7 +117,11 @@ export default function LandingPage() {
                     </CardHeader>
                     <CardContent>
                         <div className="text-2xl font-bold">
-                           <CountingNumber targetValue={8450231} />
+                           {statsLoading ? (
+                             <Loader2 className="h-6 w-6 animate-spin" />
+                           ) : (
+                             <CountingNumber targetValue={stats?.totalCoins || 0} />
+                           )}
                         </div>
                         <p className="text-xs text-muted-foreground">Awarded to players for skill and dedication</p>
                     </CardContent>
@@ -92,24 +135,37 @@ export default function LandingPage() {
           <h2 className="mb-8 text-center font-headline text-3xl font-bold tracking-tighter md:text-4xl">
             Top Players on the Rise
           </h2>
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-3 lg:grid-cols-5">
-            {topPlayers.map((player) => (
-              <Card key={player.id} className="overflow-hidden bg-card/60 backdrop-blur-lg border border-white/10 text-center glow-card-hover">
-                <CardContent className="p-6 flex flex-col items-center">
-                    <UserAvatar
-                      avatarUrl={player.avatarUrl}
-                      username={player.username}
-                      className="h-20 w-20 mb-4"
-                    />
-                    <h3 className="font-bold">{player.username}</h3>
-                    <div className="text-sm text-muted-foreground">
-                      ESR: <span className="font-semibold text-primary">{(player as any).esr}</span>
-                    </div>
-                    <Badge variant="outline" className="mt-2 border-accent text-accent">{player.rank}</Badge>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+          {statsLoading || topPlayers.length === 0 ? (
+            <div className="flex items-center justify-center py-12">
+              {statsLoading ? (
+                <Loader2 className="h-8 w-8 animate-spin" />
+              ) : (
+                <p className="text-muted-foreground">No players yet. Be the first!</p>
+              )}
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-3 lg:grid-cols-5">
+              {topPlayers.map((player) => (
+                <Card key={player.id} className="overflow-hidden bg-card/60 backdrop-blur-lg border border-white/10 text-center glow-card-hover">
+                  <CardContent className="p-6 flex flex-col items-center">
+                      <UserAvatar
+                        avatarUrl={player.avatarUrl}
+                        username={player.username}
+                        className="h-20 w-20 mb-4"
+                      />
+                      <h3 className="font-bold truncate w-full">{player.username}</h3>
+                      <div className="text-sm text-muted-foreground mt-2">
+                        ESR: <span className="font-semibold text-primary">{player.esr}</span>
+                      </div>
+                      <Badge variant="outline" className="mt-2 border-primary text-primary">
+                        {player.rank} {player.rankTier}
+                      </Badge>
+                      <p className="text-xs text-muted-foreground mt-2">Level {player.level}</p>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
         </section>
       </main>
 

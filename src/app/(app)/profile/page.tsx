@@ -22,15 +22,22 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Link from "next/link";
 import { useUser } from '@/hooks/use-user';
 import { getRoleColor, getRoleBgColor } from '@/lib/role-colors';
+import { getDefaultBannerDataUrl } from '@/lib/cosmetic-generator';
 
 export default function ProfilePage() {
   const { user, isLoading: userLoading } = useUser();
   const [matches, setMatches] = useState<any[]>([]);
+  const [achievements, setAchievements] = useState<any[]>([]);
+  const [badges, setBadges] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [achievementsLoading, setAchievementsLoading] = useState(false);
+  const [badgesLoading, setBadgesLoading] = useState(false);
 
   useEffect(() => {
     if (user) {
       fetchMatches();
+      fetchAchievements();
+      fetchBadges();
     }
   }, [user]);
 
@@ -45,6 +52,36 @@ export default function ProfilePage() {
       console.error('Error fetching matches:', error);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const fetchAchievements = async () => {
+    try {
+      setAchievementsLoading(true);
+      const response = await fetch('/api/user/achievements');
+      const data = await response.json();
+      if (response.ok) {
+        setAchievements(Array.isArray(data) ? data : []);
+      }
+    } catch (error) {
+      console.error('Error fetching achievements:', error);
+    } finally {
+      setAchievementsLoading(false);
+    }
+  };
+
+  const fetchBadges = async () => {
+    try {
+      setBadgesLoading(true);
+      const response = await fetch('/api/user/badges');
+      const data = await response.json();
+      if (response.ok) {
+        setBadges(Array.isArray(data) ? data : []);
+      }
+    } catch (error) {
+      console.error('Error fetching badges:', error);
+    } finally {
+      setBadgesLoading(false);
     }
   };
 
@@ -76,15 +113,27 @@ export default function ProfilePage() {
   return (
     <div className="p-4 md:p-8">
         <Card className="bg-card/60 backdrop-blur-lg border border-white/10 overflow-hidden">
-            <div className="relative h-48">
-                <Image 
-                  src={user.equippedBanner || 'https://picsum.photos/seed/banner1/1200/300'} 
-                  alt="Profile Banner" 
-                  fill 
-                  style={{objectFit:"cover"}} 
-                  sizes="100vw" 
-                  className="opacity-50" 
-                />
+            {/* Banner - use equipped or code-generated default */}
+            <div className="relative h-48 bg-gradient-to-r from-primary/60 to-primary/40">
+                {user.equippedBanner ? (
+                  <Image 
+                    src={user.equippedBanner} 
+                    alt="Profile Banner" 
+                    fill 
+                    style={{objectFit:"cover"}} 
+                    sizes="100vw" 
+                    className="opacity-80" 
+                  />
+                ) : (
+                  <Image 
+                    src={getDefaultBannerDataUrl()} 
+                    alt="Default Banner" 
+                    fill 
+                    style={{objectFit:"cover"}} 
+                    sizes="100vw" 
+                    className="opacity-60" 
+                  />
+                )}
                 <div className="absolute inset-0 bg-gradient-to-t from-card via-card/80 to-transparent" />
             </div>
             <div className="relative p-6 -mt-24">
@@ -114,9 +163,11 @@ export default function ProfilePage() {
                                   <Badge variant="secondary" className="text-lg">{(user as any).esr} ESR</Badge>
                         </div>
                     </div>
-                    <Button variant="outline">
-                        <Brush className="mr-2 h-4 w-4" />
-                        Customize Profile
+                    <Button variant="outline" asChild>
+                        <Link href="/settings?tab=account">
+                          <Brush className="mr-2 h-4 w-4" />
+                          Customize Profile
+                        </Link>
                     </Button>
                 </div>
                 <div className="mt-6">
@@ -130,10 +181,12 @@ export default function ProfilePage() {
         </Card>
 
         <Tabs defaultValue="overview" className="mt-8">
-            <TabsList className="grid w-full grid-cols-3 max-w-lg">
+            <TabsList className="grid w-full grid-cols-5 max-w-2xl">
                 <TabsTrigger value="overview">Overview</TabsTrigger>
-                <TabsTrigger value="matches">Match History</TabsTrigger>
+                <TabsTrigger value="matches">Matches</TabsTrigger>
                 <TabsTrigger value="achievements">Achievements</TabsTrigger>
+                <TabsTrigger value="badges">Badges</TabsTrigger>
+                <TabsTrigger value="ranks">Ranks</TabsTrigger>
             </TabsList>
             <TabsContent value="overview" className="mt-6">
                 <Card className="bg-card/60 backdrop-blur-lg border border-white/10">
@@ -244,7 +297,142 @@ export default function ProfilePage() {
                         <CardDescription>Trophies earned from completing milestones.</CardDescription>
                     </CardHeader>
                     <CardContent>
-                      <p className="text-muted-foreground text-center p-8">Achievements system coming soon!</p>
+                      {achievementsLoading ? (
+                        <div className="p-8 flex items-center justify-center">
+                          <Loader2 className="h-6 w-6 animate-spin" />
+                        </div>
+                      ) : achievements.length === 0 ? (
+                        <p className="text-muted-foreground text-center p-8">No achievements yet. Start playing to unlock achievements!</p>
+                      ) : (
+                        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                          {achievements.map((achievement) => (
+                            <div key={achievement.id} className="bg-secondary/60 border border-border rounded-lg p-4">
+                              <div className="flex items-start gap-3">
+                                <Trophy className={`h-8 w-8 flex-shrink-0 mt-1 ${achievement.unlocked ? 'text-yellow-400 fill-yellow-400' : 'text-muted-foreground opacity-50'}`} />
+                                <div className="flex-1 min-w-0">
+                                  <h3 className="font-semibold text-sm">{achievement.name}</h3>
+                                  <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{achievement.description}</p>
+                                  {achievement.userProgress && (
+                                    <div className="mt-2">
+                                      <div className="flex justify-between items-center text-xs mb-1">
+                                        <span className="font-medium">{achievement.userProgress.progress}/{achievement.target}</span>
+                                        <span className="text-primary">+{achievement.rewardXp} XP</span>
+                                      </div>
+                                      {achievement.target > 0 && (
+                                        <Progress 
+                                          value={Math.min((achievement.userProgress.progress / achievement.target) * 100, 100)} 
+                                          className="h-1" 
+                                        />
+                                      )}
+                                    </div>
+                                  )}
+                                  {achievement.unlocked && achievement.userProgress?.unlockedAt && (
+                                    <div className="text-xs text-green-400 mt-2 flex items-center gap-1">
+                                      <CheckCircle className="h-3 w-3" />
+                                      Unlocked {new Date(achievement.userProgress.unlockedAt).toLocaleDateString()}
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </CardContent>
+                </Card>
+            </TabsContent>
+            <TabsContent value="badges" className="mt-6">
+                <Card className="bg-card/60 backdrop-blur-lg border border-white/10">
+                    <CardHeader>
+                        <CardTitle>Badges</CardTitle>
+                        <CardDescription>Special badges earned from achievements and milestones.</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      {badgesLoading ? (
+                        <div className="p-8 flex items-center justify-center">
+                          <Loader2 className="h-6 w-6 animate-spin" />
+                        </div>
+                      ) : badges.length === 0 ? (
+                        <p className="text-muted-foreground text-center p-8">No badges earned yet. Complete achievements to earn badges!</p>
+                      ) : (
+                        <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                          {badges.map((badge) => (
+                            <div key={badge.id} className="flex flex-col items-center gap-2 p-3 rounded-lg bg-secondary/40 border border-border/50 hover:border-primary/50 transition-colors">
+                              <div className="relative w-16 h-16 rounded-lg overflow-hidden bg-secondary border border-border flex items-center justify-center">
+                                {badge.imageUrl ? (
+                                  <Image 
+                                    src={badge.imageUrl} 
+                                    alt={badge.name}
+                                    fill
+                                    className="object-cover"
+                                  />
+                                ) : (
+                                  <Star className="h-8 w-8 text-primary" />
+                                )}
+                              </div>
+                              <div className="text-center">
+                                <p className="text-xs font-semibold line-clamp-1">{badge.name}</p>
+                                <Badge variant="outline" className="mt-1 text-xs">{badge.category || 'Badge'}</Badge>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </CardContent>
+                </Card>
+            </TabsContent>
+            <TabsContent value="ranks" className="mt-6">
+                <Card className="bg-card/60 backdrop-blur-lg border border-white/10">
+                    <CardHeader>
+                        <CardTitle>Rank & Progression</CardTitle>
+                        <CardDescription>Your competitive rank and ESR rating progression.</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-6">
+                        <div className="grid md:grid-cols-2 gap-4">
+                          <div className="bg-secondary/60 border border-border rounded-lg p-4">
+                            <div className="flex items-center justify-between mb-3">
+                              <h3 className="font-semibold text-sm">Current Rank</h3>
+                              <Trophy className="h-5 w-5 text-yellow-400 fill-yellow-400" />
+                            </div>
+                            <p className="text-3xl font-bold text-primary">{user.rank || 'Unranked'}</p>
+                            <p className="text-xs text-muted-foreground mt-1">Your competitive rank</p>
+                          </div>
+                          <div className="bg-secondary/60 border border-border rounded-lg p-4">
+                            <div className="flex items-center justify-between mb-3">
+                              <h3 className="font-semibold text-sm">ESR Rating</h3>
+                              <TrendingUp className="h-5 w-5 text-primary" />
+                            </div>
+                            <p className="text-3xl font-bold">{(user as any).esr || 0}</p>
+                            <p className="text-xs text-muted-foreground mt-1">Elo-based rating system</p>
+                          </div>
+                        </div>
+                        <div className="bg-secondary/60 border border-border rounded-lg p-4">
+                          <h3 className="font-semibold text-sm mb-3">Rank Information</h3>
+                          <div className="space-y-2 text-sm">
+                            <div className="flex justify-between">
+                              <span className="text-muted-foreground">Level</span>
+                              <span className="font-semibold">{user.level || 1}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-muted-foreground">Total XP</span>
+                              <span className="font-semibold">{totalXP.toLocaleString()}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-muted-foreground">Next Level XP</span>
+                              <span className="font-semibold">{nextLevelXP.toLocaleString()}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-muted-foreground">Matches Played</span>
+                              <span className="font-semibold">{matches.length}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-muted-foreground">Win Rate</span>
+                              <span className="font-semibold text-green-400">{winRate}%</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
                     </CardContent>
                 </Card>
             </TabsContent>

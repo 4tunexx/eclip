@@ -85,17 +85,29 @@ export default function DashboardPage() {
   return (
     <div className="p-4 md:p-8">
       <div className="relative mb-8 pt-20">
-        <div className="absolute top-0 left-0 right-0 rounded-xl overflow-hidden p-8 bg-primary/80 h-56 flex items-start justify-between">
-            <div className="flex-1">
-                <h1 className="font-headline text-2xl md:text-4xl font-bold text-primary-foreground">
+        {/* Banner background - use equipped banner or default green */}
+        <div 
+          className="absolute top-0 left-0 right-0 rounded-xl overflow-hidden p-8 h-56 flex items-start justify-between"
+          style={{
+            backgroundImage: user.equippedBanner ? `url(${user.equippedBanner})` : undefined,
+            backgroundColor: !user.equippedBanner ? 'hsl(var(--primary))' : undefined,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+          }}
+        >
+          {/* Dark overlay for text readability */}
+          <div className="absolute inset-0 bg-black/30" />
+          
+            <div className="flex-1 relative z-10">
+                <h1 className="font-headline text-2xl md:text-4xl font-bold text-white drop-shadow-lg">
                   Welcome back, {user.username}
                 </h1>
-                <p className="text-primary-foreground/80 mt-2 text-base md:text-lg">
+                <p className="text-white/90 mt-2 text-base md:text-lg drop-shadow">
                   Ready to dominate? Your next match awaits.
                 </p>
             </div>
-            <div className="hidden md:flex items-center gap-2">
-              <Button size="lg" variant="secondary" className="font-bold bg-background/20 hover:bg-background/40 text-primary-foreground border-2 border-transparent hover:border-white/20" asChild>
+            <div className="hidden md:flex items-center gap-2 relative z-10">
+              <Button size="lg" variant="secondary" className="font-bold" asChild>
                 <Link href="/play">
                   Find Match
                   <Swords className="ml-2 h-5 w-5"/>
