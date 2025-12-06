@@ -35,7 +35,18 @@ export async function POST(request: NextRequest) {
 
     // Try Drizzle users first
     try {
-      const [user] = await db.select()
+      const [user] = await db.select({
+        id: users.id,
+        email: users.email,
+        username: users.username,
+        passwordHash: users.passwordHash,
+        level: users.level,
+        xp: users.xp,
+        mmr: users.mmr,
+        rank: users.rank,
+        coins: users.coins,
+        role: users.role,
+      })
         .from(users)
         .where(eq(users.email, validated.email))
         .limit(1);
@@ -67,7 +78,7 @@ export async function POST(request: NextRequest) {
           level: user.level,
           xp: Number(user.xp),
           rank: user.rank,
-          esr: (user as any).esr,
+          mmr: user.mmr,
           coins: Number(user.coins),
           isAdmin: user.role === 'ADMIN',
         },
@@ -88,49 +99,66 @@ export async function POST(request: NextRequest) {
       return response;
     } catch (drizzleErr) {
       const errMsg = String(drizzleErr);
-      if (errMsg.includes('does not exist')) {
-        console.log('[Login] Tables missing - running auto-migrations...');
+      if (errMsg.includes('does not exist') || errMsg.includes('column')) {
+        console.log('[Login] Schema mismatch detected - running auto-migrations...');
         await ensureMigrations();
+        
         // Retry after migration
-        const [user] = await db.select()
-          .from(users)
-          .where(eq(users.email, validated.email))
-          .limit(1);
+        try {
+          const [user] = await db.select({
+            id: users.id,
+            email: users.email,
+            username: users.username,
+            passwordHash: users.passwordHash,
+            level: users.level,
+            xp: users.xp,
+            mmr: users.mmr,
+            rank: users.rank,
+            coins: users.coins,
+            role: users.role,
+          })
+            .from(users)
+            .where(eq(users.email, validated.email))
+            .limit(1);
 
-        if (!user || !user.passwordHash) {
-          return NextResponse.json({ error: 'Invalid email or password' }, { status: 401 });
+          if (!user || !user.passwordHash) {
+            return NextResponse.json({ error: 'Invalid email or password' }, { status: 401 });
+          }
+
+          const isValid = await verifyPassword(validated.password, user.passwordHash);
+          if (!isValid) {
+            return NextResponse.json({ error: 'Invalid email or password' }, { status: 401 });
+          }
+
+          const session = await createSession(user.id);
+          const response = NextResponse.json({
+            success: true,
+            user: {
+              id: user.id,
+              email: user.email,
+              username: user.username,
+              level: user.level,
+              xp: Number(user.xp),
+              rank: user.rank,
+              mmr: user.mmr,
+              coins: Number(user.coins),
+              isAdmin: user.role === 'ADMIN',
+            },
+          });
+          response.cookies.set({
+            name: 'session',
+            value: session.token,
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'lax',
+            expires: session.expiresAt,
+            path: '/',
+          });
+          return response;
+        } catch (retryErr) {
+          console.error('[Login] Retry failed:', retryErr);
+          throw retryErr;
         }
-
-        const isValid = await verifyPassword(validated.password, user.passwordHash);
-        if (!isValid) {
-          return NextResponse.json({ error: 'Invalid email or password' }, { status: 401 });
-        }
-
-        const session = await createSession(user.id);
-        const response = NextResponse.json({
-          success: true,
-          user: {
-            id: user.id,
-            email: user.email,
-            username: user.username,
-            level: user.level,
-            xp: Number(user.xp),
-            rank: user.rank,
-            esr: (user as any).esr,
-            coins: Number(user.coins),
-            isAdmin: user.role === 'ADMIN',
-          },
-        });
-        response.cookies.set({
-          name: 'session',
-          value: session.token,
-          httpOnly: true,
-          secure: process.env.NODE_ENV === 'production',
-          sameSite: 'lax',
-          expires: session.expiresAt,
-          path: '/',
-        });
-        return response;
       }
       throw drizzleErr;
     }

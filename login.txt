@@ -1,0 +1,23 @@
+[Login] Error: Error: Failed query: select "id", "email", "username", "password_hash", "steam_id", "avatar_url", "level", "xp", "esr", "rank", "coins", "role", "role_color", "rank_tier", "rank_division", "email_verified", "email_verification_token", "password_reset_token", "password_reset_expires", "created_at", "updated_at" from "users" where "users"."email" = $1 limit $2
+params: admin@eclip.pro,1
+    at aC.queryWithCache (.next/server/chunks/3840.js:8:36467)
+    at async (.next/server/chunks/3840.js:8:38955)
+    at async C (.next/server/app/api/auth/login/route.js:1:1988)
+    at async k (.next/server/app/api/auth/login/route.js:1:6394)
+    at async g (.next/server/app/api/auth/login/route.js:1:7397)
+    at async I (.next/server/app/api/auth/login/route.js:1:8519) {
+  query: 'select "id", "email", "username", "password_hash", "steam_id", "avatar_url", "level", "xp", "esr", "rank", "coins", "role", "role_color", "rank_tier", "rank_division", "email_verified", "email_verification_token", "password_reset_token", "password_reset_expires", "created_at", "updated_at" from "users" where "users"."email" = $1 limit $2',
+  params: [Array],
+  [cause]: k: column "avatar_url" does not exist
+      at S (.next/server/chunks/9122.js:4:2034)
+      at <unknown> (.next/server/chunks/9122.js:4:3080)
+      at TLSSocket.aN (.next/server/chunks/9122.js:4:3084) {
+    severity_local: 'ERROR',
+    severity: 'ERROR',
+    code: '42703',
+    position: '64',
+    file: 'parse_relation.c',
+    line: '3716',
+    routine: 'errorMissingColumn'
+  }
+}
