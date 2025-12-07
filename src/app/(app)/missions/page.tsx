@@ -77,9 +77,10 @@ export default function MissionsPage() {
     const objective = mission.objectiveValue || 1;
     const progressPercent = Math.min((current / objective) * 100, 100);
     const isCompleted = mission.userProgress?.completed || false;
+    const hasStarted = mission.userProgress !== null && mission.userProgress !== undefined;
 
     return (
-      <Card className="bg-card/60 backdrop-blur-lg border border-white/10 hover:border-white/20 transition-colors">
+      <Card className={`bg-card/60 backdrop-blur-lg border border-white/10 hover:border-primary/50 hover:bg-card/80 transition-all cursor-pointer ${!hasStarted ? 'opacity-60' : ''}`}>
         <CardHeader>
           <div className="flex items-start justify-between">
             <div className="flex-1">
@@ -89,7 +90,6 @@ export default function MissionsPage() {
               </CardTitle>
               <CardDescription className="mt-2">{mission.description}</CardDescription>
             </div>
-            {isCompleted && <CheckCircle className="w-5 h-5 text-green-500" />}
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -97,28 +97,22 @@ export default function MissionsPage() {
             <div className="flex justify-between items-center mb-2">
               <span className="text-sm text-muted-foreground">Progress</span>
               <span className="text-sm font-semibold">
-                {mission.userProgress?.progress || 0} / {mission.objectiveValue}
+                {current} / {objective}
               </span>
             </div>
-            <Progress value={Math.min(progressPercent, 100)} className="h-2" />
+            <Progress value={progressPercent} className="h-2" />
           </div>
 
           <div className="grid grid-cols-2 gap-2">
-            <div className="flex items-center gap-2 p-2 rounded bg-blue-500/10 border border-blue-500/20">
-              <Gift className="w-4 h-4 text-blue-500" />
+            <div className="flex items-center gap-2 p-2 rounded bg-secondary/60 border border-border hover:border-primary/50 transition-colors">
+              <Gift className="w-4 h-4 text-muted-foreground" />
               <span className="text-sm">{mission.rewardXp} XP</span>
             </div>
-            <div className="flex items-center gap-2 p-2 rounded bg-yellow-500/10 border border-yellow-500/20">
-              <Trophy className="w-4 h-4 text-yellow-500" />
+            <div className="flex items-center gap-2 p-2 rounded bg-secondary/60 border border-border hover:border-primary/50 transition-colors">
+              <Trophy className="w-4 h-4 text-muted-foreground" />
               <span className="text-sm">{mission.rewardCoins} coins</span>
             </div>
           </div>
-
-          {isCompleted && (
-            <div className="bg-green-500/10 border border-green-500/20 rounded p-3 text-center">
-              <p className="text-sm font-semibold text-green-500">Completed! ✅</p>
-            </div>
-          )}
         </CardContent>
       </Card>
     );
@@ -175,32 +169,3 @@ export default function MissionsPage() {
   );
 }
 
-function MissionCard({ mission }: { mission: any }) {
-  const progressPercent = (mission.progress / mission.total) * 100;
-
-  return (
-    <Card className="bg-card/60 backdrop-blur-lg border border-white/10">
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <CardTitle className="text-lg">{mission.title}</CardTitle>
-          <div className="flex items-center gap-2 text-primary font-bold">
-            <Gift className="w-5 h-5"/>
-            <span>{mission.reward}</span>
-          </div>
-        </div>
-      </CardHeader>
-      <CardContent>
-        {mission.description && (
-          <p className="text-sm text-muted-foreground mb-4">{mission.description}</p>
-        )}
-        <Progress value={progressPercent} className="h-2" />
-        <div className="flex items-center justify-between mt-2">
-          <p className="text-sm text-muted-foreground">{mission.progress} / {mission.total}</p>
-          {mission.completed && (
-            <CheckCircle className="w-5 h-5 text-primary" />
-          )}
-        </div>
-      </CardContent>
-    </Card>
-  );
-}

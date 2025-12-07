@@ -57,17 +57,19 @@ export async function GET() {
       } catch {}
     }
 
-    // Map items with ownership status
-    const itemsWithOwnership = items.map(item => ({
-      id: item.id,
-      name: item.name,
-      description: item.description,
-      type: item.type,
-      rarity: item.rarity,
-      price: Number(item.price),
-      imageUrl: item.imageUrl,
-      owned: ownedItemIds.includes(item.id),
-    }));
+    // Map items with ownership status and filter out badges (achievement rewards only)
+    const itemsWithOwnership = items
+      .filter(item => item.type !== 'Badge') // Badges are not purchasable
+      .map(item => ({
+        id: item.id,
+        name: item.name,
+        description: item.description,
+        type: item.type,
+        rarity: item.rarity,
+        price: Number(item.price),
+        imageUrl: item.imageUrl,
+        owned: ownedItemIds.includes(item.id),
+      }));
 
     return NextResponse.json({ items: itemsWithOwnership });
   } catch (error) {

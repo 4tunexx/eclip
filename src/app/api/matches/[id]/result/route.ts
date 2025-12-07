@@ -5,8 +5,7 @@ import { eq, and } from 'drizzle-orm';
 import { z } from 'zod';
 
 const resultSchema = z.object({
-  scoreTeam1: z.number(),
-  scoreTeam2: z.number(),
+  winnerTeam: z.number(), // Team 1 or 2
   players: z.array(z.object({
     userId: z.string().uuid(),
     kills: z.number(),
@@ -20,12 +19,12 @@ const resultSchema = z.object({
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const matchId = params.id;
+    const { id: matchId } = await params;
     const body = await request.json();
-    const { scoreTeam1, scoreTeam2, players: playerStats } = resultSchema.parse(body);
+    const { winnerTeam, players: playerStats } = resultSchema.parse(body);
 
     // Get match
     const [match] = await db.select()
@@ -40,17 +39,13 @@ export async function POST(
       );
     }
 
-    const winner = scoreTeam1 > scoreTeam2 ? 1 : 2;
-
     await db.transaction(async (tx) => {
       // Update match
       await tx.update(matches)
         .set({
           status: 'FINISHED',
-          scoreTeam1,
-          scoreTeam2,
+          winnerTeam: winnerTeam.toString(), // Store winner team
           endedAt: new Date(),
-          updatedAt: new Date(),
         })
         .where(eq(matches.id, matchId));
 
@@ -73,7 +68,7 @@ export async function POST(
               hsPercentage: stats.hsPercentage,
               mvps: stats.mvps,
               adr: stats.adr.toString(),
-              isWinner: matchPlayer.team === winner,
+              isWinner: matchPlayer.team === winnerTeam,
             })
             .where(eq(matchPlayers.id, matchPlayer.id));
 
@@ -84,7 +79,7 @@ export async function POST(
             .limit(1);
 
           if (user) {
-            const isWinner = matchPlayer.team === winner;
+            const isWinner = matchPlayer.team === winnerTeam;
             
             // Calculate rewards
             const xpReward = isWinner ? 100 : 50;
@@ -105,7 +100,6 @@ export async function POST(
                 level: newLevel,
                 esr: newESR,
                 coins: (Number(user.coins) + coinReward).toString(),
-                updatedAt: new Date(),
               })
               .where(eq(users.id, user.id));
 

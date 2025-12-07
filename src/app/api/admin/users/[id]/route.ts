@@ -16,9 +16,10 @@ const updateUserSchema = z.object({
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const user = await getCurrentUser();
     if (!user || user.role !== 'ADMIN') {
       return NextResponse.json(
@@ -27,7 +28,7 @@ export async function GET(
       );
     }
 
-    const userId = params.id;
+    const userId = id;
 
     const [targetUser] = await db.select()
       .from(users)
@@ -82,9 +83,10 @@ export async function GET(
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const admin = await getCurrentUser();
     if (!admin || admin.role !== 'ADMIN') {
       return NextResponse.json(
@@ -93,7 +95,7 @@ export async function PATCH(
       );
     }
 
-    const userId = params.id;
+    const userId = id;
     const body = await request.json();
     const updates = updateUserSchema.parse(body);
 

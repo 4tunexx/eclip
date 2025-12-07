@@ -55,7 +55,7 @@ async function createMatch(tickets: any[]) {
   const [match] = await db.insert(matches).values({
     status: 'PENDING',
     map: 'Mirage',
-    mapImageUrl: 'https://i.postimg.cc/zXkQzY8J/mirage.png',
+    ladder: 'ranked', // Required field
   }).returning();
 
   await db.insert(matchPlayers).values([

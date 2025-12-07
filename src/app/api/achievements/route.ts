@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import { achievements, userAchievements } from '@/lib/db/schema';
+import { achievements, achievementProgress } from '@/lib/db/schema';
 import { getCurrentUser } from '@/lib/auth';
 import { eq, and } from 'drizzle-orm';
 
@@ -27,15 +27,17 @@ export async function GET(request: NextRequest) {
     // Get user's progress for each achievement
     const progressData = await db
       .select()
-      .from(userAchievements)
-      .where(eq(userAchievements.userId, user.id))
+      .from(achievementProgress)
+      .where(eq(achievementProgress.userId, user.id))
       .execute();
 
     const progressMap = new Map(progressData.map(p => [p.achievementId, p]));
 
     const achievementsWithProgress = allAchievements.map(achievement => ({
       ...achievement,
-      userProgress: progressMap.get(achievement.id) || null,
+      userProgress: progressMap.has(achievement.id)
+        ? { ...progressMap.get(achievement.id), progress: progressMap.get(achievement.id)?.currentProgress ?? 0 }
+        : null,
       unlocked: progressMap.has(achievement.id) && progressMap.get(achievement.id)?.unlockedAt !== null,
     }));
 
@@ -88,10 +90,10 @@ export async function POST(request: NextRequest) {
     // Get or create progress record
     const existingProgressResult = await db
       .select()
-      .from(userAchievements)
+      .from(achievementProgress)
       .where(and(
-        eq(userAchievements.userId, userId),
-        eq(userAchievements.achievementId, achievementId)
+        eq(achievementProgress.userId, userId),
+        eq(achievementProgress.achievementId, achievementId)
       ))
       .limit(1)
       .execute();
@@ -99,22 +101,21 @@ export async function POST(request: NextRequest) {
     const existingProgress = existingProgressResult[0];
 
     const target = achievement.target || 1;
-    const newProgress = Math.min(progress, target);
-    const shouldUnlock = newProgress >= target && (!existingProgress || !existingProgress.unlockedAt);
+    const baseProgress = existingProgress?.currentProgress || 0;
+    const updatedProgress = Math.min(baseProgress + progress, target);
+    const shouldUnlock = updatedProgress >= target && (!existingProgress || !existingProgress.unlockedAt);
 
     if (existingProgress) {
-      const updatedProgress = Math.min((existingProgress.progress || 0) + progress, target);
-
       await db
-        .update(userAchievements)
+        .update(achievementProgress)
         .set({
-          progress: updatedProgress,
+          currentProgress: updatedProgress,
           unlockedAt: shouldUnlock ? new Date() : existingProgress.unlockedAt,
           updatedAt: new Date(),
         })
         .where(and(
-          eq(userAchievements.userId, userId),
-          eq(userAchievements.achievementId, achievementId)
+          eq(achievementProgress.userId, userId),
+          eq(achievementProgress.achievementId, achievementId)
         ))
         .execute();
 
@@ -122,18 +123,19 @@ export async function POST(request: NextRequest) {
         success: true,
         progress: {
           ...existingProgress,
-          progress: updatedProgress,
+            currentProgress: updatedProgress,
+            progress: updatedProgress,
           unlockedAt: shouldUnlock ? new Date() : existingProgress.unlockedAt,
         },
         unlocked: shouldUnlock,
       });
     } else {
       const createdResult = await db
-        .insert(userAchievements)
+        .insert(achievementProgress)
         .values({
           userId,
           achievementId,
-          progress: newProgress,
+          currentProgress: updatedProgress,
           unlockedAt: shouldUnlock ? new Date() : null,
         })
         .returning()

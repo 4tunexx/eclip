@@ -138,11 +138,10 @@ export default function ShopPage() {
         </div>
 
         <Tabs defaultValue="featured">
-            <TabsList className="grid w-full grid-cols-5 max-w-2xl">
+            <TabsList className="grid w-full grid-cols-4 max-w-2xl">
                 <TabsTrigger value="featured"><Star className="mr-2" />Featured</TabsTrigger>
                 <TabsTrigger value="frames"><Gem className="mr-2" />Frames</TabsTrigger>
                 <TabsTrigger value="banners"><Shield className="mr-2" />Banners</TabsTrigger>
-                <TabsTrigger value="badges"><Trophy className="mr-2" />Badges</TabsTrigger>
                 <TabsTrigger value="titles"><Crown className="mr-2" />Titles</TabsTrigger>
             </TabsList>
 
@@ -242,28 +241,112 @@ export default function ShopPage() {
 }
 
 function ShopItemCard({ item, onPurchase, onEquip, purchasing, equipping, rarityColorMap }: any) {
-  // Generate cosmetic SVG URL based on type and rarity
-  const getCosmeticImageUrl = () => {
-    if (item.type === 'Frame') {
-      return `/api/cosmetics/generate/frame?rarity=${item.rarity?.toLowerCase() || 'common'}&username=${item.name}`;
-    } else if (item.type === 'Banner') {
-      return `/api/cosmetics/generate/banner?rarity=${item.rarity?.toLowerCase() || 'common'}&title=${item.name}`;
-    } else if (item.type === 'Badge') {
-      return `/api/cosmetics/generate/badge?rarity=${item.rarity?.toLowerCase() || 'common'}&label=${item.name}`;
+  const [imageError, setImageError] = useState(false);
+
+  // Parse metadata JSON stored in imageUrl for frames/banners
+  const parseMetadata = (val: any) => {
+    if (typeof val === 'string') {
+      try {
+        return JSON.parse(val);
+      } catch {
+        return {};
+      }
     }
-    return item.imageUrl; // Fallback to stored URL if exists
+    return val || {};
   };
 
-  const cosmeticImageUrl = getCosmeticImageUrl();
+  const getRarityGradient = () => {
+    const rarity = item.rarity?.toLowerCase() || 'common';
+    const gradients: any = {
+      legendary: 'from-yellow-600 via-yellow-400 to-amber-600',
+      epic: 'from-purple-600 via-purple-400 to-pink-600',
+      rare: 'from-blue-600 via-blue-400 to-cyan-600',
+      common: 'from-gray-600 via-gray-400 to-gray-500',
+    };
+    return gradients[rarity] || gradients.common;
+  };
+
+  const metadata = parseMetadata(item.imageUrl);
+  const rarity = item.rarity?.toLowerCase() || 'common';
+  const cosmeticImageUrl = (item.type === 'Badge') ? `/api/cosmetics/generate/badge?rarity=${rarity}&label=${item.name}` : null;
 
   return (
     <Card className="bg-card/60 backdrop-blur-lg border border-white/10 overflow-hidden glow-card-hover flex flex-col">
-      {cosmeticImageUrl && (
-        <CardHeader className="p-0 relative h-32 bg-gradient-to-br from-card via-secondary to-card/50">
-          <Image src={cosmeticImageUrl} alt={item.name} fill style={{objectFit:"contain"}} sizes="100vw" className="opacity-90 p-2" />
-          <div className="absolute inset-0 bg-gradient-to-t from-card via-card/50 to-transparent" />
-        </CardHeader>
-      )}
+      <CardHeader className="p-0 relative h-32 bg-transparent">
+        {item.type === 'Frame' ? (
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="relative w-20 h-20">
+              {metadata.border_gradient ? (
+                <div
+                  className={`absolute inset-0 rounded-full ${
+                    metadata.animation_type === 'pulse' ? 'animate-pulse' :
+                    metadata.animation_type === 'rotate' ? 'animate-spin-slow' :
+                    metadata.animation_type === 'glow' ? `animate-glow-${metadata.animation_speed || 5}` :
+                    ''
+                  }`}
+                  style={{
+                    background: metadata.border_gradient,
+                    padding: `${metadata.border_width || 3}px`,
+                    filter: 'none',
+                  }}
+                >
+                  <div className="w-full h-full rounded-full bg-card flex items-center justify-center">
+                    <div className="w-[calc(100%-6px)] h-[calc(100%-6px)] rounded-full bg-gradient-to-br from-purple-500/20 to-blue-500/20 flex items-center justify-center text-muted-foreground/40">
+                      <span className="text-xs">Avatar</span>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div
+                  className={`absolute inset-0 rounded-full ${
+                    metadata.animation_type === 'pulse' ? 'animate-pulse' :
+                    metadata.animation_type === 'rotate' ? 'animate-spin-slow' :
+                    metadata.animation_type === 'glow' ? `animate-glow-${metadata.animation_speed || 5}` :
+                    ''
+                  }`}
+                  style={{
+                    border: `${metadata.border_width || 3}px ${metadata.border_style || 'solid'} ${metadata.border_color || '#9333ea'}`,
+                    filter: 'none',
+                  }}
+                >
+                  <div className="w-full h-full rounded-full flex items-center justify-center">
+                    <div className="w-[calc(100%-6px)] h-[calc(100%-6px)] rounded-full bg-gradient-to-br from-purple-500/20 to-blue-500/20 flex items-center justify-center text-muted-foreground/40">
+                      <span className="text-xs">Avatar</span>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        ) : item.type === 'Banner' ? (
+          <div
+            className="absolute inset-0"
+            style={{ background: metadata.gradient || item.imageUrl || 'linear-gradient(135deg, rgb(100 100 100 / 0.3) 0%, rgb(150 150 150 / 0.3) 100%)' }}
+          >
+            <div className="absolute inset-0 bg-gradient-to-t from-card via-card/50 to-transparent" />
+          </div>
+        ) : cosmeticImageUrl && !imageError ? (
+          <>
+            <Image
+              src={cosmeticImageUrl}
+              alt={item.name}
+              fill
+              style={{ objectFit: "contain" }}
+              sizes="100vw"
+              className="opacity-90 p-2"
+              onError={() => setImageError(true)}
+              priority
+              unoptimized
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-card via-card/50 to-transparent" />
+          </>
+        ) : (
+          <div className="absolute inset-0 flex items-center justify-center">
+            <Gem className="h-12 w-12 text-white/30" />
+            <div className="absolute inset-0 bg-gradient-to-t from-card via-card/50 to-transparent" />
+          </div>
+        )}
+      </CardHeader>
       <CardContent className={`p-4 space-y-2 flex-grow ${!cosmeticImageUrl ? 'pt-6' : ''}`}>
         <div className="flex justify-between items-start">
           <h3 className="font-bold text-lg">{item.name}</h3>

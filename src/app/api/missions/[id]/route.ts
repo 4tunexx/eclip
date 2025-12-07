@@ -10,9 +10,10 @@ import { eq } from 'drizzle-orm';
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const user = await getCurrentUser();
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -20,7 +21,7 @@ export async function GET(
 
     const [mission] = await db.select()
       .from(missions)
-      .where(eq(missions.id, params.id));
+      .where(eq(missions.id, id));
 
     if (!mission) {
       return NextResponse.json({ error: 'Mission not found' }, { status: 404 });
@@ -29,7 +30,7 @@ export async function GET(
     // Get user's progress
     const [progress] = await db.select()
       .from(userMissionProgress)
-      .where(eq(userMissionProgress.missionId, params.id))
+      .where(eq(userMissionProgress.missionId, id))
       .limit(1);
 
     return NextResponse.json({

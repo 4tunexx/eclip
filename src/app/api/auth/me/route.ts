@@ -4,6 +4,7 @@ import { db } from '@/lib/db';
 import { userProfiles, cosmetics } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
 import postgres from 'postgres';
+import { getRankFromESR } from '@/lib/rank-calculator';
 
 export async function GET() {
   try {
@@ -39,19 +40,31 @@ export async function GET() {
     try {
       if (profile?.equippedFrameId) {
         const [frame] = await db.select().from(cosmetics).where(eq(cosmetics.id, profile.equippedFrameId)).limit(1);
-        equippedFrame = (frame as any)?.imageUrl || null;
+        if (frame) {
+          const frameData = frame as any;
+          equippedFrame = `/api/cosmetics/generate/frame?rarity=${frameData.rarity?.toLowerCase() || 'common'}&username=${frameData.name}`;
+        }
       }
       if (profile?.equippedBannerId) {
         const [banner] = await db.select().from(cosmetics).where(eq(cosmetics.id, profile.equippedBannerId)).limit(1);
-        equippedBanner = (banner as any)?.imageUrl || null;
+        if (banner) {
+          const bannerData = banner as any;
+          equippedBanner = `/api/cosmetics/generate/banner?rarity=${bannerData.rarity?.toLowerCase() || 'common'}&title=${bannerData.name}`;
+        }
       }
       if (profile?.equippedBadgeId) {
         const [badge] = await db.select().from(cosmetics).where(eq(cosmetics.id, profile.equippedBadgeId)).limit(1);
-        equippedBadge = (badge as any)?.imageUrl || null;
+        if (badge) {
+          const badgeData = badge as any;
+          equippedBadge = `/api/cosmetics/generate/badge?rarity=${badgeData.rarity?.toLowerCase() || 'common'}&label=${badgeData.name}`;
+        }
       }
     } catch (e) {
       console.log('[API/Auth/Me] Cosmetics fetch error:', (e as any).message);
     }
+
+    const esr = Number((user as any).esr ?? 1000);
+    const rankInfo = getRankFromESR(esr);
 
     const responseData = {
       id: (user as any).id,
@@ -60,8 +73,8 @@ export async function GET() {
       avatarUrl: (user as any).avatar || (user as any).avatarUrl || null,
       level: (user as any).level ?? 1,
       xp: Number((user as any).xp ?? 0),
-      rank: (user as any).rank ?? 'Bronze',
-      esr: (user as any).esr ?? 1000,
+      rank: rankInfo.tier,
+      esr: esr,
       coins: Number((user as any).coins ?? 0),
       isAdmin: ((user as any).role || '').toUpperCase() === 'ADMIN',
       emailVerified: Boolean((user as any).emailVerified ?? (profile?.emailVerifiedAt ? true : false)),

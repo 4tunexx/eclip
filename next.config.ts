@@ -10,6 +10,7 @@ const nextConfig: NextConfig = {
     ignoreDuringBuilds: true,
   },
   images: {
+    unoptimized: true,
     remotePatterns: [
       {
         protocol: 'https',
@@ -35,12 +36,24 @@ const nextConfig: NextConfig = {
         port: '',
         pathname: '/**',
       },
+
       {
         protocol: 'https',
         hostname: 'upload.wikimedia.org',
         port: '',
         pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'via.placeholder.com',
+        port: '',
+        pathname: '/**',
       }
+    ],
+    localPatterns: [
+      {
+        pathname: '/api/cosmetics/generate/**',
+      },
     ],
   },
 };

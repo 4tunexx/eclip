@@ -13,9 +13,10 @@ import {
 
 export async function GET(
   request: Request,
-  { params }: { params: { type: string } }
+  { params }: { params: Promise<{ type: string }> }
 ) {
   try {
+    const { type } = await params;
     const { searchParams } = new URL(request.url);
     const rarity = (searchParams.get('rarity') || 'common').toLowerCase() as
       | 'legendary'
@@ -24,17 +25,18 @@ export async function GET(
       | 'common';
     const title = searchParams.get('title') || 'Eclip.pro';
     const subtitle = searchParams.get('subtitle');
+    const username = searchParams.get('username') || title;
     const label = searchParams.get('label') || 'Badge';
 
-    let svg: string;
+    let svgDataUrl: string;
 
-    switch (params.type) {
+    switch (type) {
       case 'frame':
-        svg = generateAvatarFrameSVG({ type: rarity, username: title });
+        svgDataUrl = generateAvatarFrameSVG({ type: rarity, username });
         break;
 
       case 'banner':
-        svg = generateBannerSVG({
+        svgDataUrl = generateBannerSVG({
           type: rarity,
           title,
           subtitle: subtitle || undefined,
@@ -42,7 +44,7 @@ export async function GET(
         break;
 
       case 'badge':
-        svg = generateBadgeSVG({ type: rarity, label });
+        svgDataUrl = generateBadgeSVG({ type: rarity, label });
         break;
 
       default:
@@ -52,8 +54,12 @@ export async function GET(
         );
     }
 
+    // Extract base64 data and decode to SVG string
+    const base64Data = svgDataUrl.replace(/^data:image\/svg\+xml;base64,/, '');
+    const svgString = Buffer.from(base64Data, 'base64').toString('utf-8');
+
     // Return as SVG with proper content-type
-    return new NextResponse(svg.replace(/^data:image\/svg\+xml;base64,/, ''), {
+    return new NextResponse(svgString, {
       headers: {
         'Content-Type': 'image/svg+xml',
         'Cache-Control': 'public, max-age=31536000', // Cache for 1 year

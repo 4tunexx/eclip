@@ -2,8 +2,9 @@ import { NextRequest, NextResponse } from 'next/server'
 import postgres from 'postgres'
 import { getCurrentUser } from '@/lib/auth'
 
-export async function POST(request: NextRequest, { params }: { params: { id: string } }) {
+export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await params;
     const user = await getCurrentUser()
     if (!user) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
 
@@ -12,8 +13,8 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
     if (!['up','down'].includes(direction)) return NextResponse.json({ error: 'Invalid direction' }, { status: 400 })
 
     const sql = postgres(process.env.DATABASE_URL!, { max: 1 })
-    const repKey = `rep_post_${params.id}`
-    const voteKey = `vote_post_${params.id}_${user.id}`
+    const repKey = `rep_post_${id}`
+    const voteKey = `vote_post_${id}_${user.id}`
 
     try {
       const prev = await sql.unsafe('SELECT "value" FROM "public"."KeyValueConfig" WHERE "key" = $1 LIMIT 1;', [voteKey])

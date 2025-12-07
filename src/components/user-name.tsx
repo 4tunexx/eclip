@@ -9,7 +9,7 @@ type Props = {
 function roleClass(role?: string | null) {
   switch ((role || '').toUpperCase()) {
     case 'ADMIN':
-      return 'text-red-500'
+      return 'text-red-500 font-bold'
     case 'MOD':
     case 'MODERATOR':
       return 'text-green-500'

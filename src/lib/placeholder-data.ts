@@ -2,7 +2,7 @@ import type { User, Match, Player, NewsArticle, ForumActivity, Cosmetic, Mission
 import { Gamepad2, Trophy, BarChart, MessageSquare, Video } from 'lucide-react';
 
 export const topPlayers: Player[] = [
-    { id: '1', username: 'Zythex', steamId: '76561197960265728', avatarUrl: 'https://picsum.photos/seed/avatar1/200/200', rank: 'Immortal', esr: 3200, equippedFrame: 'https://i.postimg.cc/PqYp5d7C/frame-legendary.png' },
+    { id: '1', username: 'Zythex', steamId: '76561197960265728', avatarUrl: 'https://picsum.photos/seed/avatar1/200/200', rank: 'Immortal', esr: 3200, equippedFrame: '' },
     { id: '2', username: 'Vortex', steamId: '76561197960265729', avatarUrl: 'https://picsum.photos/seed/avatar2/200/200', rank: 'Immortal', esr: 3150 },
     { id: '3', username: 'Crimson', steamId: '76561197960265730', avatarUrl: 'https://picsum.photos/seed/avatar3/200/200', rank: 'Grandmaster', esr: 2980 },
     { id: '4', username: 'Pulse', steamId: '76561197960265731', avatarUrl: 'https://picsum.photos/seed/avatar4/200/200', rank: 'Grandmaster', esr: 2950 },
@@ -19,8 +19,8 @@ export const currentUser: User = {
     esr: 1850,
   coins: 1337.42,
   isAdmin: true,
-  equippedFrame: 'https://i.postimg.cc/PqYp5d7C/frame-legendary.png',
-  equippedBanner: 'https://i.postimg.cc/tJ5gST8z/banner-animated.gif',
+  equippedFrame: '',
+  equippedBanner: '',
   title: 'Headshot Machine'
 };
 
@@ -28,7 +28,7 @@ export const recentMatches: Match[] = [
     {
         id: 'm1',
         map: 'Mirage',
-        mapImageUrl: 'https://i.postimg.cc/zXkQzY8J/mirage.png',
+        mapImageUrl: 'https://placehold.co/600x400/1a1a2e/ffffff?text=Mirage',
         score: '13-8',
         result: 'Win',
         date: '2 hours ago',
@@ -40,7 +40,7 @@ export const recentMatches: Match[] = [
     {
         id: 'm2',
         map: 'Inferno',
-        mapImageUrl: 'https://i.postimg.cc/mD3wS2vP/inferno.png',
+        mapImageUrl: 'https://placehold.co/600x400/1a1a2e/ffffff?text=Inferno',
         score: '10-13',
         result: 'Loss',
         date: '5 hours ago',
@@ -52,7 +52,7 @@ export const recentMatches: Match[] = [
     {
         id: 'm3',
         map: 'Anubis',
-        mapImageUrl: 'https://i.postimg.cc/pT3YyT3g/anubis.png',
+        mapImageUrl: 'https://placehold.co/600x400/1a1a2e/ffffff?text=Anubis',
         score: '13-5',
         result: 'Win',
         date: '1 day ago',
@@ -133,11 +133,170 @@ export const forumActivity: ForumActivity[] = [
 ];
 
 export const shopItems: Cosmetic[] = [
-    { id: 'c1', name: 'Cyberpunk Neon', description: 'A vibrant, glowing frame.', type: 'Frame', rarity: 'Legendary', price: 1500, owned: true, imageUrl: 'https://i.postimg.cc/PqYp5d7C/frame-legendary.png' },
-    { id: 'c2', name: 'Synthwave Sunset', description: 'Animated banner of a retro sunset.', type: 'Banner', rarity: 'Epic', price: 800, owned: true, imageUrl: 'https://i.postimg.cc/tJ5gST8z/banner-animated.gif' },
-    { id: 'c3', name: 'Pro League 2024', description: 'Badge for participating in the pro league.', type: 'Badge', rarity: 'Epic', price: 500, owned: false, imageUrl: 'https://i.postimg.cc/KzCjz1fS/badge-epic.png' },
-    { id: 'c4', name: 'Headshot Machine', description: 'Show off your aim.', type: 'Title', rarity: 'Rare', price: 250, owned: true },
-    { id: 'c5', name: 'Azure Frame', description: 'A simple, clean blue frame.', type: 'Frame', rarity: 'Common', price: 100, owned: false, imageUrl: 'https://i.postimg.cc/C1xX639D/frame-common.png' },
+    // Avatar Frames
+    { 
+        id: 'frame_glow_blue', 
+        name: 'Electric Blue Glow', 
+        description: 'Animated glowing blue frame that pulses with energy!', 
+        type: 'Frame', 
+        rarity: 'Rare', 
+        price: 200, 
+        owned: false, 
+        imageUrl: '' 
+    },
+    { 
+        id: 'frame_pulse_rainbow', 
+        name: 'Rainbow Pulse', 
+        description: 'Vibrant rainbow frame that pulses with colors!', 
+        type: 'Frame', 
+        rarity: 'Rare', 
+        price: 400, 
+        owned: false, 
+        imageUrl: '' 
+    },
+    { 
+        id: 'frame_glow_gold', 
+        name: 'Golden Aura', 
+        description: 'Radiant golden glow that shines brightly!', 
+        type: 'Frame', 
+        rarity: 'Epic', 
+        price: 600, 
+        owned: true, 
+        imageUrl: '' 
+    },
+    { 
+        id: 'frame_rotate_neon', 
+        name: 'Neon Spinner', 
+        description: 'Rotating neon frame with electric colors!', 
+        type: 'Frame', 
+        rarity: 'Epic', 
+        price: 800, 
+        owned: false, 
+        imageUrl: '' 
+    },
+    { 
+        id: 'frame_legendary_aura', 
+        name: 'Legendary Aura', 
+        description: 'Ultimate animated frame with multiple effects!', 
+        type: 'Frame', 
+        rarity: 'Legendary', 
+        price: 1200, 
+        owned: true, 
+        imageUrl: '' 
+    },
+    
+    // Profile Banners
+    { 
+        id: 'banner_sunset', 
+        name: 'Sunset Blaze', 
+        description: 'Warm orange and pink gradient banner.', 
+        type: 'Banner', 
+        rarity: 'Common', 
+        price: 100, 
+        owned: true, 
+        imageUrl: '' 
+    },
+    { 
+        id: 'banner_ocean', 
+        name: 'Ocean Wave', 
+        description: 'Cool cyan and blue gradient banner.', 
+        type: 'Banner', 
+        rarity: 'Rare', 
+        price: 150, 
+        owned: false, 
+        imageUrl: '' 
+    },
+    { 
+        id: 'banner_royal', 
+        name: 'Royal Purple', 
+        description: 'Deep purple and violet gradient banner.', 
+        type: 'Banner', 
+        rarity: 'Rare', 
+        price: 300, 
+        owned: false, 
+        imageUrl: '' 
+    },
+    { 
+        id: 'banner_aurora', 
+        name: 'Aurora Borealis', 
+        description: 'Magical northern lights gradient banner.', 
+        type: 'Banner', 
+        rarity: 'Epic', 
+        price: 500, 
+        owned: true, 
+        imageUrl: '' 
+    },
+    { 
+        id: 'banner_gold', 
+        name: 'Golden Prestige', 
+        description: 'Radiant gold and amber gradient banner.', 
+        type: 'Banner', 
+        rarity: 'Legendary', 
+        price: 1000, 
+        owned: false, 
+        imageUrl: '' 
+    },
+    
+    // Badges
+    { 
+        id: 'badge_pro_league', 
+        name: 'Pro League 2024', 
+        description: 'Exclusive badge for Pro League participants.', 
+        type: 'Badge', 
+        rarity: 'Epic', 
+        price: 500, 
+        owned: false, 
+        imageUrl: '' 
+    },
+    { 
+        id: 'badge_first_blood', 
+        name: 'First Blood Master', 
+        description: 'Achieved 100 first bloods in competitive matches.', 
+        type: 'Badge', 
+        rarity: 'Rare', 
+        price: 300, 
+        owned: true, 
+        imageUrl: '' 
+    },
+    { 
+        id: 'badge_clutch_king', 
+        name: 'Clutch King', 
+        description: 'Won 50 1v3+ clutch situations.', 
+        type: 'Badge', 
+        rarity: 'Legendary', 
+        price: 800, 
+        owned: false, 
+        imageUrl: '' 
+    },
+    
+    // Titles
+    { 
+        id: 'title_headshot_machine', 
+        name: 'Headshot Machine', 
+        description: 'Display your precision aim with this title.', 
+        type: 'Title', 
+        rarity: 'Rare', 
+        price: 250, 
+        owned: true 
+    },
+    { 
+        id: 'title_ace_collector', 
+        name: 'Ace Collector', 
+        description: 'For those who collect aces like trophies.', 
+        type: 'Title', 
+        rarity: 'Epic', 
+        price: 400, 
+        owned: false 
+    },
+    { 
+        id: 'title_legend', 
+        name: 'The Legend', 
+        description: 'Ultimate title for legendary players.', 
+        type: 'Title', 
+        rarity: 'Legendary', 
+        price: 1500, 
+        owned: false 
+    },
 ];
 
 export const forumCategories: ForumCategory[] = [

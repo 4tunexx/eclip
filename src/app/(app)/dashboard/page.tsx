@@ -85,12 +85,12 @@ export default function DashboardPage() {
   return (
     <div className="p-4 md:p-8">
       <div className="relative mb-8 pt-20">
-        {/* Banner background - use equipped banner or default green */}
+        {/* Banner background - use equipped banner or default green gradient */}
         <div 
           className="absolute top-0 left-0 right-0 rounded-xl overflow-hidden p-8 h-56 flex items-start justify-between"
           style={{
             backgroundImage: user.equippedBanner ? `url(${user.equippedBanner})` : undefined,
-            backgroundColor: !user.equippedBanner ? 'hsl(var(--primary))' : undefined,
+            background: !user.equippedBanner ? 'linear-gradient(135deg, rgb(34 197 94 / 0.3) 0%, rgb(16 185 129 / 0.3) 50%, rgb(20 184 166 / 0.3) 100%)' : undefined,
             backgroundSize: 'cover',
             backgroundPosition: 'center',
           }}

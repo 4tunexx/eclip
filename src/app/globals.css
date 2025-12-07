@@ -76,6 +76,88 @@
   }
 }
 
+@keyframes shimmer {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 200% 50%; }
+}
+
+@keyframes rotate-ring {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+
+
+@keyframes dash-move {
+  0% { stroke-dashoffset: 0; }
+  100% { stroke-dashoffset: -720; }
+}
+
+/* Avatar Frame Animations */
+@keyframes glow-pulse {
+  0%, 100% {
+    filter: drop-shadow(0 0 10px currentColor);
+    opacity: 1;
+  }
+  50% {
+    filter: drop-shadow(0 0 25px currentColor);
+    opacity: 0.85;
+  }
+}
+
+@keyframes spin-slow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Glow animation variants by speed */
+@keyframes glow-1 { 0%, 100% { filter: drop-shadow(0 0 2px currentColor); } 50% { filter: drop-shadow(0 0 3px currentColor); } }
+@keyframes glow-2 { 0%, 100% { filter: drop-shadow(0 0 2px currentColor); } 50% { filter: drop-shadow(0 0 4px currentColor); } }
+@keyframes glow-3 { 0%, 100% { filter: drop-shadow(0 0 2px currentColor); } 50% { filter: drop-shadow(0 0 4px currentColor); } }
+@keyframes glow-4 { 0%, 100% { filter: drop-shadow(0 0 3px currentColor); } 50% { filter: drop-shadow(0 0 5px currentColor); } }
+@keyframes glow-5 { 0%, 100% { filter: drop-shadow(0 0 3px currentColor); } 50% { filter: drop-shadow(0 0 5px currentColor); } }
+@keyframes glow-6 { 0%, 100% { filter: drop-shadow(0 0 3px currentColor); } 50% { filter: drop-shadow(0 0 6px currentColor); } }
+@keyframes glow-7 { 0%, 100% { filter: drop-shadow(0 0 4px currentColor); } 50% { filter: drop-shadow(0 0 6px currentColor); } }
+@keyframes glow-8 { 0%, 100% { filter: drop-shadow(0 0 4px currentColor); } 50% { filter: drop-shadow(0 0 7px currentColor); } }
+
+.animate-glow-1 { animation: glow-1 3s ease-in-out infinite alternate; }
+.animate-glow-2 { animation: glow-2 2.8s ease-in-out infinite alternate; }
+.animate-glow-3 { animation: glow-3 2.6s ease-in-out infinite alternate; }
+.animate-glow-4 { animation: glow-4 2.4s ease-in-out infinite alternate; }
+.animate-glow-5 { animation: glow-5 2.2s ease-in-out infinite alternate; }
+.animate-glow-6 { animation: glow-6 2s ease-in-out infinite alternate; }
+.animate-glow-7 { animation: glow-7 1.8s ease-in-out infinite alternate; }
+.animate-glow-8 { animation: glow-8 1.6s ease-in-out infinite alternate; }
+
+.animate-spin-slow {
+  animation: spin-slow 3s linear infinite;
+}
+
+.shimmer-track {
+  position: relative;
+  overflow: hidden;
+  background: var(--secondary, hsl(var(--secondary)));
+}
+
+.shimmer-fill {
+  height: 100%;
+  border-radius: 9999px;
+  background: linear-gradient(90deg, rgba(255,255,255,0.4), rgba(255,255,255,0.9), rgba(255,255,255,0.4));
+  background-size: 200% 100%;
+  animation: shimmer 2.4s linear infinite;
+}
+
+
+
+.charge-ring {
+  animation: dash-move 6s linear infinite;
+}
+
+.ring-glow {
+  transform-origin: center;
+  animation: rotate-ring 6s linear infinite;
+}
+
 @layer base {
   * {
     @apply border-border;

@@ -9,7 +9,7 @@ export async function GET() {
     const topPlayers = await db.select({
       id: users.id,
       username: users.username,
-      avatarUrl: users.avatarUrl,
+      avatar: users.avatar,
       rank: users.rank,
       esr: users.esr,
       level: users.level,

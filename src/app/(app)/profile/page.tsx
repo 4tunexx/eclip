@@ -7,6 +7,7 @@ import Image from "next/image";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { 
     Star, 
@@ -33,6 +34,10 @@ export default function ProfilePage() {
   const [isLoading, setIsLoading] = useState(true);
   const [achievementsLoading, setAchievementsLoading] = useState(false);
   const [badgesLoading, setBadgesLoading] = useState(false);
+  const [cosmeticsLoading, setCosmeticsLoading] = useState(false);
+  const [actionLoading, setActionLoading] = useState(false);
+  const [cosmeticsData, setCosmeticsData] = useState<{banners:any[];frames:any[];titles:any[]}>({ banners: [], frames: [], titles: [] });
+  const [avatarInput, setAvatarInput] = useState('');
 
   useEffect(() => {
     if (user) {
@@ -86,6 +91,84 @@ export default function ProfilePage() {
     }
   };
 
+  const normalizedRole = (user as any)?.role ? String((user as any).role).trim().toUpperCase() : '';
+  const isAdmin = normalizedRole === 'ADMIN' || Boolean((user as any)?.isAdmin);
+
+  const fetchCosmetics = async () => {
+    if (!user) return;
+    try {
+      setCosmeticsLoading(true);
+      const res = await fetch('/api/user/cosmetics');
+      if (!res.ok) throw new Error('Failed to load cosmetics');
+      const data = await res.json();
+      setCosmeticsData({
+        banners: data.banners || [],
+        frames: data.frames || [],
+        titles: data.titles || [],
+      });
+    } catch (e) {
+      console.error('[Profile] cosmetics load error', e);
+    } finally {
+      setCosmeticsLoading(false);
+    }
+  };
+
+  const equipCosmetic = async (type: 'Banner' | 'Frame' | 'Title', cosmeticId: string) => {
+    try {
+      setActionLoading(true);
+      const res = await fetch('/api/user/equip', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type, cosmeticId }),
+      });
+      if (!res.ok) throw new Error('Equip failed');
+      await fetchCosmetics();
+      // Reload to refresh banner/frame in hero
+      window.location.reload();
+    } catch (e) {
+      console.error('[Profile] equip error', e);
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const saveAvatarUrl = async () => {
+    try {
+      setActionLoading(true);
+      const res = await fetch('/api/user/avatar', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ avatarUrl: avatarInput }),
+      });
+      if (!res.ok) throw new Error('Avatar update failed');
+      window.location.reload();
+    } catch (e) {
+      console.error('[Profile] avatar save error', e);
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleAvatarFile = (file?: File | null) => {
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = reader.result as string;
+      setAvatarInput(result);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  useEffect(() => {
+    if (user?.avatarUrl) {
+      setAvatarInput(user.avatarUrl);
+    }
+  }, [user?.avatarUrl]);
+
+  useEffect(() => {
+    fetchCosmetics();
+  }, [user]);
+
   if (userLoading || !user) {
     return (
       <div className="p-4 md:p-8 flex items-center justify-center min-h-[calc(100vh-8rem)]">
@@ -108,9 +191,11 @@ export default function ProfilePage() {
   const wins = matches.filter(m => m.result === 'Win').length;
   const winRate = matches.length > 0 ? Math.round((wins / matches.length) * 100) : 0;
 
-  const totalXP = user.level ? (user.level - 1) * 200 + user.xp : user.xp;
-  const nextLevelXP = user.level ? user.level * 200 : 200;
-  const levelProgress = Math.min(100, ((user.xp || 0) / nextLevelXP) * 100);
+  const xpPerLevel = 200;
+  const currentLevelXP = (user.xp || 0) % xpPerLevel;
+  const levelProgress = (currentLevelXP / xpPerLevel) * 100;
+  const nextLevelXP = xpPerLevel;
+  const totalXP = user.level ? (user.level - 1) * 200 + (user.xp || 0) : (user.xp || 0);
   const rankProgress = getProgressToNextDivision((user as any)?.esr || 0);
 
   const activityFeed = [
@@ -158,13 +243,15 @@ export default function ProfilePage() {
                     fill 
                     style={{objectFit:"cover"}} 
                     sizes="100vw" 
-                    className="opacity-80" 
+                    className="opacity-80"
+                    unoptimized 
                   />
                 ) : (
                   <Image 
                     src={getDefaultBannerDataUrl()} 
                     alt="Default Banner" 
-                    fill 
+                    fill
+                    unoptimized 
                     style={{objectFit:"cover"}} 
                     sizes="100vw" 
                     className="opacity-60" 
@@ -174,80 +261,97 @@ export default function ProfilePage() {
             </div>
             <div className="relative p-6 -mt-24">
                 <div className="flex flex-col md:flex-row items-center md:items-end gap-6">
-                    <div 
-                      className="relative w-44 h-44 flex items-center justify-center"
-                      style={{
-                        background: `conic-gradient(white ${levelProgress}%, rgba(255,255,255,0.1) ${levelProgress}% 100%)`,
-                        borderRadius: '9999px',
-                        padding: '6px'
-                      }}
-                    >
-                      <div className="bg-card rounded-full p-1 w-full h-full flex items-center justify-center">
-                        <UserAvatar 
-                            avatarUrl={user.avatarUrl}
-                            username={user.username}
-                            frameUrl={user.equippedFrame}
-                            className="w-40 h-40 rounded-full border-4 border-background"
-                        />
-                      </div>
-                      <div className="absolute bottom-2 text-xs font-semibold text-white drop-shadow-sm">
-                        Level {user.level || 1}
-                      </div>
+                    {/* Avatar (no circular progress ring or level badge on profile) */}
+                    <div className="relative w-44 h-44 flex items-center justify-center">
+                      <UserAvatar 
+                          avatarUrl={user.avatarUrl}
+                          username={user.username}
+                          frameUrl={user.equippedFrame}
+                          className="w-40 h-40 rounded-full border-4 border-background"
+                      />
                     </div>
-                    <div className="flex-1 text-center md:text-left">
-                        <h1 className="font-headline text-4xl font-bold">{user.username}</h1>
-                        <p className="text-primary font-semibold">{user.title || 'Eclip.pro Player'}</p>
-                        {user.role && (
-                          <div
-                            style={{
-                              backgroundColor: getRoleBgColor(user.role),
-                              color: getRoleColor(user.role),
-                            }}
-                            className="inline-block px-3 py-1 rounded-full text-sm font-semibold mt-2"
-                          >
-                            {user.role}
-                          </div>
-                        )}
+                    <div className="flex-1 text-center md:text-left space-y-2">
+                        <h1 
+                          className="font-headline text-4xl font-bold" 
+                          style={isAdmin ? { color: getRoleColor('ADMIN') } : {}}
+                        >
+                          {user.username}
+                        </h1>
+                        {user.title && <p className="text-primary font-semibold">{user.title}</p>}
                         <div className="flex items-center justify-center md:justify-start gap-2 mt-2">
-                             <Badge variant="outline" style={{ borderColor: getRankFromESR((user as any)?.esr || 1000).color }} className="text-lg">
+                             <Badge 
+                               variant="outline" 
+                               style={{ 
+                                 borderColor: getRankFromESR((user as any)?.esr || 1000).color,
+                                 color: getRankFromESR((user as any)?.esr || 1000).color 
+                               }} 
+                               className="text-lg"
+                             >
                                {formatRank((user as any)?.esr || 1000)}
                              </Badge>
-                                  <Badge variant="secondary" className="text-lg">{(user as any).esr} ESR</Badge>
+                             <Badge 
+                               variant="secondary" 
+                               style={{ color: getRankFromESR((user as any)?.esr || 1000).color }}
+                               className="text-lg"
+                             >
+                               {(user as any).esr} ESR
+                             </Badge>
+                             {(user.role || isAdmin) && (
+                               <Badge
+                                 variant="secondary"
+                                 style={{
+                                   color: getRankFromESR((user as any)?.esr || 1000).color,
+                                 }}
+                                 className="text-lg font-semibold"
+                               >
+                                 {isAdmin ? 'ADMIN' : user.role}
+                               </Badge>
+                             )}
                         </div>
                     </div>
-                    <Button variant="outline" asChild>
-                        <Link href="/settings?tab=account">
-                          <Brush className="mr-2 h-4 w-4" />
-                          Customize Profile
-                        </Link>
-                    </Button>
                 </div>
                 <div className="mt-6 space-y-3">
                     <div>
                       <div className="flex items-center justify-between text-sm mb-1">
-                          <span className="font-semibold">Level {user.level || 1}</span>
-                          <span className="text-muted-foreground">{user.xp || 0} / {nextLevelXP} XP</span>
+                          <span className="font-semibold text-white">Level {user.level || 1}</span>
+                          <span className="text-muted-foreground">{currentLevelXP} / {nextLevelXP} XP</span>
                       </div>
-                      <Progress value={levelProgress} className="h-2" />
+                        <div className="w-full h-2 bg-white/10 rounded-full overflow-hidden">
+                          <div 
+                            style={{ width: `${levelProgress}%`, background: 'linear-gradient(90deg, rgba(255,255,255,0.3), rgba(255,255,255,0.9), rgba(255,255,255,0.3))' }}
+                            className="h-full rounded-full transition-all"
+                          />
+                        </div>
                     </div>
                     <div>
                       <div className="flex items-center justify-between text-sm mb-1">
-                        <span className="font-semibold text-emerald-400">Rank Progress</span>
+                        <span className="font-semibold text-green-400">Rank Progress</span>
                         <span className="text-muted-foreground">{rankProgress.current} / {rankProgress.next} ESR</span>
                       </div>
-                      <Progress value={rankProgress.percentage} className="h-2" indicatorClassName="bg-emerald-500" />
+                      <div className="w-full h-2 bg-green-900/20 rounded-full overflow-hidden">
+                        <div 
+                          style={{ width: `${rankProgress.percentage}%`, background: 'linear-gradient(90deg, rgba(52,199,89,0.2), rgba(52,199,89,0.9), rgba(52,199,89,0.2))' }}
+                          className="h-full rounded-full transition-all"
+                        />
+                      </div>
                     </div>
                 </div>
             </div>
         </Card>
 
         <Tabs defaultValue="overview" className="mt-8">
-            <TabsList className="grid w-full grid-cols-5 max-w-2xl">
+          <TabsList className="grid w-full grid-cols-6 max-w-3xl">
                 <TabsTrigger value="overview">Overview</TabsTrigger>
                 <TabsTrigger value="matches">Matches</TabsTrigger>
                 <TabsTrigger value="achievements">Achievements</TabsTrigger>
                 <TabsTrigger value="badges">Badges</TabsTrigger>
                 <TabsTrigger value="ranks">Ranks</TabsTrigger>
+            <TabsTrigger value="customize">
+              <div className="flex items-center gap-2">
+                <Brush className="h-4 w-4" />
+                Customize
+              </div>
+            </TabsTrigger>
             </TabsList>
             <TabsContent value="overview" className="mt-6">
                 <Card className="bg-card/60 backdrop-blur-lg border border-white/10">
@@ -395,9 +499,9 @@ export default function ProfilePage() {
                       ) : (
                         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
                           {achievements.map((achievement) => (
-                            <div key={achievement.id} className="bg-secondary/60 border border-border rounded-lg p-4">
+                            <div key={achievement.id} className={`bg-secondary/60 border rounded-lg p-4 transition-all cursor-pointer hover:bg-secondary/80 hover:scale-105 ${achievement.unlocked ? 'border-green-500/30 hover:border-green-500/50' : 'border-border hover:border-primary/50 opacity-70'}`}>
                               <div className="flex items-start gap-3">
-                                <Trophy className={`h-8 w-8 flex-shrink-0 mt-1 ${achievement.unlocked ? 'text-yellow-400 fill-yellow-400' : 'text-muted-foreground opacity-50'}`} />
+                                <Trophy className={`h-8 w-8 flex-shrink-0 mt-1 ${achievement.unlocked ? 'text-green-500' : 'text-muted-foreground opacity-50'}`} />
                                 <div className="flex-1 min-w-0">
                                   <h3 className="font-semibold text-sm">{achievement.name}</h3>
                                   <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{achievement.description}</p>
@@ -405,7 +509,7 @@ export default function ProfilePage() {
                                     <div className="mt-2">
                                       <div className="flex justify-between items-center text-xs mb-1">
                                         <span className="font-medium">{achievement.userProgress.progress}/{achievement.target}</span>
-                                        <span className="text-primary">+{achievement.rewardXp} XP</span>
+                                        <span className="text-muted-foreground">+{achievement.rewardXp} XP</span>
                                       </div>
                                       {achievement.target > 0 && (
                                         <Progress 
@@ -416,7 +520,7 @@ export default function ProfilePage() {
                                     </div>
                                   )}
                                   {achievement.unlocked && achievement.userProgress?.unlockedAt && (
-                                    <div className="text-xs text-green-400 mt-2 flex items-center gap-1">
+                                    <div className="text-xs text-green-500 mt-2 flex items-center gap-1">
                                       <CheckCircle className="h-3 w-3" />
                                       Unlocked {new Date(achievement.userProgress.unlockedAt).toLocaleDateString()}
                                     </div>
@@ -446,7 +550,7 @@ export default function ProfilePage() {
                       ) : (
                         <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
                           {badges.map((badge) => (
-                            <div key={badge.id} className="flex flex-col items-center gap-2 p-3 rounded-lg bg-secondary/40 border border-border/50 hover:border-primary/50 transition-colors">
+                            <div key={badge.id} className="flex flex-col items-center gap-2 p-3 rounded-lg bg-secondary/40 border border-border/50 hover:border-green-500/50 hover:bg-secondary/60 hover:scale-105 transition-all cursor-pointer">
                               <div className="relative w-16 h-16 rounded-lg overflow-hidden bg-secondary border border-border flex items-center justify-center">
                                 {badge.imageUrl ? (
                                   <Image 
@@ -456,7 +560,7 @@ export default function ProfilePage() {
                                     className="object-cover"
                                   />
                                 ) : (
-                                  <Star className="h-8 w-8 text-primary" />
+                                  <Star className="h-8 w-8 text-muted-foreground" />
                                 )}
                               </div>
                               <div className="text-center">
@@ -527,6 +631,140 @@ export default function ProfilePage() {
                     </CardContent>
                 </Card>
             </TabsContent>
+
+                <TabsContent value="customize" className="mt-6">
+                  <Card className="bg-card/60 backdrop-blur-lg border border-white/10">
+                    <CardHeader>
+                      <CardTitle>Customize Profile</CardTitle>
+                      <CardDescription>Avatar uploads are user-provided; banner/frame/title can only be equipped from owned cosmetics (shop, missions, achievements).</CardDescription>
+                    </CardHeader>
+                    <CardContent className="grid md:grid-cols-2 gap-4">
+                      <div className="bg-secondary/60 border border-border rounded-lg p-4 space-y-3">
+                        <div className="flex items-center gap-3">
+                          <UserAvatar 
+                            avatarUrl={user.avatarUrl}
+                            username={user.username}
+                            frameUrl={user.equippedFrame}
+                            className="w-12 h-12 rounded-full"
+                          />
+                          <div>
+                            <h3 className="font-semibold">Avatar</h3>
+                            <p className="text-sm text-muted-foreground">Upload your own or set an image URL.</p>
+                          </div>
+                        </div>
+                            <div className="flex flex-col gap-2">
+                                <Input
+                                  placeholder="https://... or paste data URL"
+                                  value={avatarInput}
+                                  onChange={(e) => setAvatarInput(e.target.value)}
+                                />
+                                <Input
+                                  type="file"
+                                  accept="image/*"
+                                  onChange={(e) => handleAvatarFile(e.target.files?.[0])}
+                                />
+                                <div className="flex gap-2">
+                                  <Button size="sm" onClick={saveAvatarUrl} disabled={actionLoading || !avatarInput}>Save Avatar</Button>
+                                </div>
+                            </div>
+                      </div>
+
+                      <div className="bg-secondary/60 border border-border rounded-lg p-6 space-y-4">
+                        <h3 className="font-semibold text-lg">Banner Preview</h3>
+                        <div className="relative w-full h-24 overflow-hidden rounded-lg border-2 border-border shadow-lg bg-gradient-to-br from-primary/20 via-secondary/30 to-secondary/20">
+                          <Image 
+                            src={user.equippedBanner || getDefaultBannerDataUrl()}
+                            alt="Banner preview"
+                            fill
+                            sizes="100%"
+                            style={{ objectFit: 'cover' }}
+                            unoptimized
+                            className="hover:scale-105 transition-transform duration-300"
+                          />
+                        </div>
+                            <div className="flex flex-wrap gap-2">
+                                {cosmeticsLoading && <p className="text-sm text-muted-foreground">Loading...</p>}
+                                {!cosmeticsLoading && cosmeticsData.banners.length === 0 && (
+                                  <p className="text-sm text-muted-foreground">No banners owned. Purchase from shop or earn via missions.</p>
+                                )}
+                                {cosmeticsData.banners.map((b) => (
+                                  <Button
+                                    key={b.id}
+                                    size="sm"
+                                    variant={b.equipped ? 'default' : 'outline'}
+                                    onClick={() => equipCosmetic('Banner', b.id)}
+                                    disabled={actionLoading}
+                                    className="truncate max-w-[120px]"
+                                  >
+                                    {b.equipped ? '✓ ' : ''}{b.name || 'Banner'}
+                                  </Button>
+                                ))}
+                            </div>
+                      </div>
+
+                      <div className="bg-secondary/60 border border-border rounded-lg p-6 space-y-4">
+                        <h3 className="font-semibold text-lg">Avatar Frame Preview</h3>
+                        <div className="h-32 relative bg-secondary flex items-center justify-center rounded-lg border-2 border-border shadow-lg overflow-hidden">
+                          <div className="w-24 h-24 rounded-full border-4 flex items-center justify-center relative animate-pulse bg-gradient-to-br from-primary/30 via-secondary/50 to-secondary/30">
+                            <UserAvatar 
+                              avatarUrl={user.avatarUrl}
+                              username={user.username}
+                              frameUrl={user.equippedFrame}
+                              className="w-20 h-20 rounded-full"
+                            />
+                          </div>
+                        </div>
+                            <div className="flex flex-wrap gap-2">
+                                {cosmeticsLoading && <p className="text-sm text-muted-foreground">Loading...</p>}
+                                {!cosmeticsLoading && cosmeticsData.frames.length === 0 && (
+                                  <p className="text-sm text-muted-foreground">No frames owned. Purchase from shop or earn via missions.</p>
+                                )}
+                                {cosmeticsData.frames.map((f) => (
+                                  <Button
+                                    key={f.id}
+                                    size="sm"
+                                    variant={f.equipped ? 'default' : 'outline'}
+                                    onClick={() => equipCosmetic('Frame', f.id)}
+                                    disabled={actionLoading}
+                                    className="truncate max-w-[120px]"
+                                  >
+                                    {f.equipped ? '✓ ' : ''}{f.name || 'Frame'}
+                                  </Button>
+                                ))}
+                            </div>
+                      </div>
+
+                      <div className="bg-secondary/60 border border-border rounded-lg p-4 space-y-3">
+                        <div className="flex items-center gap-3">
+                          <div className="w-12 h-12 rounded-md bg-card border border-border flex items-center justify-center text-sm font-semibold">
+                            {user.title ? user.title.slice(0,6) : 'Title'}
+                          </div>
+                          <div>
+                            <h3 className="font-semibold">Title</h3>
+                            <p className="text-sm text-muted-foreground">Titles are earned or purchased; equip one you own.</p>
+                          </div>
+                        </div>
+                            <div className="flex flex-wrap gap-2">
+                                {cosmeticsLoading && <p className="text-sm text-muted-foreground">Loading...</p>}
+                                {!cosmeticsLoading && cosmeticsData.titles.length === 0 && (
+                                  <p className="text-sm text-muted-foreground">No titles owned.</p>
+                                )}
+                                {cosmeticsData.titles.map((t) => (
+                                  <Button
+                                    key={t.id}
+                                    size="sm"
+                                    variant={t.equipped ? 'default' : 'outline'}
+                                    onClick={() => equipCosmetic('Title', t.id)}
+                                    disabled={actionLoading}
+                                  >
+                                    {t.equipped ? 'Equipped' : 'Equip'}
+                                  </Button>
+                                ))}
+                            </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </TabsContent>
         </Tabs>
     </div>
   );

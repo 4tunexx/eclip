@@ -26,7 +26,7 @@ export async function GET(request: NextRequest) {
       user: {
         id: users.id,
         username: users.username,
-        avatarUrl: users.avatarUrl,
+        avatar: users.avatar,
       },
     })
       .from(acEvents)

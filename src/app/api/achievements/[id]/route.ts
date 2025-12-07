@@ -10,9 +10,10 @@ import { eq, and } from 'drizzle-orm';
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const user = await getCurrentUser();
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -20,7 +21,7 @@ export async function GET(
 
     const [achievement] = await db.select()
       .from(achievements)
-      .where(eq(achievements.id, params.id));
+      .where(eq(achievements.id, id));
 
     if (!achievement) {
       return NextResponse.json({ error: 'Achievement not found' }, { status: 404 });
@@ -32,7 +33,7 @@ export async function GET(
       .where(
         and(
           eq(achievementProgress.userId, user.id),
-          eq(achievementProgress.achievementId, params.id)
+          eq(achievementProgress.achievementId, id)
         )
       )
       .limit(1);

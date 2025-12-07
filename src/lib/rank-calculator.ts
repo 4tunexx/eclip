@@ -22,7 +22,7 @@ const TIER_RANGES: Record<string, { color: string; ranges: Array<[number, number
     ],
   },
   Rookie: {
-    color: '#90EE90',
+    color: '#34C759',
     ranges: [
       [500, 666],
       [667, 833],

@@ -20,13 +20,21 @@ export async function GET(request: NextRequest) {
 
     // Get user's matches
     const userMatches = await db.select({
-      match: matches,
+      match: {
+        id: matches.id,
+        status: matches.status,
+        map: matches.map,
+        ladder: matches.ladder,
+        startedAt: matches.startedAt,
+        endedAt: matches.endedAt,
+        winnerTeam: matches.winnerTeam,
+      },
       playerStats: matchPlayers,
     })
       .from(matchPlayers)
       .innerJoin(matches, eq(matchPlayers.matchId, matches.id))
       .where(eq(matchPlayers.userId, user.id))
-      .orderBy(desc(matches.createdAt))
+      .orderBy(desc(matches.startedAt))
       .limit(limit)
       .offset(offset);
 
@@ -44,7 +52,7 @@ export async function GET(request: NextRequest) {
         const players = allPlayers.map(({ player, user }) => ({
           id: user.id,
           username: user.username,
-          avatarUrl: user.avatarUrl,
+          avatarUrl: user.avatar,
           rank: user.rank,
           esr: (user as any).esr,
           kills: player.kills || 0,
@@ -56,17 +64,17 @@ export async function GET(request: NextRequest) {
         }));
 
         const isWinner = playerStats.isWinner;
-        const score = match.scoreTeam1 && match.scoreTeam2 
-          ? `${match.scoreTeam1}-${match.scoreTeam2}`
-          : null;
+        const score = match.winnerTeam 
+          ? `Team ${match.winnerTeam} Won`
+          : 'In Progress';
 
         return {
           id: match.id,
           map: match.map,
-          mapImageUrl: match.mapImageUrl,
+          ladder: match.ladder,
           score,
           result: isWinner ? 'Win' : 'Loss',
-          date: match.createdAt.toISOString(),
+          date: match.startedAt ? match.startedAt.toISOString() : new Date().toISOString(),
           players,
         };
       })

@@ -31,7 +31,8 @@ import {
   ChevronDown,
   Plus,
   Minus,
-  DollarSign
+  DollarSign,
+  CircleHelp
 } from 'lucide-react';
 import { Logo } from '../icons/logo';
 import { UserAvatar } from '../user-avatar';
@@ -44,7 +45,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { getRoleColor, getRoleBgColor, getRoleLabel } from '@/lib/role-colors';
-import { getRankFromESR, formatRank } from '@/lib/rank-calculator';
+import { getRankFromESR, formatRank, getProgressToNextDivision } from '@/lib/rank-calculator';
 
 const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, disabled: false },
@@ -54,6 +55,7 @@ const navItems = [
   { href: '/missions', label: 'Missions', icon: CheckCircle, disabled: false },
   { href: '/profile', label: 'Profile', icon: User, disabled: false },
   { href: '/forum', label: 'Forum', icon: BookUser, disabled: false },
+  { href: '/faq', label: 'FAQ', icon: CircleHelp, disabled: false },
 ];
 
 const bottomNavItems = [
@@ -127,47 +129,113 @@ export function AppSidebar() {
       <SidebarSeparator />
 
       <SidebarContent className="p-2">
-        <SidebarGroup className="group-data-[collapsible=icon]:hidden">
-            <div className="p-2 flex flex-col items-center text-center gap-2">
-                <UserAvatar 
+      <SidebarGroup className="group-data-[collapsible=icon]:hidden">
+        <div className="p-2 flex flex-col items-center text-center gap-3">
+                {/* Avatar with XP Ring and Level Badge */}
+                <div className="relative">
+                  {/* XP Progress Ring */}
+                  <svg className="absolute inset-0 w-20 h-20 -m-2" viewBox="0 0 80 80">
+                    <circle
+                      cx="40"
+                      cy="40"
+                      r="36"
+                      fill="none"
+                      stroke="rgba(255,255,255,0.15)"
+                      strokeWidth="3"
+                    />
+                    <circle
+                      cx="40"
+                      cy="40"
+                      r="36"
+                      fill="none"
+                      stroke="#FFFFFF"
+                      strokeWidth="3"
+                      strokeDasharray={`${2 * Math.PI * 36}`}
+                      strokeDashoffset={`${2 * Math.PI * 36 * (1 - ((Number((user as any)?.xp ?? 0) % 200) / 200))}`}
+                      strokeLinecap="round"
+                      transform="rotate(-90 40 40)"
+                      style={{ transition: 'stroke-dashoffset 0.3s ease' }}
+                    />
+                    <circle
+                      cx="40"
+                      cy="40"
+                      r="36"
+                      fill="none"
+                      stroke="rgba(255,255,255,0.5)"
+                      strokeWidth="3"
+                      strokeDasharray={`${2 * Math.PI * 36}`}
+                      strokeDashoffset={`${2 * Math.PI * 36 * (1 - ((Number((user as any)?.xp ?? 0) % 200) / 200))}`}
+                      strokeLinecap="round"
+                      transform="rotate(-90 40 40)"
+                      style={{ transition: 'stroke-dashoffset 0.3s ease' }}
+                    />
+                  </svg>
+                  
+                  <UserAvatar 
                     avatarUrl={user?.avatarUrl || ''}
                     username={user?.username || ''}
-                    frameUrl={undefined}
+                    frameUrl={(user as any)?.equippedFrame}
                     className="w-16 h-16"
-                />
-                <div>
-                    {user ? (
-                      <UserName username={user.username} role={isAdmin ? 'ADMIN' : (user as any).role} className="font-semibold" />
-                    ) : (
-                      <p className="font-semibold">Guest</p>
-                    )}
-                    <p className="text-xs text-muted-foreground">Level {Number((user as any)?.level ?? 1)}</p>
+                  />
+                  
+                  {/* Level Badge */}
+                  <div className="absolute -bottom-1 -right-1 bg-primary text-white rounded-full w-7 h-7 flex items-center justify-center text-xs font-bold border-2 border-background">
+                    {Number((user as any)?.level ?? 1)}
+                  </div>
+                </div>
+
+                {/* Username with Role Color */}
+                <div className="flex flex-col items-center gap-1">
+                  {user ? (
+                    <UserName username={user.username} role={isAdmin ? 'ADMIN' : (user as any).role} className="font-semibold" />
+                  ) : (
+                    <p className="font-semibold">Guest</p>
+                  )}
                 </div>
                 
-                {/* Role Color Badge */}
+                {/* Rank Badge with ESR and Progress */}
                 {user && (
-                  <div
-                    style={{
-                      backgroundColor: getRoleBgColor(isAdmin ? 'ADMIN' : (user as any).role),
-                      color: getRoleColor(isAdmin ? 'ADMIN' : (user as any).role),
-                    }}
-                    className="px-3 py-1 rounded-full text-xs font-semibold"
-                  >
-                    {getRoleLabel(isAdmin ? 'ADMIN' : (user as any).role)}
+                  <div className="w-full space-y-2">
+                    <div className="flex items-center justify-between gap-2">
+                      <Badge 
+                        variant="outline" 
+                        style={{ 
+                          borderColor: getRankFromESR((user as any)?.esr ?? 1000).color,
+                          color: getRankFromESR((user as any)?.esr ?? 1000).color,
+                        }}
+                        className="flex-1 justify-center"
+                      >
+                        {formatRank((user as any)?.esr ?? 1000)}
+                      </Badge>
+                      <Badge 
+                        variant="secondary" 
+                        style={{ color: getRankFromESR((user as any)?.esr ?? 1000).color }}
+                        className="tabular-nums"
+                      >
+                        {(user as any)?.esr ?? 1000}
+                      </Badge>
+                    </div>
+                    {/* ESR Progress to next division */}
+                    <div className="space-y-1">
+                      {(() => {
+                        const progress = getProgressToNextDivision((user as any)?.esr ?? 1000);
+                        return (
+                          <>
+                            <div className="h-2 bg-green-900/20 rounded-full overflow-hidden">
+                              <div
+                                style={{ width: `${progress.percentage}%`, background: 'linear-gradient(90deg, rgba(52,199,89,0.2), rgba(52,199,89,0.9), rgba(52,199,89,0.2))' }}
+                                className="h-full rounded-full transition-all"
+                              />
+                            </div>
+                            <p className="text-[10px] text-muted-foreground text-center">
+                              {Math.round(progress.percentage)}% to next division ({progress.current} / {progress.next} ESR)
+                            </p>
+                          </>
+                        );
+                      })()}
+                    </div>
                   </div>
                 )}
-                
-                <Progress value={((Number((user as any)?.xp ?? 0)) / (Number((user as any)?.level ?? 1) * 100)) * 100} className="h-1 w-full" />
-                <div className="flex items-center gap-2">
-                    {user && (
-                      <>
-                        <Badge variant="outline" style={{ borderColor: getRankFromESR((user as any)?.esr ?? 1000).color }}>
-                          {formatRank((user as any)?.esr ?? 1000)}
-                        </Badge>
-                        <Badge variant="secondary">{(user as any)?.esr ?? 1000} ESR</Badge>
-                      </>
-                    )}
-                </div>
             </div>
         </SidebarGroup>
 

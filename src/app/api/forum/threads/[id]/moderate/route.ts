@@ -5,8 +5,9 @@ import { eq } from 'drizzle-orm'
 import { getCurrentUser } from '@/lib/auth'
 import postgres from 'postgres'
 
-export async function POST(request: NextRequest, { params }: { params: { id: string } }) {
+export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await params;
     const user = await getCurrentUser()
     if (!user) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
     const role = (user as any).role?.toUpperCase?.() || 'USER'
@@ -16,7 +17,6 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
 
     const body = await request.json()
     const action = (body?.action || '').toString().toLowerCase()
-    const id = params.id
     if (!['pin','unpin','lock','unlock'].includes(action)) {
       return NextResponse.json({ error: 'Invalid action' }, { status: 400 })
     }

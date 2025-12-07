@@ -27,7 +27,7 @@ export async function POST() {
     const [match] = await db.insert(matches).values({
       status: 'PENDING',
       map: 'Mirage', // TODO: Random map selection
-      mapImageUrl: 'https://i.postimg.cc/zXkQzY8J/mirage.png',
+      ladder: 'ranked', // Required field
     }).returning();
 
     // Create match player entries

@@ -83,20 +83,21 @@ export const userInventory = pgTable('user_inventory', {
   purchasedAt: timestamp('purchased_at').defaultNow().notNull(),
 });
 
-// Matches table
+// Matches table - aligned with actual DB schema
 export const matches = pgTable('matches', {
   id: uuid('id').primaryKey().defaultRandom(),
-  status: matchStatusEnum('status').default('PENDING').notNull(),
-  map: text('map'),
-  mapImageUrl: text('map_image_url'),
-  serverHost: text('server_host'),
-  serverPort: integer('server_port'),
-  scoreTeam1: integer('score_team1').default(0),
-  scoreTeam2: integer('score_team2').default(0),
+  ladder: text('ladder').notNull(), // Required: 'ranked', 'casual', etc.
+  serverInstanceId: uuid('server_instance_id'),
   startedAt: timestamp('started_at'),
   endedAt: timestamp('ended_at'),
-  createdAt: timestamp('created_at').defaultNow().notNull(),
-  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+  status: text('status').notNull(),
+  serverId: text('server_id'),
+  map: text('map'),
+  teamAPlayers: text('team_a_players').array(),
+  teamBPlayers: text('team_b_players').array(),
+  winnerTeam: text('winner_team'),
+  matchStart: timestamp('match_start'),
+  matchEnd: timestamp('match_end'),
 });
 
 // Match Players (stats per player per match)
@@ -173,13 +174,13 @@ export const badges = pgTable('badges', {
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
 
-// Achievements - actual DB schema
+// Achievements - aligned with actual DB schema (NO created_at)
 export const achievements = pgTable('achievements', {
   id: uuid('id').primaryKey().defaultRandom(),
-  code: text('code'),
+  code: text('code').notNull(),
   name: text('name').notNull(),
-  description: text('description'),
-  points: integer('points'),
+  description: text('description').notNull(),
+  points: integer('points').notNull(),
   category: text('category'),
   requirementType: text('requirement_type'),
   requirementValue: text('requirement_value'),
@@ -188,18 +189,14 @@ export const achievements = pgTable('achievements', {
   rewardBadgeId: uuid('reward_badge_id').references(() => badges.id),
   isSecret: boolean('is_secret').default(false),
   isActive: boolean('is_active').default(true),
-  createdAt: timestamp('created_at').defaultNow().notNull(),
 });
 
-// User Achievements - actual DB schema
+// User Achievements - aligned with actual DB schema (NO progress, created_at, updated_at)
 export const userAchievements = pgTable('user_achievements', {
   id: uuid('id').primaryKey().defaultRandom(),
-  userId: uuid('user_id').references(() => users.id, { onDelete: 'cascade' }).notNull(),
-  achievementId: uuid('achievement_id').references(() => achievements.id, { onDelete: 'cascade' }).notNull(),
-  progress: integer('progress').default(0).notNull(),
+  userId: uuid('user_id').references(() => users.id, { onDelete: 'cascade' }),
+  achievementId: uuid('achievement_id').references(() => achievements.id, { onDelete: 'cascade' }),
   unlockedAt: timestamp('unlocked_at'),
-  createdAt: timestamp('created_at').defaultNow().notNull(),
-  updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
 
 // Forum Categories

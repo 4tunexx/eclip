@@ -36,13 +36,23 @@ import { Logo } from '../icons/logo';
 
 export function Header() {
   const router = useRouter();
-  const { user } = useUser();
+  const { user, refetch } = useUser();
   const coins = Number(user?.coins ?? 0);
   const isAdmin = ((user as any)?.isAdmin as boolean) || (((user as any)?.role || '').toUpperCase() === 'ADMIN');
   
   const [notifications, setNotifications] = useState<any[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [notificationsLoading, setNotificationsLoading] = useState(true);
+
+  // Refetch user data periodically to get coin updates
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (user?.id) {
+        refetch();
+      }
+    }, 3000); // Refetch every 3 seconds
+    return () => clearInterval(interval);
+  }, [user?.id, refetch]);
 
   useEffect(() => {
     if (user?.id) {
@@ -124,8 +134,8 @@ export function Header() {
 
         <div className="flex items-center gap-2">
           <div className="hidden md:flex items-center gap-2 rounded-md bg-secondary px-3 py-1.5 text-sm">
-            <span className="font-bold text-primary">{coins.toFixed(2)}</span>
-            <span className="text-muted-foreground">Coins</span>
+            <span className="font-bold text-yellow-400">{coins.toFixed(2)}</span>
+            <span className="text-yellow-400">Coins</span>
           </div>
 
           {/* Notifications */}
@@ -239,7 +249,7 @@ export function Header() {
               <Link href="/dashboard"><LayoutDashboard className="mr-2" />Dashboard</Link>
             </DropdownMenuItem>
             <DropdownMenuItem asChild>
-              <Link href="#"><User className="mr-2" />Profile</Link>
+              <Link href="/profile"><User className="mr-2" />Profile</Link>
             </DropdownMenuItem>
             <DropdownMenuItem asChild>
               <Link href="#"><Settings className="mr-2" />Settings</Link>

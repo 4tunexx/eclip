@@ -70,7 +70,7 @@ export async function POST(request: NextRequest) {
         steamId: `temp-${crypto.randomUUID()}`, // placeholder until user links Steam
         eclipId: crypto.randomUUID(), // unique as well
       }).returning({ id: users.id, email: users.email, username: users.username });
-      createdUser = { id: user.id, email: user.email, username: user.username };
+      createdUser = { id: user.id, email: validated.email, username: user.username };
     } catch (drizzleError) {
       const errMsg = String(drizzleError);
       if (errMsg.includes('does not exist') || errMsg.includes('column')) {
@@ -114,7 +114,7 @@ export async function POST(request: NextRequest) {
             role: 'USER',
             steamId: `temp-${crypto.randomUUID()}`,
           }).returning({ id: users.id, email: users.email, username: users.username });
-          createdUser = { id: user.id, email: user.email, username: user.username };
+          createdUser = { id: user.id, email: validated.email, username: user.username };
         } catch (retryErr) {
           console.error('[Register] Retry failed:', retryErr);
           throw retryErr;

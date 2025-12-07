@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
 
     const matchList = await db.select()
       .from(matches)
-      .orderBy(desc(matches.createdAt))
+      .orderBy(desc(matches.startedAt))
       .limit(limit)
       .offset(offset);
 

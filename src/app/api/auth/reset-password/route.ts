@@ -50,7 +50,15 @@ export async function POST(request: NextRequest) {
         .where(eq(users.id, user.id));
 
       // Send reset email
-      await sendPasswordResetEmail(user.email, resetToken, user.username);
+      const emailAddress = user.email;
+      if (!emailAddress) {
+        return NextResponse.json(
+          { error: 'User email not available' },
+          { status: 400 }
+        );
+      }
+
+      await sendPasswordResetEmail(emailAddress, resetToken, user.username);
 
       return NextResponse.json({
         success: true,

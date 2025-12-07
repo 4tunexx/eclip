@@ -1,12 +1,16 @@
 import Link from "next/link";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ShieldAlert, Users, Gamepad2, Gem, Settings } from "lucide-react";
+import { ShieldAlert, Users, Gamepad2, Gem, Settings, Award, Target, Trophy, BarChart3 } from "lucide-react";
 
 const adminNav = [
     { name: "Anti-Cheat", href: "/admin/anti-cheat", icon: ShieldAlert, disabled: false },
     { name: "Users", href: "/admin/users", icon: Users, disabled: false },
     { name: "Matches", href: "/admin/matches", icon: Gamepad2, disabled: false },
     { name: "Cosmetics", href: "/admin/cosmetics", icon: Gem, disabled: false },
+    { name: "Badges", href: "/admin/badges", icon: Award, disabled: false },
+    { name: "Missions", href: "/admin/missions", icon: Target, disabled: false },
+    { name: "Achievements", href: "/admin/achievements", icon: Trophy, disabled: false },
+    { name: "ESR Tiers", href: "/admin/esr-tiers", icon: BarChart3, disabled: false },
     { name: "Site Config", href: "/admin/config", icon: Settings, disabled: false },
 ];
 
@@ -25,7 +29,7 @@ export default function AdminLayout({
       </div>
       
       <Tabs defaultValue="/admin/anti-cheat" className="w-full">
-        <TabsList className="grid w-full grid-cols-1 sm:grid-cols-2 md:grid-cols-5 overflow-x-auto">
+        <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-9 gap-2 h-auto overflow-x-auto">
             {adminNav.map((item) => (
                 <TabsTrigger value={item.href} key={item.href} asChild disabled={item.disabled}>
                     <Link href={item.href}>

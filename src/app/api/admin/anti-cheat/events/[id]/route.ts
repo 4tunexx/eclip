@@ -11,9 +11,10 @@ const reviewSchema = z.object({
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const user = await getCurrentUser();
     if (!user || (user.role !== 'ADMIN' && user.role !== 'MOD')) {
       return NextResponse.json(
@@ -22,7 +23,7 @@ export async function PATCH(
       );
     }
 
-    const eventId = params.id;
+    const eventId = id;
     const body = await request.json();
     const { reviewed } = reviewSchema.parse(body);
 

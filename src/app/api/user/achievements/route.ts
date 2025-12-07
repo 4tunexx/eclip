@@ -19,8 +19,7 @@ export async function GET(request: NextRequest) {
     const userAchievementsList = await db
       .select()
       .from(userAchievements)
-      .where(eq(userAchievements.userId, user.id))
-      .execute();
+      .where(eq(userAchievements.userId, user.id));
 
     const achievementIds = userAchievementsList.map(ua => ua.achievementId);
 
@@ -29,8 +28,12 @@ export async function GET(request: NextRequest) {
     if (achievementIds.length > 0) {
       achievementDetails = await db
         .select()
-        .from(achievements)
-        .execute();
+        .from(achievements);
+    } else {
+      // Return all achievements even if user has none unlocked
+      achievementDetails = await db
+        .select()
+        .from(achievements);
     }
 
     // Merge achievements with user progress
@@ -40,7 +43,7 @@ export async function GET(request: NextRequest) {
         ...achievement,
         userProgress,
         unlocked: userProgress?.unlockedAt ? true : false,
-        progress: userProgress?.progress || 0,
+        progress: 0, // Progress tracking not yet implemented in DB
         unlockedAt: userProgress?.unlockedAt,
       };
     });
