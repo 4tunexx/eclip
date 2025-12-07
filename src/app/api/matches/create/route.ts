@@ -3,6 +3,21 @@ import { db } from '@/lib/db';
 import { matches, matchPlayers, queueTickets } from '@/lib/db/schema';
 import { eq, and, inArray } from 'drizzle-orm';
 
+// Available CS2 maps
+const AVAILABLE_MAPS = [
+  'Mirage',
+  'Inferno',
+  'Ancient',
+  'Nuke',
+  'Anubis',
+  'Vertigo',
+  'Dust2',
+];
+
+function getRandomMap(): string {
+  return AVAILABLE_MAPS[Math.floor(Math.random() * AVAILABLE_MAPS.length)];
+}
+
 // Matchmaker - finds 10 players and creates a match
 export async function POST() {
   try {
@@ -23,10 +38,10 @@ export async function POST() {
     // TODO: Implement proper ESR-based matching
     const selectedTickets = waitingTickets.slice(0, 10);
 
-    // Create match
+    // Create match with random map selection
     const [match] = await db.insert(matches).values({
       status: 'PENDING',
-      map: 'Mirage', // TODO: Random map selection
+      map: getRandomMap(),
       ladder: 'ranked', // Required field
     }).returning();
 

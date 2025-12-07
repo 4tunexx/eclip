@@ -52,7 +52,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Store as JSON metadata since we don't have dedicated columns
+    // Store banner-specific data in metadata field
     const metadata = {
       gradient,
       is_vip: is_vip || false,
@@ -67,7 +67,7 @@ export async function POST(request: NextRequest) {
         type: 'Banner',
         rarity: (rarity || 'common').charAt(0).toUpperCase() + (rarity || 'common').slice(1).toLowerCase() as 'Common' | 'Rare' | 'Epic' | 'Legendary',
         price: price?.toString() || '0',
-        imageUrl: JSON.stringify(metadata), // Store metadata in imageUrl as JSON
+        metadata: metadata,
         isActive: is_active !== false,
       })
       .returning();

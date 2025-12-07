@@ -51,7 +51,7 @@ export async function PUT(
         description: description || '',
         rarity: (rarity || 'common').charAt(0).toUpperCase() + (rarity || 'common').slice(1).toLowerCase() as 'Common' | 'Rare' | 'Epic' | 'Legendary',
         price: price?.toString() || '0',
-        imageUrl: JSON.stringify(metadata),
+        metadata: metadata,
         isActive: is_active !== false,
         updatedAt: new Date(),
       })

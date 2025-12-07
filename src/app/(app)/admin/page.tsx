@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useEffect, useState } from 'react';
 import {
   AlertCircle,
   BarChart,
@@ -11,10 +12,63 @@ import {
   Shield,
   Trophy,
   Users,
+  Loader2,
 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
+interface AdminStats {
+  totalUsers: number;
+  totalMatches: number;
+  totalCosmetics: number;
+  systemHealth: number;
+}
+
 export default function AdminIndexPage() {
+  const [stats, setStats] = useState<AdminStats | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const response = await fetch('/api/admin/stats');
+        if (response.ok) {
+          const data = await response.json();
+          setStats(data);
+        }
+      } catch (error) {
+        console.error('Error fetching admin stats:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchStats();
+  }, []);
+
+  const displayStats = [
+    {
+      title: 'Total Users',
+      value: loading ? '...' : stats?.totalUsers.toLocaleString() || '0',
+      hint: 'Active accounts'
+    },
+    {
+      title: 'Matches Played',
+      value: loading ? '...' : stats?.totalMatches.toLocaleString() || '0',
+      hint: 'Total matches'
+    },
+    {
+      title: 'Cosmetics',
+      value: loading ? '...' : stats?.totalCosmetics.toLocaleString() || '0',
+      hint: 'Items available'
+    },
+    {
+      title: 'System Health',
+      value: loading ? '...' : '100%',
+      hint: 'All services online',
+      positive: true
+    }
+  ];
+
   return (
     <div className="space-y-8">
       <div>
@@ -23,21 +77,22 @@ export default function AdminIndexPage() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        {[{
-          title: 'Total Users', value: '1,234', hint: 'Active accounts'
-        }, {
-          title: 'Matches Played', value: '5,678', hint: 'Total matches'
-        }, {
-          title: 'Cosmetics', value: '48', hint: 'Items available'
-        }, {
-          title: 'System Health', value: '100%', hint: 'All services online', positive: true
-        }].map((stat) => (
+        {displayStats.map((stat) => (
           <Card key={stat.title}>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">{stat.title}</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className={`text-2xl font-bold ${stat.positive ? 'text-green-500' : ''}`}>{stat.value}</div>
+              <div className={`text-2xl font-bold ${stat.positive ? 'text-green-500' : ''} ${loading ? 'flex items-center gap-2' : ''}`}>
+                {loading ? (
+                  <>
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                    {stat.value}
+                  </>
+                ) : (
+                  stat.value
+                )}
+              </div>
               <p className="text-xs text-muted-foreground">{stat.hint}</p>
             </CardContent>
           </Card>

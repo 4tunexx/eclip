@@ -57,7 +57,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Store frame properties as JSON metadata
+    // Store frame properties in metadata field
     const metadata = {
       border_color: border_color || '#9333ea',
       border_width: border_width || 4,
@@ -77,7 +77,7 @@ export async function POST(request: NextRequest) {
         type: 'Frame',
         rarity: (rarity || 'common').charAt(0).toUpperCase() + (rarity || 'common').slice(1).toLowerCase() as 'Common' | 'Rare' | 'Epic' | 'Legendary',
         price: price?.toString() || '0',
-        imageUrl: JSON.stringify(metadata),
+        metadata: metadata,
         isActive: is_active !== false,
       })
       .returning();

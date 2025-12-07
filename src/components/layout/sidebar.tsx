@@ -174,7 +174,7 @@ export function AppSidebar() {
                   <UserAvatar 
                     avatarUrl={user?.avatarUrl || ''}
                     username={user?.username || ''}
-                    frameUrl={(user as any)?.equippedFrame}
+                    frameData={(user as any)?.equippedFrame}
                     className="w-16 h-16"
                   />
                   

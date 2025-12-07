@@ -3,6 +3,7 @@ import { Space_Grotesk } from 'next/font/google';
 import './globals.css';
 import { cn } from '@/lib/utils';
 import { Toaster } from '@/components/ui/toaster';
+import { UserProvider } from '@/contexts/UserContext';
 
 const spaceGrotesk = Space_Grotesk({
   subsets: ['latin'],
@@ -32,8 +33,10 @@ export default function RootLayout({
           spaceGrotesk.variable
         )}
       >
-        {children}
-        <Toaster />
+        <UserProvider>
+          {children}
+          <Toaster />
+        </UserProvider>
       </body>
     </html>
   );

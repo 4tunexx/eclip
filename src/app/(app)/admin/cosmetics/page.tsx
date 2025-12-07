@@ -108,6 +108,17 @@ export default function AdminCosmeticsPage() {
         const bannersData = await bannersResponse.json();
         let fetchedBanners = bannersData.banners || [];
         
+        // Parse metadata for each banner
+        fetchedBanners = fetchedBanners.map((banner: any) => {
+          if (banner.metadata && typeof banner.metadata === 'object') {
+            return {
+              ...banner,
+              gradient: banner.metadata.gradient || banner.gradient
+            };
+          }
+          return banner;
+        });
+        
         // If banners exist but need unique gradients, update them
         if (fetchedBanners.length > 0) {
           await updateBannersWithUniqueGradients(fetchedBanners);
@@ -116,6 +127,16 @@ export default function AdminCosmeticsPage() {
           if (retryRes.ok) {
             const retryData = await retryRes.json();
             fetchedBanners = retryData.banners || [];
+            // Parse metadata again
+            fetchedBanners = fetchedBanners.map((banner: any) => {
+              if (banner.metadata && typeof banner.metadata === 'object') {
+                return {
+                  ...banner,
+                  gradient: banner.metadata.gradient || banner.gradient
+                };
+              }
+              return banner;
+            });
           }
         }
         
@@ -151,6 +172,16 @@ export default function AdminCosmeticsPage() {
           if (retryRes.ok) {
             const retryData = await retryRes.json();
             fetchedBanners = retryData.banners || [];
+            // Parse metadata
+            fetchedBanners = fetchedBanners.map((banner: any) => {
+              if (banner.metadata && typeof banner.metadata === 'object') {
+                return {
+                  ...banner,
+                  gradient: banner.metadata.gradient || banner.gradient
+                };
+              }
+              return banner;
+            });
           }
         }
         
@@ -166,6 +197,23 @@ export default function AdminCosmeticsPage() {
         const framesData = await framesResponse.json();
         let fetchedFrames = framesData.frames || [];
         
+        // Parse metadata for each frame
+        fetchedFrames = fetchedFrames.map((frame: any) => {
+          if (frame.metadata && typeof frame.metadata === 'object') {
+            return {
+              ...frame,
+              border_color: frame.metadata.border_color || frame.border_color,
+              border_gradient: frame.metadata.border_gradient || frame.border_gradient,
+              border_width: frame.metadata.border_width || frame.border_width,
+              border_style: frame.metadata.border_style || frame.border_style,
+              shadow_color: frame.metadata.shadow_color || frame.shadow_color,
+              animation_type: frame.metadata.animation_type || frame.animation_type,
+              animation_speed: frame.metadata.animation_speed || frame.animation_speed
+            };
+          }
+          return frame;
+        });
+        
         // If frames exist but need unique styles, update them
         if (fetchedFrames.length > 0) {
           await updateFramesWithUniqueStyles(fetchedFrames);
@@ -174,6 +222,22 @@ export default function AdminCosmeticsPage() {
           if (retryRes.ok) {
             const retryData = await retryRes.json();
             fetchedFrames = retryData.frames || [];
+            // Parse metadata again
+            fetchedFrames = fetchedFrames.map((frame: any) => {
+              if (frame.metadata && typeof frame.metadata === 'object') {
+                return {
+                  ...frame,
+                  border_color: frame.metadata.border_color || frame.border_color,
+                  border_gradient: frame.metadata.border_gradient || frame.border_gradient,
+                  border_width: frame.metadata.border_width || frame.border_width,
+                  border_style: frame.metadata.border_style || frame.border_style,
+                  shadow_color: frame.metadata.shadow_color || frame.shadow_color,
+                  animation_type: frame.metadata.animation_type || frame.animation_type,
+                  animation_speed: frame.metadata.animation_speed || frame.animation_speed
+                };
+              }
+              return frame;
+            });
           }
         }
         
@@ -676,10 +740,6 @@ export default function AdminCosmeticsPage() {
             <Sparkles className="w-4 h-4 mr-2" />
             Banners ({banners.length})
           </TabsTrigger>
-          <TabsTrigger value="badges">
-            <Award className="w-4 h-4 mr-2" />
-            Badges ({badges.length})
-          </TabsTrigger>
           <TabsTrigger value="frames">
             <Frame className="w-4 h-4 mr-2" />
             Avatar Frames ({avatarFrames.length})
@@ -710,11 +770,9 @@ export default function AdminCosmeticsPage() {
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {banners.map((banner) => {
-                    const metadata = parseBannerMetadata(banner);
-                    const gradient = metadata.gradient
-                      || banner.gradient
-                      || getBannerGradient(banner.id)
-                      || 'linear-gradient(135deg, rgb(100 100 100 / 0.3) 0%, rgb(150 150 150 / 0.3) 100%)';
+                    // Use metadata field only - same as shop
+                    const metadata = banner.metadata || {};
+                    const gradient = metadata.gradient || 'linear-gradient(135deg, rgb(100 100 100 / 0.3) 0%, rgb(150 150 150 / 0.3) 100%)';
                     
                     return (
                       <Card key={banner.id} className="overflow-hidden">
@@ -776,7 +834,13 @@ export default function AdminCosmeticsPage() {
                                   size="sm"
                                   className="flex-1"
                                   onClick={() => {
-                                    setEditingBanner({ ...banner, ...metadata });
+                                    const metadata = banner.metadata || {};
+                                    setEditingBanner({ 
+                                      ...banner, 
+                                      gradient: metadata.gradient,
+                                      is_vip: metadata.is_vip || false,
+                                      vip_tier_required: metadata.vip_tier_required || 'none'
+                                    });
                                     setShowEditBanner(true);
                                   }}
                                 >
@@ -797,87 +861,6 @@ export default function AdminCosmeticsPage() {
                       </Card>
                     );
                   })}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        {/* BADGES TAB */}
-        <TabsContent value="badges" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle>Badges</CardTitle>
-                  <CardDescription>Manage achievement/status badges from the database</CardDescription>
-                </div>
-                <Button onClick={() => setShowCreateBadge(true)}>
-                  <Plus className="w-4 h-4 mr-2" />
-                  Create Badge
-                </Button>
-              </div>
-            </CardHeader>
-            <CardContent>
-              {badges.length === 0 ? (
-                <div className="text-center py-12">
-                  <Award className="w-16 h-16 text-muted-foreground/40 mx-auto mb-4" />
-                  <p className="text-muted-foreground">No badges found. Create your first badge!</p>
-                </div>
-              ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {badges.map((badge) => (
-                    <Card key={badge.id} className="overflow-hidden">
-                      <CardContent className="p-4 space-y-3">
-                        <div className="flex items-start justify-between">
-                          <div>
-                            <h3 className="font-semibold leading-tight">{badge.title}</h3>
-                            <p className="text-xs text-muted-foreground line-clamp-2">{badge.description}</p>
-                          </div>
-                          <span className={`text-xs px-2 py-1 rounded font-semibold ${
-                            badge.rarity === 'LEGENDARY' ? 'bg-yellow-500/20 text-yellow-500' :
-                            badge.rarity === 'EPIC' ? 'bg-purple-500/20 text-purple-500' :
-                            badge.rarity === 'RARE' ? 'bg-blue-500/20 text-blue-500' :
-                            'bg-gray-500/20 text-gray-500'
-                          }`}>
-                            {badge.rarity?.toLowerCase?.() ? badge.rarity.toLowerCase() : badge.rarity}
-                          </span>
-                        </div>
-                        <div className="text-xs text-muted-foreground space-y-1">
-                          <div className="flex items-center justify-between">
-                            <span className="font-medium text-foreground">Requirement</span>
-                            <span className="bg-orange-500/15 text-orange-500 px-2 py-0.5 rounded">
-                              {badge.requirementType}
-                            </span>
-                          </div>
-                          {badge.requirementValue && (
-                            <div className="truncate text-foreground/80">Value: {badge.requirementValue}</div>
-                          )}
-                        </div>
-                        <div className="flex gap-2 pt-1">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="flex-1"
-                            onClick={() => {
-                              setEditingBadge(withBadgeDefaults(badge));
-                              setShowEditBadge(true);
-                            }}
-                          >
-                            <Edit className="w-3 h-3 mr-1" />
-                            Edit
-                          </Button>
-                          <Button
-                            variant="destructive"
-                            size="sm"
-                            onClick={() => handleDeleteBadge(badge.id)}
-                          >
-                            <Trash2 className="w-3 h-3" />
-                          </Button>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
                 </div>
               )}
             </CardContent>
@@ -908,15 +891,16 @@ export default function AdminCosmeticsPage() {
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {avatarFrames.map((frame) => {
-                    const metadata = parseFrameMetadata(frame);
-                    const borderGradient = metadata.border_gradient || frame.border_gradient;
-                    const borderWidth = metadata.border_width || frame.border_width || 3;
-                    const borderColor = metadata.border_color || frame.border_color || '#9333ea';
-                    const borderStyle = metadata.border_style || frame.border_style || 'solid';
-                    const shadowColor = metadata.shadow_color || frame.shadow_color || 'rgba(147, 51, 234, 0.5)';
+                    // Use metadata field only - same as shop
+                    const metadata = frame.metadata || {};
+                    const borderGradient = metadata.border_gradient;
+                    const borderWidth = metadata.border_width || 3;
+                    const borderColor = metadata.border_color || '#9333ea';
+                    const borderStyle = metadata.border_style || 'solid';
+                    const shadowColor = metadata.shadow_color || 'rgba(147, 51, 234, 0.5)';
 
-                    const animationType = metadata.animation_type || frame.animation_type || 'none';
-                    const animationSpeed = metadata.animation_speed || frame.animation_speed || 5;
+                    const animationType = metadata.animation_type || 'none';
+                    const animationSpeed = metadata.animation_speed || 5;
                     const animationClass = animationType === 'pulse' ? 'animate-pulse' :
                                          animationType === 'rotate' ? 'animate-spin-slow' :
                                          animationType === 'glow' ? `animate-glow-${animationSpeed}` :
@@ -1012,7 +996,19 @@ export default function AdminCosmeticsPage() {
                                   size="sm"
                                   className="flex-1"
                                   onClick={() => {
-                                    setEditingFrame(withFrameDefaults({ ...frame, ...metadata }));
+                                    const metadata = frame.metadata || {};
+                                    setEditingFrame(withFrameDefaults({ 
+                                      ...frame,
+                                      border_color: metadata.border_color,
+                                      border_gradient: metadata.border_gradient,
+                                      border_width: metadata.border_width,
+                                      border_style: metadata.border_style,
+                                      shadow_color: metadata.shadow_color,
+                                      animation_type: metadata.animation_type,
+                                      animation_speed: metadata.animation_speed,
+                                      is_vip: metadata.is_vip,
+                                      vip_tier_required: metadata.vip_tier_required
+                                    }));
                                     setShowEditFrame(true);
                                   }}
                                 >

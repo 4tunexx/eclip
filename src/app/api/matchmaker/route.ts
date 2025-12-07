@@ -3,6 +3,21 @@ import { db } from '@/lib/db';
 import { queueTickets, matches, matchPlayers } from '@/lib/db/schema';
 import { eq, and, gte, lte } from 'drizzle-orm';
 
+// Available CS2 maps
+const AVAILABLE_MAPS = [
+  'Mirage',
+  'Inferno',
+  'Ancient',
+  'Nuke',
+  'Anubis',
+  'Vertigo',
+  'Dust2',
+];
+
+function getRandomMap(): string {
+  return AVAILABLE_MAPS[Math.floor(Math.random() * AVAILABLE_MAPS.length)];
+}
+
 // This endpoint should be called periodically (e.g., via cron or background job)
 export async function POST() {
   try {
@@ -54,7 +69,7 @@ async function createMatch(tickets: any[]) {
 
   const [match] = await db.insert(matches).values({
     status: 'PENDING',
-    map: 'Mirage',
+    map: getRandomMap(),
     ladder: 'ranked', // Required field
   }).returning();
 

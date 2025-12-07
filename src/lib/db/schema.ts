@@ -70,6 +70,7 @@ export const cosmetics = pgTable('cosmetics', {
   rarity: rarityEnum('rarity').notNull(),
   price: decimal('price', { precision: 10, scale: 2 }).notNull(),
   imageUrl: text('image_url'),
+  metadata: jsonb('metadata'), // Stores gradient, border styles, animation settings, etc.
   isActive: boolean('is_active').default(true).notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
@@ -359,5 +360,13 @@ export const userMetrics = pgTable('user_metrics', {
   acesDone: integer('aces_done').default(0),
   lastResetAt: timestamp('last_reset_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
+});
+
+// Chat Messages table (for live chat persistence)
+export const chatMessages = pgTable('chat_messages', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  userId: uuid('user_id').references(() => users.id, { onDelete: 'cascade' }).notNull(),
+  text: text('text').notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
 });
 

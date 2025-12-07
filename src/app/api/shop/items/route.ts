@@ -68,6 +68,7 @@ export async function GET() {
         rarity: item.rarity,
         price: Number(item.price),
         imageUrl: item.imageUrl,
+        metadata: item.metadata || {},
         owned: ownedItemIds.includes(item.id),
       }));
 

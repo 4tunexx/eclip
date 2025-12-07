@@ -42,21 +42,39 @@ export async function GET() {
         const [frame] = await db.select().from(cosmetics).where(eq(cosmetics.id, profile.equippedFrameId)).limit(1);
         if (frame) {
           const frameData = frame as any;
-          equippedFrame = `/api/cosmetics/generate/frame?rarity=${frameData.rarity?.toLowerCase() || 'common'}&username=${frameData.name}`;
+          const metadata = frameData.metadata || {};
+          equippedFrame = JSON.stringify({
+            id: frameData.id,
+            name: frameData.name,
+            rarity: frameData.rarity,
+            ...metadata
+          });
         }
       }
       if (profile?.equippedBannerId) {
         const [banner] = await db.select().from(cosmetics).where(eq(cosmetics.id, profile.equippedBannerId)).limit(1);
         if (banner) {
           const bannerData = banner as any;
-          equippedBanner = `/api/cosmetics/generate/banner?rarity=${bannerData.rarity?.toLowerCase() || 'common'}&title=${bannerData.name}`;
+          const metadata = bannerData.metadata || {};
+          equippedBanner = JSON.stringify({
+            id: bannerData.id,
+            name: bannerData.name,
+            rarity: bannerData.rarity,
+            ...metadata
+          });
         }
       }
       if (profile?.equippedBadgeId) {
         const [badge] = await db.select().from(cosmetics).where(eq(cosmetics.id, profile.equippedBadgeId)).limit(1);
         if (badge) {
           const badgeData = badge as any;
-          equippedBadge = `/api/cosmetics/generate/badge?rarity=${badgeData.rarity?.toLowerCase() || 'common'}&label=${badgeData.name}`;
+          const metadata = badgeData.metadata || {};
+          equippedBadge = JSON.stringify({
+            id: badgeData.id,
+            name: badgeData.name,
+            rarity: badgeData.rarity,
+            ...metadata
+          });
         }
       }
     } catch (e) {

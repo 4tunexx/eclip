@@ -44,15 +44,8 @@ export function Header() {
   const [unreadCount, setUnreadCount] = useState(0);
   const [notificationsLoading, setNotificationsLoading] = useState(true);
 
-  // Refetch user data periodically to get coin updates
-  useEffect(() => {
-    const interval = setInterval(() => {
-      if (user?.id) {
-        refetch();
-      }
-    }, 3000); // Refetch every 3 seconds
-    return () => clearInterval(interval);
-  }, [user?.id, refetch]);
+  // Removed automatic refetch interval - use manual refetch when needed
+  // If you need to update coins, call refetch() after coin-changing actions
 
   useEffect(() => {
     if (user?.id) {

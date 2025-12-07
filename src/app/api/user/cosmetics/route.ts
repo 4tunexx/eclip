@@ -48,6 +48,7 @@ export async function GET(req: NextRequest) {
           type: cosmetics.type,
           rarity: cosmetics.rarity,
           imageUrl: cosmetics.imageUrl,
+          metadata: cosmetics.metadata,
         })
         .from(userInventory)
         .innerJoin(cosmetics, eq(userInventory.cosmeticId, cosmetics.id))

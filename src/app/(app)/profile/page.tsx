@@ -25,6 +25,7 @@ import { useUser } from '@/hooks/use-user';
 import { getRoleColor, getRoleBgColor } from '@/lib/role-colors';
 import { getDefaultBannerDataUrl } from '@/lib/cosmetic-generator';
 import { getRankFromESR, formatRank, getProgressToNextDivision } from '@/lib/rank-calculator';
+import { RankDisplay } from '@/components/rank-display';
 
 export default function ProfilePage() {
   const { user, isLoading: userLoading } = useUser();
@@ -231,32 +232,29 @@ export default function ProfilePage() {
     .filter((item) => item.date)
     .sort((a, b) => (b.date as any) - (a.date as any));
 
+  // Parse equipped banner metadata
+  const parseBannerData = () => {
+    if (!user.equippedBanner) return null;
+    try {
+      return JSON.parse(user.equippedBanner);
+    } catch {
+      return null;
+    }
+  };
+
+  const bannerData = parseBannerData();
+  const bannerGradient = bannerData?.gradient || null;
+
   return (
     <div className="p-4 md:p-8">
         <Card className="bg-card/60 backdrop-blur-lg border border-white/10 overflow-hidden">
-            {/* Banner - use equipped or code-generated default */}
-            <div className="relative h-48 bg-gradient-to-r from-primary/60 to-primary/40">
-                {user.equippedBanner ? (
-                  <Image 
-                    src={user.equippedBanner} 
-                    alt="Profile Banner" 
-                    fill 
-                    style={{objectFit:"cover"}} 
-                    sizes="100vw" 
-                    className="opacity-80"
-                    unoptimized 
-                  />
-                ) : (
-                  <Image 
-                    src={getDefaultBannerDataUrl()} 
-                    alt="Default Banner" 
-                    fill
-                    unoptimized 
-                    style={{objectFit:"cover"}} 
-                    sizes="100vw" 
-                    className="opacity-60" 
-                  />
-                )}
+            {/* Banner - use equipped gradient or code-generated default */}
+            <div 
+              className="relative h-48" 
+              style={{
+                background: bannerGradient || 'linear-gradient(135deg, hsl(var(--primary) / 0.2) 0%, rgb(139 92 246 / 0.2) 50%, rgb(59 130 246 / 0.2) 100%)'
+              }}
+            >
                 <div className="absolute inset-0 bg-gradient-to-t from-card via-card/80 to-transparent" />
             </div>
             <div className="relative p-6 -mt-24">
@@ -266,7 +264,7 @@ export default function ProfilePage() {
                       <UserAvatar 
                           avatarUrl={user.avatarUrl}
                           username={user.username}
-                          frameUrl={user.equippedFrame}
+                          frameData={user.equippedFrame}
                           className="w-40 h-40 rounded-full border-4 border-background"
                       />
                     </div>
@@ -576,58 +574,12 @@ export default function ProfilePage() {
             </TabsContent>
             <TabsContent value="ranks" className="mt-6">
                 <Card className="bg-card/60 backdrop-blur-lg border border-white/10">
-                    <CardHeader>
-                        <CardTitle>Rank & Progression</CardTitle>
-                        <CardDescription>Your competitive rank and ESR rating progression.</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-6">
-                        <div className="grid md:grid-cols-2 gap-4">
-                          <div className="bg-secondary/60 border border-border rounded-lg p-4">
-                            <div className="flex items-center justify-between mb-3">
-                              <h3 className="font-semibold text-sm">Current Rank</h3>
-                              <Trophy className="h-5 w-5 text-yellow-400 fill-yellow-400" />
-                            </div>
-                            <p className="text-3xl font-bold" style={{ color: getRankFromESR((user as any)?.esr || 1000).color }}>
-                              {formatRank((user as any)?.esr || 1000)}
-                            </p>
-                            <p className="text-xs text-muted-foreground mt-1">Your competitive rank</p>
-                          </div>
-                          <div className="bg-secondary/60 border border-border rounded-lg p-4">
-                            <div className="flex items-center justify-between mb-3">
-                              <h3 className="font-semibold text-sm">ESR Rating</h3>
-                              <TrendingUp className="h-5 w-5 text-primary" />
-                            </div>
-                            <p className="text-3xl font-bold">{(user as any).esr || 0}</p>
-                            <p className="text-xs text-muted-foreground mt-1">Elo-based rating system</p>
-                          </div>
-                        </div>
-                        <div className="bg-secondary/60 border border-border rounded-lg p-4">
-                          <h3 className="font-semibold text-sm mb-3">Rank Information</h3>
-                          <div className="space-y-2 text-sm">
-                            <div className="flex justify-between">
-                              <span className="text-muted-foreground">Level</span>
-                              <span className="font-semibold">{user.level || 1}</span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span className="text-muted-foreground">Total XP</span>
-                              <span className="font-semibold">{totalXP.toLocaleString()}</span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span className="text-muted-foreground">Next Level XP</span>
-                              <span className="font-semibold">{nextLevelXP.toLocaleString()}</span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span className="text-muted-foreground">Matches Played</span>
-                              <span className="font-semibold">{matches.length}</span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span className="text-muted-foreground">Win Rate</span>
-                              <span className="font-semibold text-green-400">{winRate}%</span>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
+                    <CardContent className="p-8">
+                        <RankDisplay 
+                            rank={user.rank || 'Rookie'}
+                            division={user.rankDivision || 1}
+                            esr={user.esr || 1000}
+                        />
                     </CardContent>
                 </Card>
             </TabsContent>
@@ -644,7 +596,7 @@ export default function ProfilePage() {
                           <UserAvatar 
                             avatarUrl={user.avatarUrl}
                             username={user.username}
-                            frameUrl={user.equippedFrame}
+                            frameData={user.equippedFrame}
                             className="w-12 h-12 rounded-full"
                           />
                           <div>
@@ -671,66 +623,115 @@ export default function ProfilePage() {
 
                       <div className="bg-secondary/60 border border-border rounded-lg p-6 space-y-4">
                         <h3 className="font-semibold text-lg">Banner Preview</h3>
-                        <div className="relative w-full h-24 overflow-hidden rounded-lg border-2 border-border shadow-lg bg-gradient-to-br from-primary/20 via-secondary/30 to-secondary/20">
-                          <Image 
-                            src={user.equippedBanner || getDefaultBannerDataUrl()}
-                            alt="Banner preview"
-                            fill
-                            sizes="100%"
-                            style={{ objectFit: 'cover' }}
-                            unoptimized
-                            className="hover:scale-105 transition-transform duration-300"
-                          />
+                        <div 
+                          className="relative w-full h-24 overflow-hidden rounded-lg border-2 border-border shadow-lg"
+                          style={{
+                            background: bannerGradient || 'linear-gradient(135deg, hsl(var(--primary) / 0.2) 0%, rgb(139 92 246 / 0.2) 50%, rgb(59 130 246 / 0.2) 100%)'
+                          }}
+                        >
+                          <div className="absolute inset-0 flex items-center justify-center">
+                            <span className="text-white font-bold drop-shadow-lg text-lg">
+                              {bannerData?.name || 'Your Banner'}
+                            </span>
+                          </div>
                         </div>
                             <div className="flex flex-wrap gap-2">
                                 {cosmeticsLoading && <p className="text-sm text-muted-foreground">Loading...</p>}
                                 {!cosmeticsLoading && cosmeticsData.banners.length === 0 && (
                                   <p className="text-sm text-muted-foreground">No banners owned. Purchase from shop or earn via missions.</p>
                                 )}
-                                {cosmeticsData.banners.map((b) => (
-                                  <Button
-                                    key={b.id}
-                                    size="sm"
-                                    variant={b.equipped ? 'default' : 'outline'}
-                                    onClick={() => equipCosmetic('Banner', b.id)}
-                                    disabled={actionLoading}
-                                    className="truncate max-w-[120px]"
-                                  >
-                                    {b.equipped ? '✓ ' : ''}{b.name || 'Banner'}
-                                  </Button>
-                                ))}
+                                {cosmeticsData.banners.map((b) => {
+                                  const metadata = b.metadata || {};
+                                  const gradient = metadata.gradient || 'linear-gradient(135deg, rgb(100 100 100 / 0.3) 0%, rgb(150 150 150 / 0.3) 100%)';
+                                  return (
+                                    <button
+                                      key={b.id}
+                                      onClick={() => equipCosmetic('Banner', b.id)}
+                                      disabled={actionLoading}
+                                      className={`relative overflow-hidden rounded-md border-2 transition-all hover:scale-105 ${
+                                        b.equipped ? 'border-green-500 ring-2 ring-green-500/50' : 'border-border hover:border-primary'
+                                      }`}
+                                      style={{ width: '120px', height: '60px' }}
+                                    >
+                                      <div
+                                        className="absolute inset-0"
+                                        style={{ background: gradient }}
+                                      />
+                                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/30 to-transparent" />
+                                      <div className="absolute inset-0 flex items-center justify-center">
+                                        <span className="text-white text-xs font-bold drop-shadow-lg">
+                                          {b.equipped ? '✓ ' : ''}{b.name || 'Banner'}
+                                        </span>
+                                      </div>
+                                    </button>
+                                  );
+                                })}
                             </div>
                       </div>
 
                       <div className="bg-secondary/60 border border-border rounded-lg p-6 space-y-4">
                         <h3 className="font-semibold text-lg">Avatar Frame Preview</h3>
-                        <div className="h-32 relative bg-secondary flex items-center justify-center rounded-lg border-2 border-border shadow-lg overflow-hidden">
-                          <div className="w-24 h-24 rounded-full border-4 flex items-center justify-center relative animate-pulse bg-gradient-to-br from-primary/30 via-secondary/50 to-secondary/30">
-                            <UserAvatar 
-                              avatarUrl={user.avatarUrl}
-                              username={user.username}
-                              frameUrl={user.equippedFrame}
-                              className="w-20 h-20 rounded-full"
-                            />
-                          </div>
+                        <div className="h-32 relative bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex items-center justify-center rounded-lg border-2 border-border shadow-lg overflow-hidden">
+                          <UserAvatar 
+                            avatarUrl={user.avatarUrl}
+                            username={user.username}
+                            frameData={user.equippedFrame}
+                            className="w-20 h-20 rounded-full"
+                          />
                         </div>
                             <div className="flex flex-wrap gap-2">
                                 {cosmeticsLoading && <p className="text-sm text-muted-foreground">Loading...</p>}
                                 {!cosmeticsLoading && cosmeticsData.frames.length === 0 && (
                                   <p className="text-sm text-muted-foreground">No frames owned. Purchase from shop or earn via missions.</p>
                                 )}
-                                {cosmeticsData.frames.map((f) => (
-                                  <Button
-                                    key={f.id}
-                                    size="sm"
-                                    variant={f.equipped ? 'default' : 'outline'}
-                                    onClick={() => equipCosmetic('Frame', f.id)}
-                                    disabled={actionLoading}
-                                    className="truncate max-w-[120px]"
-                                  >
-                                    {f.equipped ? '✓ ' : ''}{f.name || 'Frame'}
-                                  </Button>
-                                ))}
+                                {cosmeticsData.frames.map((f) => {
+                                  const metadata = f.metadata || {};
+                                  const {
+                                    border_color = '#9333ea',
+                                    border_gradient,
+                                    border_width = 3,
+                                    border_style = 'solid'
+                                  } = metadata;
+                                  return (
+                                    <button
+                                      key={f.id}
+                                      onClick={() => equipCosmetic('Frame', f.id)}
+                                      disabled={actionLoading}
+                                      className={`relative overflow-hidden rounded-md p-2 transition-all hover:scale-105 bg-secondary/80 ${
+                                        f.equipped ? 'ring-2 ring-green-500' : 'hover:bg-secondary'
+                                      }`}
+                                      style={{ width: '80px', height: '80px' }}
+                                    >
+                                      <div className="absolute inset-0 flex items-center justify-center">
+                                        {border_gradient ? (
+                                          <div
+                                            className="rounded-full"
+                                            style={{
+                                              background: border_gradient,
+                                              padding: `${border_width}px`,
+                                              width: '50px',
+                                              height: '50px'
+                                            }}
+                                          >
+                                            <div className="w-full h-full rounded-full bg-card" />
+                                          </div>
+                                        ) : (
+                                          <div
+                                            className="rounded-full w-12 h-12"
+                                            style={{
+                                              border: `${border_width}px ${border_style} ${border_color}`
+                                            }}
+                                          />
+                                        )}
+                                      </div>
+                                      <div className="absolute bottom-1 left-0 right-0 text-center">
+                                        <span className="text-[10px] font-bold text-white drop-shadow-lg bg-black/60 px-1 rounded">
+                                          {f.equipped ? '✓ ' : ''}{f.name?.slice(0, 8) || 'Frame'}
+                                        </span>
+                                      </div>
+                                    </button>
+                                  );
+                                })}
                             </div>
                       </div>
 

@@ -243,18 +243,6 @@ export default function ShopPage() {
 function ShopItemCard({ item, onPurchase, onEquip, purchasing, equipping, rarityColorMap }: any) {
   const [imageError, setImageError] = useState(false);
 
-  // Parse metadata JSON stored in imageUrl for frames/banners
-  const parseMetadata = (val: any) => {
-    if (typeof val === 'string') {
-      try {
-        return JSON.parse(val);
-      } catch {
-        return {};
-      }
-    }
-    return val || {};
-  };
-
   const getRarityGradient = () => {
     const rarity = item.rarity?.toLowerCase() || 'common';
     const gradients: any = {
@@ -266,7 +254,8 @@ function ShopItemCard({ item, onPurchase, onEquip, purchasing, equipping, rarity
     return gradients[rarity] || gradients.common;
   };
 
-  const metadata = parseMetadata(item.imageUrl);
+  // Use metadata from database (already parsed by API)
+  const metadata = item.metadata || {};
   const rarity = item.rarity?.toLowerCase() || 'common';
   const cosmeticImageUrl = (item.type === 'Badge') ? `/api/cosmetics/generate/badge?rarity=${rarity}&label=${item.name}` : null;
 

@@ -11,6 +11,7 @@ const createCosmeticSchema = z.object({
   rarity: z.enum(['Common', 'Rare', 'Epic', 'Legendary']),
   price: z.number().min(0),
   imageUrl: z.string().url().optional(),
+  metadata: z.record(z.any()).optional(),
 });
 
 export async function GET() {
@@ -62,6 +63,7 @@ export async function POST(request: NextRequest) {
       rarity: data.rarity,
       price: data.price.toString(),
       imageUrl: data.imageUrl,
+      metadata: data.metadata,
       isActive: true,
     }).returning();
 
