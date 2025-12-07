@@ -24,7 +24,6 @@ export function Logo({
       width={width || defaultWidth}
       height={height || defaultHeight}
       className={className}
-      style={{ height: 'auto', width: 'auto' }}
       priority
     />
   );
