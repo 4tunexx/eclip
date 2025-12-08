@@ -43,3 +43,9 @@ next-env.d.ts
 # firebase
 firebase-debug.log
 firestore-debug.log
+
+# anticheat executables (too large for GitHub)
+public/downloads/*.exe
+public/downloads/*.zip
+client-app/dist/
+client-app/node_modules/

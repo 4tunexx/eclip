@@ -75,7 +75,7 @@ function SidebarLogo() {
 export function AppSidebar() {
   const pathname = usePathname();
   const { user, refetch } = useUser();
-  const { isClientConnected, setClientOpen } = useClient();
+  const { isClientConnected, setClientOpen, setLauncherOpen } = useClient();
   const isAdmin = (((user as any)?.isAdmin as boolean) || (((user as any)?.role || '').toUpperCase() === 'ADMIN')) ?? false;
   const [coinsOpen, setCoinsOpen] = useState(false);
   const [coinAmount, setCoinAmount] = useState('1000');
@@ -342,7 +342,7 @@ export function AppSidebar() {
         {/* AC Client Status */}
         <div className="px-2 pb-2">
           <button
-            onClick={() => setClientOpen(true)}
+            onClick={() => setLauncherOpen(true)}
             className={`w-full p-3 rounded-lg border transition-all duration-300 hover:scale-105 ${
               isClientConnected 
                 ? 'border-primary/50 bg-primary/10 hover:bg-primary/20' 

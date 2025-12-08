@@ -258,24 +258,49 @@ export default function PlayPage() {
                   </div>
                 </div>
               ) : (
-                <Button 
-                  onClick={handleJoinQueue}
-                  disabled={isLoading}
-                  size="lg"
-                  className="w-full font-black text-2xl h-16 shadow-lg shadow-primary/20 hover:shadow-primary/40 transition-all"
-                >
-                  {isLoading ? (
-                    <>
-                      <Loader2 className="mr-2 h-6 w-6 animate-spin" />
-                      Joining...
-                    </>
-                  ) : (
-                    <>
-                      <Swords className="mr-2 h-6 w-6" />
-                      FIND MATCH
-                    </>
+                <>
+                  {!isClientConnected && (
+                    <div className="mb-4 p-4 bg-red-500/10 border border-red-500/20 rounded-lg flex items-start gap-3">
+                      <AlertTriangle className="w-5 h-5 text-red-500 mt-0.5" />
+                      <div className="flex-1">
+                        <p className="text-sm font-semibold text-red-500">Anti-Cheat Required</p>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Connect EclipAC client to search for matches. Click the shield icon in sidebar.
+                        </p>
+                      </div>
+                    </div>
                   )}
-                </Button>
+                  <Button 
+                    onClick={isClientConnected ? handleJoinQueue : () => {
+                      toast({
+                        title: 'Anti-Cheat Required',
+                        description: 'Please launch the EclipAC client from the sidebar before searching for matches.',
+                        variant: 'destructive',
+                      });
+                      setClientOpen(true);
+                    }}
+                    disabled={isLoading || !isClientConnected}
+                    size="lg"
+                    className="w-full font-black text-2xl h-16 shadow-lg shadow-primary/20 hover:shadow-primary/40 transition-all"
+                  >
+                    {isLoading ? (
+                      <>
+                        <Loader2 className="mr-2 h-6 w-6 animate-spin" />
+                        Joining...
+                      </>
+                    ) : !isClientConnected ? (
+                      <>
+                        <Shield className="mr-2 h-6 w-6" />
+                        ANTI-CHEAT REQUIRED
+                      </>
+                    ) : (
+                      <>
+                        <Swords className="mr-2 h-6 w-6" />
+                        FIND MATCH
+                      </>
+                    )}
+                  </Button>
+                </>
               )}
             </CardContent>
           </Card>

@@ -1,0 +1,58 @@
+{
+  "name": "eclip-anticheat",
+  "version": "2.4.1",
+  "description": "EclipAC Anti-Cheat Client for eclip.pro",
+  "main": "main.js",
+  "author": "Eclip",
+  "license": "MIT",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder",
+    "build:win": "electron-builder --win"
+  },
+  "devDependencies": {
+    "electron": "^28.3.3",
+    "electron-builder": "^24.13.3"
+  },
+  "dependencies": {
+    "axios": "^1.6.0",
+    "ip": "^1.1.5"
+  },
+  "build": {
+    "appId": "com.eclip.anticheat",
+    "productName": "EclipAC",
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "assets/icon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true
+    },
+    "protocols": [
+      {
+        "name": "eclip-protocol",
+        "schemes": [
+          "eclip"
+        ]
+      }
+    ],
+    "files": [
+      "**/*",
+      "!*.md"
+    ]
+  },
+  "keywords": [
+    "anticheat",
+    "gaming"
+  ]
+}

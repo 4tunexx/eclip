@@ -7,6 +7,8 @@ interface ClientContextType {
   setClientConnected: (status: boolean) => void;
   isClientOpen: boolean;
   setClientOpen: (status: boolean) => void;
+  isLauncherOpen: boolean;
+  setLauncherOpen: (status: boolean) => void;
   clientVersion: string;
 }
 
@@ -15,6 +17,8 @@ const ClientContext = createContext<ClientContextType>({
   setClientConnected: () => {},
   isClientOpen: false,
   setClientOpen: () => {},
+  isLauncherOpen: false,
+  setLauncherOpen: () => {},
   clientVersion: 'v2.4.1'
 });
 
@@ -23,6 +27,7 @@ export const useClient = () => useContext(ClientContext);
 export const ClientProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [isClientConnected, setClientConnected] = useState(false);
   const [isClientOpen, setClientOpen] = useState(false);
+  const [isLauncherOpen, setLauncherOpen] = useState(false);
 
   // Persist client connection state
   useEffect(() => {
@@ -42,6 +47,8 @@ export const ClientProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       setClientConnected,
       isClientOpen,
       setClientOpen,
+      isLauncherOpen,
+      setLauncherOpen,
       clientVersion: 'v2.4.1'
     }}>
       {children}

@@ -16,7 +16,9 @@ import {
   Loader2,
   Zap,
   MessageSquare,
-  Target
+  Target,
+  Shield,
+  AlertTriangle
 } from 'lucide-react';
 import Image from "next/image";
 import { UserAvatar } from "@/components/user-avatar";
@@ -26,8 +28,12 @@ import { Progress } from "@/components/ui/progress";
 import Link from "next/link";
 import { LiveChat } from "@/components/chat/live-chat";
 import { useUser } from '@/hooks/use-user';
+import { useClient } from '@/components/client/ClientContext';
+import { useToast } from '@/hooks/use-toast';
 
 export default function DashboardPage() {
+  const { isClientConnected, setLauncherOpen } = useClient();
+  const { toast } = useToast();
   const [matches, setMatches] = useState<any[]>([]);
   const [isLoadingMatches, setIsLoadingMatches] = useState(true);
   const [missions, setMissions] = useState<any[]>([]);
@@ -187,12 +193,31 @@ export default function DashboardPage() {
             </p>
           </div>
           <div className="hidden md:flex items-center gap-2 relative z-10">
-            <Button size="lg" variant="secondary" className="font-bold" asChild>
-              <Link href="/play">
-                Find Match
-                <Swords className="ml-2 h-5 w-5"/>
-              </Link>
-            </Button>
+            {isClientConnected ? (
+              <Button size="lg" variant="secondary" className="font-bold" asChild>
+                <Link href="/play">
+                  Find Match
+                  <Swords className="ml-2 h-5 w-5"/>
+                </Link>
+              </Button>
+            ) : (
+              <Button 
+                size="lg" 
+                variant="destructive" 
+                className="font-bold"
+                onClick={() => {
+                  toast({
+                    title: 'Anti-Cheat Required',
+                    description: 'Please launch the EclipAC client from the sidebar before searching for matches.',
+                    variant: 'destructive',
+                  });
+                  setLauncherOpen(true);
+                }}
+              >
+                <Shield className="mr-2 h-5 w-5"/>
+                AC Required
+              </Button>
+            )}
           </div>
         </div>
         

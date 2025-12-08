@@ -4,6 +4,7 @@ import { AppSidebar } from '@/components/layout/sidebar';
 import { ClientProvider } from '@/components/client/ClientContext';
 import { WindowsClient } from '@/components/client/WindowsClient';
 import { WindowsClientWrapper } from '@/components/client/WindowsClientWrapper';
+import { ClientLauncherWrapper } from '@/components/client/ClientLauncherWrapper';
 
 export default function AppLayout({
   children,
@@ -24,6 +25,7 @@ export default function AppLayout({
         </div>
       </SidebarProvider>
       <WindowsClientWrapper />
+      <ClientLauncherWrapper />
     </ClientProvider>
   );
 }
