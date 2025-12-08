@@ -8,18 +8,11 @@ import { getRankFromESR } from '@/lib/rank-calculator';
 
 export async function GET() {
   try {
-    const cookieStore = await import('next/headers').then(m => m.cookies());
-    const allCookies = (await cookieStore).getAll();
-    const sessionCookie = (await cookieStore).get('session');
-    console.log('[API/Auth/Me] Cookies count:', allCookies.length, 'hasSession:', !!sessionCookie);
-
     const user = await getCurrentUser();
     if (!user) {
-      console.log('[API/Auth/Me] No user found (401)');
+      // Silent 401 - user not logged in (normal during logout)
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
     }
-
-    console.log('[API/Auth/Me] User authenticated:', user.id, 'email:', (user as any).email);
 
     // Try Drizzle profile first
     let profile: any = null;

@@ -71,18 +71,15 @@ export async function getSession(): Promise<{ userId: string } | null> {
   const cookieStore = await cookies();
   const token = cookieStore.get('session')?.value;
 
-  console.log('[Auth] getSession called - token present:', !!token);
-
   if (!token) {
     return null;
   }
 
   try {
     const decoded = jwt.verify(token, JWT_SECRET) as { userId: string };
-    console.log('[Auth] Token decoded successfully, userId:', decoded.userId);
     return { userId: decoded.userId };
   } catch (e) {
-    console.log('[Auth] Error verifying token:', (e as any).message);
+    // Token invalid or expired - silent fail
     return null;
   }
 }
