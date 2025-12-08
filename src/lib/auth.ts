@@ -129,11 +129,25 @@ export async function logout() {
   const token = cookieStore.get('session')?.value;
 
   if (token) {
-    // Delete session from DB
-    await db.delete(sessions).where(eq(sessions.token, token));
+    try {
+      // Delete session from DB
+      await db.delete(sessions).where(eq(sessions.token, token));
+    } catch (error) {
+      console.error('Error deleting session from DB:', error);
+      // Continue with cookie deletion even if DB delete fails
+    }
   }
 
-  // Delete cookie
-  cookieStore.delete('session');
+  // Delete cookie with explicit settings to ensure it's cleared
+  cookieStore.set({
+    name: 'session',
+    value: '',
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production' || process.env.API_BASE_URL?.includes('www.eclip.pro'),
+    sameSite: 'lax',
+    expires: new Date(0), // Set to past date to delete
+    path: '/',
+    maxAge: 0,
+  });
 }
 

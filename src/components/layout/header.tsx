@@ -106,7 +106,7 @@ export function Header() {
       setIsOpen(false);
       
       // Call logout API
-      await fetch('/api/auth/logout', { 
+      const response = await fetch('/api/auth/logout', { 
         method: 'POST', 
         credentials: 'include',
         headers: {
@@ -114,10 +114,21 @@ export function Header() {
         }
       });
       
-      // Redirect to home and force full page reload to clear all state
-      window.location.href = '/';
+      if (response.ok) {
+        // Force redirect to landing page (root) after successful logout
+        window.location.replace('/');
+      } else {
+        // Even if logout fails, clear session on client side
+        document.cookie = 'session=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+        window.location.replace('/');
+      }
     } catch (error) {
       console.error('Logout error:', error);
+      // Force logout on error by clearing cookie and redirecting
+      document.cookie = 'session=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+      window.location.replace('/');
+    }
+  };
       // Force redirect even on error
       window.location.href = '/';
     }
