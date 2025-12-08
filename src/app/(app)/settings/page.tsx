@@ -231,6 +231,7 @@ export default function SettingsPage() {
                             <Input 
                               id="current-password" 
                               type="password" 
+                              autoComplete="current-password"
                               value={currentPassword}
                               onChange={(e) => setCurrentPassword(e.target.value)}
                               disabled={isChangingPassword}
@@ -242,6 +243,7 @@ export default function SettingsPage() {
                             <Input 
                               id="new-password" 
                               type="password" 
+                              autoComplete="new-password"
                               value={newPassword}
                               onChange={(e) => setNewPassword(e.target.value)}
                               disabled={isChangingPassword}
@@ -253,6 +255,7 @@ export default function SettingsPage() {
                             <Input 
                               id="confirm-password" 
                               type="password" 
+                              autoComplete="new-password"
                               value={confirmPassword}
                               onChange={(e) => setConfirmPassword(e.target.value)}
                               disabled={isChangingPassword}
