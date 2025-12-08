@@ -179,9 +179,22 @@ export const ClientLauncherDialog: React.FC<ClientLauncherDialogProps> = ({
                 </div>
                 <div>
                   <h3 className="text-xl font-bold text-white mb-2">Client Not Installed</h3>
-                  <p className="text-sm text-zinc-400">
+                  <p className="text-sm text-zinc-400 mb-4">
                     Download and install the EclipAC client to continue
                   </p>
+                  <div className="bg-yellow-500/5 border border-yellow-500/20 rounded-lg p-4 text-left space-y-2">
+                    <p className="text-xs text-yellow-200 font-medium">
+                      📥 Installation Instructions:
+                    </p>
+                    <ol className="text-xs text-zinc-300 space-y-1 list-decimal list-inside">
+                      <li>Download <code className="text-yellow-300 bg-black/30 px-1 rounded">EclipAC-Setup.exe</code></li>
+                      <li>Run the installer (may need admin rights)</li>
+                      <li>Click "Launch Client" again</li>
+                    </ol>
+                    <p className="text-xs text-zinc-400 pt-2">
+                      <strong>Using portable version?</strong> Run <code className="text-yellow-300 bg-black/30 px-1 rounded">register-protocol.bat</code> as admin to enable browser launching.
+                    </p>
+                  </div>
                 </div>
               </div>
             )}
@@ -265,7 +278,15 @@ export const ClientLauncherDialog: React.FC<ClientLauncherDialogProps> = ({
                     className="flex-1 bg-primary hover:bg-primary/90"
                   >
                     <Download className="w-4 h-4 mr-2" />
-                    Download Client
+                    Download Installer
+                  </Button>
+                  <Button
+                    onClick={() => window.open('https://github.com/4tunexx/eclip/releases', '_blank')}
+                    variant="outline"
+                    className="border-zinc-700"
+                  >
+                    <ExternalLink className="w-4 h-4 mr-2" />
+                    GitHub
                   </Button>
                   <Button
                     onClick={() => setLaunchStatus('idle')}

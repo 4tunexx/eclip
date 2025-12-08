@@ -25,46 +25,83 @@ export async function launchNativeClient(options?: LaunchOptions): Promise<boole
   const protocolUrl = `eclip://launch${params.toString() ? '?' + params.toString() : ''}`;
   
   return new Promise((resolve) => {
-    // Create a hidden iframe to trigger the protocol
-    const iframe = document.createElement('iframe');
-    iframe.style.display = 'none';
-    iframe.src = protocolUrl;
-    document.body.appendChild(iframe);
-
-    // Set a timeout to check if the protocol worked
-    const timeoutId = setTimeout(() => {
-      // If we're still here after 2 seconds, the app probably isn't installed
-      document.body.removeChild(iframe);
-      resolve(false);
-    }, 2000);
-
-    // Listen for blur event (indicates app might have launched)
-    const onBlur = () => {
-      clearTimeout(timeoutId);
-      setTimeout(() => {
-        document.body.removeChild(iframe);
-        resolve(true);
-      }, 100);
-      window.removeEventListener('blur', onBlur);
-    };
-
-    window.addEventListener('blur', onBlur);
-
-    // Fallback: if page becomes visible again quickly, app didn't launch
-    const onFocus = () => {
-      clearTimeout(timeoutId);
-      setTimeout(() => {
-        if (document.body.contains(iframe)) {
-          document.body.removeChild(iframe);
+    let resolved = false;
+    
+    // Try window.location first to get proper error handling
+    try {
+      // Create a temporary anchor to trigger protocol
+      const link = document.createElement('a');
+      link.href = protocolUrl;
+      link.style.display = 'none';
+      document.body.appendChild(link);
+      
+      // Listen for error (protocol not registered)
+      link.addEventListener('error', () => {
+        if (!resolved) {
+          resolved = true;
+          document.body.removeChild(link);
+          resolve(false);
         }
-        resolve(false);
-      }, 1500);
-      window.removeEventListener('focus', onFocus);
-    };
+      });
+      
+      // Click the link to trigger protocol
+      link.click();
+      
+      // Set a timeout to check if the protocol worked
+      const timeoutId = setTimeout(() => {
+        if (!resolved) {
+          resolved = true;
+          if (document.body.contains(link)) {
+            document.body.removeChild(link);
+          }
+          resolve(false);
+        }
+      }, 2000);
 
-    setTimeout(() => {
-      window.addEventListener('focus', onFocus);
-    }, 100);
+      // Listen for blur event (indicates app might have launched)
+      const onBlur = () => {
+        if (!resolved) {
+          resolved = true;
+          clearTimeout(timeoutId);
+          setTimeout(() => {
+            if (document.body.contains(link)) {
+              document.body.removeChild(link);
+            }
+            resolve(true);
+          }, 100);
+          window.removeEventListener('blur', onBlur);
+        }
+      };
+
+      window.addEventListener('blur', onBlur);
+
+      // Fallback: if page becomes visible again quickly, app didn't launch
+      const onFocus = () => {
+        if (!resolved) {
+          resolved = true;
+          clearTimeout(timeoutId);
+          setTimeout(() => {
+            if (document.body.contains(link)) {
+              document.body.removeChild(link);
+            }
+            resolve(false);
+          }, 1500);
+          window.removeEventListener('focus', onFocus);
+        }
+      };
+
+      setTimeout(() => {
+        window.addEventListener('focus', onFocus);
+      }, 100);
+      
+    } catch (error) {
+      // Protocol not registered or other error
+      if (!resolved) {
+        resolved = true;
+        console.warn('Protocol launch failed:', error);
+        resolve(false);
+      }
+    }
   });
 }
 
