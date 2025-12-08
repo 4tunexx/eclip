@@ -5,8 +5,11 @@ const os = require('os');
 const { exec } = require('child_process');
 const fs = require('fs');
 
-// Your API base URL (change this to your production URL when deploying)
-const API_BASE_URL = process.env.API_URL || 'http://localhost:3000';
+// Auto-detect API URL based on environment
+const API_BASE_URL = process.env.API_URL || 
+  (process.env.NODE_ENV === 'production' || app.isPackaged
+    ? 'https://www.eclip.pro'
+    : 'http://localhost:9002');
 const PLATFORM_NAME = 'eclip.pro';
 
 let mainWindow;

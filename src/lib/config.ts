@@ -21,9 +21,16 @@ export const config = {
       try {
         if (ret) return new URL(ret).origin;
       } catch {}
-      return 'http://localhost:3000';
+      // Auto-detect based on environment
+      if (typeof window !== 'undefined') {
+        return window.location.origin;
+      }
+      return process.env.NODE_ENV === 'production' ? 'https://www.eclip.pro' : 'http://localhost:9002';
     })(),
-    returnUrl: process.env.STEAM_RETURN_URL || 'http://localhost:3000/api/auth/steam/return',
+    returnUrl: process.env.STEAM_RETURN_URL || 
+      (process.env.NODE_ENV === 'production' 
+        ? 'https://www.eclip.pro/api/auth/steam/return' 
+        : 'http://localhost:9002/api/auth/steam/return'),
   },
   gcp: {
     projectId: process.env.GCP_PROJECT_ID!,
@@ -42,8 +49,14 @@ export const config = {
     shutdownTimeout: parseInt(process.env.MATCH_SERVER_SHUTDOWN_TIMEOUT || '15000'),
   },
   api: {
-    baseUrl: process.env.API_BASE_URL || 'http://localhost:3001',
-    wsUrl: process.env.WS_URL || 'ws://localhost:3001',
+    baseUrl: process.env.API_BASE_URL || 
+      (process.env.NODE_ENV === 'production' 
+        ? 'https://www.eclip.pro' 
+        : 'http://localhost:9002'),
+    wsUrl: process.env.WS_URL || 
+      (process.env.NODE_ENV === 'production' 
+        ? 'wss://www.eclip.pro' 
+        : 'ws://localhost:9002'),
   },
   ac: {
     ingestSecret: process.env.AC_INGEST_SECRET,
