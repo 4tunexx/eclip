@@ -55,14 +55,20 @@ export function Header() {
 
   const fetchNotifications = async () => {
     try {
-      const response = await fetch('/api/notifications?limit=5');
+      const response = await fetch('/api/notifications?limit=5', { credentials: 'include' });
       if (response.ok) {
         const data = await response.json();
         setNotifications(data.notifications || []);
         setUnreadCount(data.unreadCount || 0);
+      } else if (response.status === 401) {
+        // User not authenticated
+        setNotifications([]);
+        setUnreadCount(0);
       }
     } catch (error) {
-      console.error('Failed to fetch notifications:', error);
+      // Silently fail on errors (e.g., during logout)
+      setNotifications([]);
+      setUnreadCount(0);
     } finally {
       setNotificationsLoading(false);
     }
@@ -96,10 +102,25 @@ export function Header() {
 
   const handleLogout = async () => {
     try {
-      await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
-    } catch {}
-    router.push('/');
-    router.refresh();
+      // Clear local state immediately to prevent API calls
+      setIsOpen(false);
+      
+      // Call logout API
+      await fetch('/api/auth/logout', { 
+        method: 'POST', 
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      // Redirect to home and force full page reload to clear all state
+      window.location.href = '/';
+    } catch (error) {
+      console.error('Logout error:', error);
+      // Force redirect even on error
+      window.location.href = '/';
+    }
   };
 
   return (

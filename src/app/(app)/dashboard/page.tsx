@@ -77,13 +77,15 @@ export default function DashboardPage() {
 
   const fetchMatches = async () => {
     try {
-      const response = await fetch('/api/matches?limit=5');
+      const response = await fetch('/api/matches?limit=5', { credentials: 'include' });
       const data = await response.json();
       if (response.ok) {
         setMatches(data.matches || []);
+      } else if (response.status === 401) {
+        setMatches([]);
       }
     } catch (error) {
-      console.error('Error fetching matches:', error);
+      setMatches([]);
     } finally {
       setIsLoadingMatches(false);
     }
@@ -92,8 +94,8 @@ export default function DashboardPage() {
   const fetchMissions = async () => {
     try {
       const [allRes, dailyRes] = await Promise.all([
-        fetch('/api/missions'),
-        fetch('/api/missions?daily=true'),
+        fetch('/api/missions', { credentials: 'include' }),
+        fetch('/api/missions?daily=true', { credentials: 'include' }),
       ]);
       
       if (allRes.ok && dailyRes.ok) {
@@ -101,9 +103,15 @@ export default function DashboardPage() {
         const dailyData = await dailyRes.json();
         setMissions(allData || []);
         setDailyMissions(dailyData || []);
+      } else if (allRes.status === 401 || dailyRes.status === 401) {
+        // User not authenticated, silently fail
+        setMissions([]);
+        setDailyMissions([]);
       }
     } catch (error) {
-      console.error('Error fetching missions:', error);
+      // Silently fail if user is logging out
+      setMissions([]);
+      setDailyMissions([]);
     } finally {
       setIsLoadingMissions(false);
     }
