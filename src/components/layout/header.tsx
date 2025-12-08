@@ -129,10 +129,6 @@ export function Header() {
       window.location.replace('/');
     }
   };
-      // Force redirect even on error
-      window.location.href = '/';
-    }
-  };
 
   return (
     <header className="sticky top-0 z-30 flex h-16 items-center justify-between gap-4 border-b bg-background/80 px-4 backdrop-blur-sm md:px-6">
