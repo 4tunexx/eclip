@@ -93,15 +93,22 @@ export async function POST(request: NextRequest) {
         },
       });
       
+      // Determine if we're on production based on API URL
+      const isProduction = process.env.API_BASE_URL?.includes('www.eclip.pro') || 
+                          process.env.STEAM_REALM?.includes('www.eclip.pro');
+      
+      console.log('[Login] Setting cookie for:', isProduction ? 'production (www.eclip.pro)' : 'development (localhost)');
+      
       // Set cookie on response
       response.cookies.set({
         name: 'session',
         value: session.token,
         httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
+        secure: isProduction, // Enable secure flag for HTTPS
         sameSite: 'lax',
         expires: session.expiresAt,
         path: '/',
+        ...(isProduction && { domain: '.eclip.pro' }), // Set domain for production
       });
       
       console.log('[Login] Login successful!');
@@ -155,14 +162,20 @@ export async function POST(request: NextRequest) {
               isAdmin: user.role === 'ADMIN',
             },
           });
+          
+          // Determine if we're on production based on API URL
+          const isProduction = process.env.API_BASE_URL?.includes('www.eclip.pro') || 
+                              process.env.STEAM_REALM?.includes('www.eclip.pro');
+          
           response.cookies.set({
             name: 'session',
             value: session.token,
             httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
+            secure: isProduction,
             sameSite: 'lax',
             expires: session.expiresAt,
             path: '/',
+            ...(isProduction && { domain: '.eclip.pro' }),
           });
           return response;
         } catch (retryErr) {
