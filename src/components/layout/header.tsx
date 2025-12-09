@@ -102,31 +102,40 @@ export function Header() {
 
   const handleLogout = async () => {
     try {
-      // Clear local state immediately to prevent API calls
-      setIsOpen(false);
-      
-      // Call logout API
-      const response = await fetch('/api/auth/logout', { 
-        method: 'POST', 
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      });
-      
-      if (response.ok) {
-        // Force redirect to landing page (root) after successful logout
-        window.location.replace('/');
-      } else {
-        // Even if logout fails, clear session on client side
-        document.cookie = 'session=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
-        window.location.replace('/');
+      // Call logout API to clear session server-side
+      try {
+        await fetch('/api/auth/logout', { 
+          method: 'POST', 
+          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        });
+      } catch (err) {
+        console.error('Logout API error:', err);
       }
+      
+      // Clear session cookie on client side with proper domain
+      // Try with domain first (for production)
+      document.cookie = 'session=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=.eclip.pro;';
+      // Also try without domain (for local development)
+      document.cookie = 'session=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+      
+      // Clear from root domain as well
+      document.cookie = 'session=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=eclip.pro;';
+      
+      // Force redirect to landing page
+      setTimeout(() => {
+        window.location.href = '/';
+      }, 100);
     } catch (error) {
       console.error('Logout error:', error);
-      // Force logout on error by clearing cookie and redirecting
+      // Force logout on error
+      document.cookie = 'session=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=.eclip.pro;';
       document.cookie = 'session=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
-      window.location.replace('/');
+      setTimeout(() => {
+        window.location.href = '/';
+      }, 100);
     }
   };
 
