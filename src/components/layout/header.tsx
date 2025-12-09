@@ -103,39 +103,27 @@ export function Header() {
   const handleLogout = async () => {
     try {
       // Call logout API to clear session server-side
-      try {
-        await fetch('/api/auth/logout', { 
-          method: 'POST', 
-          credentials: 'include',
-          headers: {
-            'Content-Type': 'application/json'
-          }
-        });
-      } catch (err) {
-        console.error('Logout API error:', err);
-      }
+      await fetch('/api/auth/logout', { 
+        method: 'POST', 
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      }).catch(err => console.error('Logout API error:', err));
       
-      // Clear session cookie on client side with proper domain
-      // Try with domain first (for production)
+      // Clear session cookie on client side with multiple attempts
       document.cookie = 'session=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=.eclip.pro;';
-      // Also try without domain (for local development)
       document.cookie = 'session=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
-      
-      // Clear from root domain as well
       document.cookie = 'session=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=eclip.pro;';
       
-      // Force redirect to landing page
+      // Hard reload to landing page - forces server to re-validate session
       setTimeout(() => {
-        window.location.href = '/';
-      }, 100);
+        window.location.replace('/');
+      }, 200);
     } catch (error) {
       console.error('Logout error:', error);
-      // Force logout on error
-      document.cookie = 'session=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=.eclip.pro;';
-      document.cookie = 'session=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
-      setTimeout(() => {
-        window.location.href = '/';
-      }, 100);
+      // Force logout on error with hard reload
+      window.location.replace('/');
     }
   };
 
