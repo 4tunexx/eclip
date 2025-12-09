@@ -36,7 +36,7 @@ import { Logo } from '../icons/logo';
 
 export function Header() {
   const router = useRouter();
-  const { user, refetch } = useUser();
+  const { user, refetch, clearUser } = useUser();
   const coins = Number(user?.coins ?? 0);
   const isAdmin = ((user as any)?.isAdmin as boolean) || (((user as any)?.role || '').toUpperCase() === 'ADMIN');
   
@@ -104,7 +104,12 @@ export function Header() {
     try {
       console.log('[Logout] Starting logout process...');
       
-      // Call logout API to clear session server-side
+      // FIRST: Clear user context immediately to prevent redirects
+      if (typeof clearUser === 'function') {
+        clearUser();
+      }
+      
+      // SECOND: Call logout API to clear session server-side
       const logoutResponse = await fetch('/api/auth/logout', { 
         method: 'POST', 
         credentials: 'include',
@@ -120,13 +125,12 @@ export function Header() {
         console.log('[Logout] Server response:', data);
       }
       
-      // Immediately redirect with hard reload - no waiting, no refetch
-      // This ensures cookies are cleared and middleware can't redirect back
+      // THIRD: Redirect with hard reload to ensure clean state
       console.log('[Logout] Performing hard redirect to landing page...');
       window.location.href = '/';
     } catch (error) {
       console.error('[Logout] Logout error:', error);
-      // Force redirect on error
+      // Force redirect on error (user already cleared above)
       window.location.href = '/';
     }
   };

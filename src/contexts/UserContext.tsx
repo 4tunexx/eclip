@@ -16,6 +16,7 @@ interface UserContextType {
   user: User | null;
   isLoading: boolean;
   refetch: () => Promise<void>;
+  clearUser: () => void;
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
@@ -25,6 +26,11 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
   const isFetchingRef = useRef(false);
   const hasFetchedRef = useRef(false);
+
+  const clearUser = useCallback(() => {
+    setUser(null);
+    setIsLoading(false);
+  }, []);
 
   const fetchUser = useCallback(async () => {
     // Prevent concurrent fetches
@@ -74,7 +80,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
   }, []); // Empty deps - only run on mount
 
   return (
-    <UserContext.Provider value={{ user, isLoading, refetch: fetchUser }}>
+    <UserContext.Provider value={{ user, isLoading, refetch: fetchUser, clearUser }}>
       {children}
     </UserContext.Provider>
   );
