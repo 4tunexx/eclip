@@ -116,6 +116,9 @@ export function Header() {
       document.cookie = 'session=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
       document.cookie = 'session=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=eclip.pro;';
       
+      // Update user context to null before redirect
+      await refetch();
+      
       // Hard reload to landing page - forces server to re-validate session
       setTimeout(() => {
         window.location.replace('/');
