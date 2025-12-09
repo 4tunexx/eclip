@@ -59,10 +59,12 @@ export async function middleware(request: NextRequest) {
   if (!sessionToken) {
     const url = request.nextUrl.clone();
     url.pathname = '/';
+    url.search = '';
     return NextResponse.redirect(url);
   }
 
-  // Token exists - allow access (validation happens in API routes)
+  // Token exists - allow access (full validation happens in API routes)
+  // This prevents unnecessary redirects for valid sessions
   return NextResponse.next();
 }
 

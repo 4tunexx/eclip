@@ -168,22 +168,7 @@ export async function logout() {
     }
   }
 
-  // Determine if production to match cookie creation settings
-  const isProduction = process.env.API_BASE_URL?.includes('www.eclip.pro') || 
-                      process.env.STEAM_REALM?.includes('www.eclip.pro');
-
-  // Delete cookie with explicit settings to ensure it's cleared
-  // IMPORTANT: These attributes must match the original cookie creation
-  cookieStore.set({
-    name: 'session',
-    value: '',
-    httpOnly: true,
-    secure: isProduction,
-    sameSite: 'lax',
-    expires: new Date(0), // Set to past date to delete
-    path: '/',
-    maxAge: 0,
-    ...(isProduction && { domain: '.eclip.pro' }), // Must match original cookie domain
-  });
+  // Delete cookie - Next.js cookies().delete() handles all variations
+  cookieStore.delete('session');
 }
 

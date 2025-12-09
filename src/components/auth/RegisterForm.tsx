@@ -57,11 +57,16 @@ export function RegisterForm() {
 
       toast({
         title: 'Success!',
-        description: 'Account created. Please check your email to verify your account.',
+        description: data.message || 'Account created. Please check your email to verify your account.',
+        duration: 6000,
       });
 
-      router.push('/dashboard');
-      router.refresh();
+      // Don't auto-login or redirect - user needs to verify email first
+      // Just show success message and let them log in after verification
+      setEmail('');
+      setPassword('');
+      setConfirmPassword('');
+      setUsername('');
     } catch (error: any) {
       toast({
         title: 'Error',

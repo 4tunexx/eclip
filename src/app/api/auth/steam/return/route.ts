@@ -116,34 +116,39 @@ export async function GET(request: NextRequest) {
         }
       }
       
-      // Only create new session if not already logged in (not linking)
-      if (existingSession && isLinking) {
-        // User is already logged in with session, just redirect to success
-        const redirectUrl = new URL('/?steam-link=success', request.url);
-        return NextResponse.redirect(redirectUrl);
-      } else {
-        // Create session and set cookie for new login
-        const session = await createSession(userId!);
-        
-        console.log('[Steam Auth] Created session:', { userId, token: session.token.substring(0, 20) + '...', expiresAt: session.expiresAt });
-        
-        // Create redirect response to dashboard
-        const redirectUrl = new URL('/dashboard', request.url);
-        const response = NextResponse.redirect(redirectUrl);
-        
-        // Set cookie on response - don't set domain to allow it to work on any subdomain
-        response.cookies.set({
-          name: 'session',
-          value: session.token,
-          httpOnly: true,
-          secure: true, // Always use secure in production
-          sameSite: 'lax',
-          expires: session.expiresAt,
-          path: '/',
-        });
-        
-        return response;
-      }
+        // Only create new session if not already logged in (not linking)
+        if (existingSession && isLinking) {
+          // User is already logged in with session, just redirect to success
+          const redirectUrl = new URL('/dashboard?steam-link=success', request.url);
+          return NextResponse.redirect(redirectUrl);
+        } else {
+          // Create session and set cookie for new login
+          const session = await createSession(userId!);
+          
+          console.log('[Steam Auth] Created session:', { userId, token: session.token.substring(0, 20) + '...', expiresAt: session.expiresAt });
+          
+          // Create redirect response to dashboard
+          const redirectUrl = new URL('/dashboard', request.url);
+          const response = NextResponse.redirect(redirectUrl);
+          
+          // Determine if production
+          const isProduction = process.env.NODE_ENV === 'production' || 
+                              process.env.API_BASE_URL?.includes('eclip.pro');
+          
+          // Set cookie on response with consistent settings
+          response.cookies.set({
+            name: 'session',
+            value: session.token,
+            httpOnly: true,
+            secure: isProduction,
+            sameSite: 'lax',
+            expires: session.expiresAt,
+            path: '/',
+            ...(isProduction && { domain: '.eclip.pro' }),
+          });
+          
+          return response;
+        }
     } catch (drizzleErr) {
       console.log('[Steam Auth] Drizzle error, falling back to legacy table:', drizzleErr);
       
@@ -173,14 +178,18 @@ export async function GET(request: NextRequest) {
         const redirectUrl = new URL('/dashboard', request.url);
         const response = NextResponse.redirect(redirectUrl);
         
+        const isProduction = process.env.NODE_ENV === 'production' || 
+                            process.env.API_BASE_URL?.includes('eclip.pro');
+        
         response.cookies.set({
           name: 'session',
           value: session.token,
           httpOnly: true,
-          secure: true,
+          secure: isProduction,
           sameSite: 'lax',
           expires: session.expiresAt,
           path: '/',
+          ...(isProduction && { domain: '.eclip.pro' }),
         });
         
         await sql.end({ timeout: 5 });

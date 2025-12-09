@@ -44,7 +44,11 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
       if (response.ok) {
         const data = await response.json();
         setUser(data);
+      } else if (response.status === 401) {
+        // Explicitly clear user on 401 (not authenticated)
+        setUser(null);
       } else {
+        // Other errors - also clear user to be safe
         setUser(null);
       }
     } catch (error) {

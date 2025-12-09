@@ -39,8 +39,8 @@ export function LoginForm() {
         description: 'You have been logged in.',
       });
 
-      router.push('/dashboard');
-      router.refresh();
+      // Use hard reload to ensure cookie is properly set and middleware validates it
+      window.location.href = '/dashboard';
     } catch (error: any) {
       toast({
         title: 'Error',

@@ -24,12 +24,13 @@ export default function LandingPage() {
   const [topPlayers, setTopPlayers] = useState<any[]>([]);
   const [statsLoading, setStatsLoading] = useState(true);
 
-  // Redirect authenticated users to dashboard
+  // Redirect authenticated users to dashboard (only once)
   useEffect(() => {
     if (!isLoading && user) {
-      router.push('/dashboard');
+      // Use replace to avoid back button issues
+      window.location.replace('/dashboard');
     }
-  }, [user, isLoading, router]);
+  }, [user, isLoading]);
 
   // Fetch real stats and top players
   useEffect(() => {

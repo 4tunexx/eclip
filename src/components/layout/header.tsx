@@ -115,25 +115,19 @@ export function Header() {
       
       console.log('[Logout] API response status:', logoutResponse.status);
       
-      if (!logoutResponse.ok) {
-        console.error('[Logout] Logout API returned error:', logoutResponse.status);
+      if (logoutResponse.ok) {
+        const data = await logoutResponse.json();
+        console.log('[Logout] Server response:', data);
       }
       
-      // Wait for server to clear the cookie
-      await new Promise(resolve => setTimeout(resolve, 300));
-      
-      // Update user context to null before redirect
-      console.log('[Logout] Refetching user context...');
-      await refetch();
-      console.log('[Logout] User context should be cleared now');
-      
-      // Hard reload to landing page - forces server to re-validate session
-      console.log('[Logout] Redirecting to landing page...');
-      window.location.replace('/');
+      // Immediately redirect with hard reload - no waiting, no refetch
+      // This ensures cookies are cleared and middleware can't redirect back
+      console.log('[Logout] Performing hard redirect to landing page...');
+      window.location.href = '/';
     } catch (error) {
       console.error('[Logout] Logout error:', error);
-      // Force logout on error with hard reload
-      window.location.replace('/');
+      // Force redirect on error
+      window.location.href = '/';
     }
   };
 
