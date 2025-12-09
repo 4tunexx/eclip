@@ -72,6 +72,22 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   useEffect(() => {
+    // Check if user just logged out
+    const logoutTime = localStorage.getItem('logout_timestamp');
+    if (logoutTime) {
+      const timeSinceLogout = Date.now() - parseInt(logoutTime);
+      if (timeSinceLogout < 2000) {
+        // User just logged out, don't fetch user data
+        console.log('[UserContext] Skipping fetch - user just logged out');
+        setIsLoading(false);
+        setUser(null);
+        hasFetchedRef.current = true;
+        return;
+      }
+      // Clear old logout timestamp
+      localStorage.removeItem('logout_timestamp');
+    }
+    
     // Only fetch once on mount
     if (!hasFetchedRef.current) {
       hasFetchedRef.current = true;

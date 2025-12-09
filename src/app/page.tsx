@@ -27,6 +27,19 @@ export default function LandingPage() {
   // Redirect authenticated users to dashboard (only once)
   useEffect(() => {
     if (!isLoading && user) {
+      // Check if user just logged out (within last 2 seconds)
+      const logoutTime = localStorage.getItem('logout_timestamp');
+      if (logoutTime) {
+        const timeSinceLogout = Date.now() - parseInt(logoutTime);
+        if (timeSinceLogout < 2000) {
+          // User just logged out, don't redirect
+          console.log('[LandingPage] Ignoring redirect - user just logged out');
+          return;
+        }
+        // Clear old logout timestamp
+        localStorage.removeItem('logout_timestamp');
+      }
+      
       // Use replace to avoid back button issues
       window.location.replace('/dashboard');
     }

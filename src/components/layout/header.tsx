@@ -104,12 +104,15 @@ export function Header() {
     try {
       console.log('[Logout] Starting logout process...');
       
-      // FIRST: Clear user context immediately to prevent redirects
+      // FIRST: Set logout timestamp to prevent auto-login redirect
+      localStorage.setItem('logout_timestamp', Date.now().toString());
+      
+      // SECOND: Clear user context immediately to prevent redirects
       if (typeof clearUser === 'function') {
         clearUser();
       }
       
-      // SECOND: Call logout API to clear session server-side
+      // THIRD: Call logout API to clear session server-side
       const logoutResponse = await fetch('/api/auth/logout', { 
         method: 'POST', 
         credentials: 'include',
@@ -125,7 +128,7 @@ export function Header() {
         console.log('[Logout] Server response:', data);
       }
       
-      // THIRD: Redirect with hard reload to ensure clean state
+      // FOURTH: Redirect with hard reload to ensure clean state
       console.log('[Logout] Performing hard redirect to landing page...');
       window.location.href = '/';
     } catch (error) {
