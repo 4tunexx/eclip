@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { queueTickets, users, matches } from '@/lib/db/schema';
-import { getCurrentUser } from '@/lib/auth';
+import { getCurrentUser, checkFullVerification } from '@/lib/auth';
 import { eq, and, gte, lte } from 'drizzle-orm';
 
 export async function POST() {
@@ -32,11 +32,12 @@ export async function POST() {
       );
     }
 
-    // Check prerequisites
-    if (!user.emailVerified) {
+    // Check if user has verified email and Steam account
+    const verification = await checkFullVerification(user);
+    if (!verification.verified) {
       return NextResponse.json(
-        { error: 'Email must be verified to queue' },
-        { status: 400 }
+        { error: verification.reason || 'Email and Steam verification required to queue' },
+        { status: 403 }
       );
     }
 
@@ -72,4 +73,3 @@ export async function POST() {
     );
   }
 }
-

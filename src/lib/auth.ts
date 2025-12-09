@@ -124,6 +124,36 @@ export async function getCurrentUser() {
   return null;
 }
 
+// Check if user has both email and Steam verification
+// Admins/Moderators bypass this check
+export async function checkFullVerification(user: any): Promise<{ verified: boolean; reason?: string }> {
+  const userRole = (user?.role || 'USER').toUpperCase();
+  
+  // Admins and moderators don't need verification
+  if (userRole === 'ADMIN' || userRole === 'MODERATOR' || userRole === 'MOD') {
+    return { verified: true };
+  }
+
+  // Regular users must have both email and Steam verified
+  const emailVerified = user?.emailVerified === true;
+  
+  // Check if steamId is real (not a placeholder)
+  // Real Steam IDs are 17-digit numbers
+  // Placeholders start with "temp-" or end with "@steam.local"
+  const steamId = user?.steamId || '';
+  const isRealSteamId = /^\d{17}$/.test(steamId);
+
+  if (!emailVerified) {
+    return { verified: false, reason: 'Email must be verified' };
+  }
+
+  if (!isRealSteamId) {
+    return { verified: false, reason: 'Steam account must be authenticated' };
+  }
+
+  return { verified: true };
+}
+
 export async function logout() {
   const cookieStore = await cookies();
   const token = cookieStore.get('session')?.value;
@@ -138,16 +168,22 @@ export async function logout() {
     }
   }
 
+  // Determine if production to match cookie creation settings
+  const isProduction = process.env.API_BASE_URL?.includes('www.eclip.pro') || 
+                      process.env.STEAM_REALM?.includes('www.eclip.pro');
+
   // Delete cookie with explicit settings to ensure it's cleared
+  // IMPORTANT: These attributes must match the original cookie creation
   cookieStore.set({
     name: 'session',
     value: '',
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production' || process.env.API_BASE_URL?.includes('www.eclip.pro'),
+    secure: isProduction,
     sameSite: 'lax',
     expires: new Date(0), // Set to past date to delete
     path: '/',
     maxAge: 0,
+    ...(isProduction && { domain: '.eclip.pro' }), // Must match original cookie domain
   });
 }
 

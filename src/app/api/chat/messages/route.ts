@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getCurrentUser } from '@/lib/auth';
+import { getCurrentUser, checkFullVerification } from '@/lib/auth';
 import { db } from '@/lib/db';
 import { chatMessages, users } from '@/lib/db/schema';
 import { desc, eq } from 'drizzle-orm';
@@ -56,6 +56,15 @@ export async function POST(request: NextRequest) {
     const user = await getCurrentUser();
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    // Check if user has verified email and Steam account
+    const verification = await checkFullVerification(user);
+    if (!verification.verified) {
+      return NextResponse.json(
+        { error: verification.reason || 'Email and Steam verification required to use chat' },
+        { status: 403 }
+      );
     }
 
     const { text } = await request.json();

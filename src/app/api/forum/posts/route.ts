@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { forumPosts, forumThreads, users } from '@/lib/db/schema';
-import { getCurrentUser } from '@/lib/auth';
+import { getCurrentUser, checkFullVerification } from '@/lib/auth';
 import { eq } from 'drizzle-orm';
 import { z } from 'zod';
 
@@ -17,6 +17,15 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { error: 'Not authenticated' },
         { status: 401 }
+      );
+    }
+
+    // Check if user has verified email and Steam account (unless admin/moderator)
+    const verification = await checkFullVerification(user);
+    if (!verification.verified) {
+      return NextResponse.json(
+        { error: verification.reason || 'Email and Steam verification required to post in forum' },
+        { status: 403 }
       );
     }
 

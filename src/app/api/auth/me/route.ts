@@ -77,6 +77,10 @@ export async function GET() {
     const esr = Number((user as any).esr ?? 1000);
     const rankInfo = getRankFromESR(esr);
 
+    // Check if Steam ID is real (17-digit number) vs placeholder
+    const steamId = (user as any).steamId || '';
+    const hasSteamAuth = /^\d{17}$/.test(steamId);
+
     const responseData = {
       id: (user as any).id,
       email: (user as any).email || null,
@@ -89,6 +93,8 @@ export async function GET() {
       coins: Number((user as any).coins ?? 0),
       isAdmin: ((user as any).role || '').toUpperCase() === 'ADMIN',
       emailVerified: Boolean((user as any).emailVerified ?? (profile?.emailVerifiedAt ? true : false)),
+      hasSteamAuth: hasSteamAuth,
+      steamId: hasSteamAuth ? steamId : null,
       title: profile?.title || null,
       equippedFrame,
       equippedBanner,

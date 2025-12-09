@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { cosmetics, userInventory, users, transactions, notifications } from '@/lib/db/schema';
-import { getCurrentUser } from '@/lib/auth';
+import { getCurrentUser, checkFullVerification } from '@/lib/auth';
 import { eq, and } from 'drizzle-orm';
 import { z } from 'zod';
 import postgres from 'postgres';
@@ -17,6 +17,15 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { error: 'Not authenticated' },
         { status: 401 }
+      );
+    }
+
+    // Check if user has verified email and Steam account
+    const verification = await checkFullVerification(user);
+    if (!verification.verified) {
+      return NextResponse.json(
+        { error: verification.reason || 'Email and Steam verification required to purchase cosmetics' },
+        { status: 403 }
       );
     }
 

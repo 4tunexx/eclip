@@ -4,7 +4,7 @@ import postgres from 'postgres';
 import { db } from '@/lib/db';
 import { users } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
-import { createSession } from '@/lib/auth';
+import { createSession, getSession } from '@/lib/auth';
 
 async function fetchSteamAvatar(steamId: string): Promise<string | null> {
   if (!config.steam.apiKey) return null;
@@ -55,18 +55,44 @@ export async function GET(request: NextRequest) {
     const steamId = match[1];
     console.log('[Steam Auth] Extracted Steam ID:', steamId);
 
+    // Check if user is already logged in (linking scenario)
+    const existingSession = await getSession();
+    
     // Try drizzle users table first
     try {
-      const [existing] = await db.select().from(users).where(eq(users.steamId, steamId)).limit(1);
-      let userId = existing?.id as string | undefined;
-      let avatarUrl = existing?.avatar as string | undefined;
-      if (!userId) {
+      // Check if this Steam ID is already linked to an account
+      const [linkedUser] = await db.select().from(users).where(eq(users.steamId, steamId)).limit(1);
+      
+      let userId: string | undefined;
+      let isLinking = false;
+
+      if (linkedUser) {
+        // Steam ID already exists - use that user
+        userId = linkedUser.id as string;
+        console.log('[Steam Auth] Found existing user with this Steam ID');
+      } else if (existingSession) {
+        // User is logged in - link this Steam ID to their account
+        console.log('[Steam Auth] User is logged in, linking Steam ID...');
+        const [currentUser] = await db.select().from(users).where(eq(users.id, existingSession.userId)).limit(1);
+        
+        if (currentUser) {
+          userId = currentUser.id as string;
+          isLinking = true;
+          
+          // Update user with Steam ID
+          await db.update(users)
+            .set({ steamId })
+            .where(eq(users.id, userId));
+          console.log('[Steam Auth] Successfully linked Steam ID to existing user');
+        }
+      } else {
+        // New user registering with Steam
         const [u] = await db.insert(users).values({
           email: `${steamId}@steam.local`,
           username: `steam_${steamId.slice(-6)}`,
           passwordHash: null,
           steamId,
-          emailVerified: true,
+          emailVerified: false, // Steam users must verify email separately
           level: 1,
           xp: 0,
           esr: 1000,
@@ -75,9 +101,11 @@ export async function GET(request: NextRequest) {
           role: 'USER',
         }).returning();
         userId = u.id as string;
-        avatarUrl = (u as any)?.avatar || null;
+        console.log('[Steam Auth] Created new user with Steam ID');
       }
 
+      let avatarUrl = linkedUser?.avatar as string | undefined;
+      
       // Sync Steam avatar if we have none or a temp placeholder
       if (!avatarUrl) {
         const steamAvatar = await fetchSteamAvatar(steamId);
@@ -88,33 +116,43 @@ export async function GET(request: NextRequest) {
         }
       }
       
-      // Create session and set cookie
-      const session = await createSession(userId);
+      // Only create new session if not already logged in (not linking)
+      if (existingSession && isLinking) {
+        // User is already logged in with session, just redirect to success
+        const redirectUrl = new URL('/?steam-link=success', request.url);
+        return NextResponse.redirect(redirectUrl);
+      } else {
+        // Create session and set cookie for new login
+        const session = await createSession(userId!);
+        
+        console.log('[Steam Auth] Created session:', { userId, token: session.token.substring(0, 20) + '...', expiresAt: session.expiresAt });
+        
+        // Create redirect response to dashboard
+        const redirectUrl = new URL('/dashboard', request.url);
+        const response = NextResponse.redirect(redirectUrl);
+        
+        // Set cookie on response - don't set domain to allow it to work on any subdomain
+        response.cookies.set({
+          name: 'session',
+          value: session.token,
+          httpOnly: true,
+          secure: true, // Always use secure in production
+          sameSite: 'lax',
+          expires: session.expiresAt,
+          path: '/',
+        });
+        
+        return response;
+      }
+    } catch (drizzleErr) {
+      console.log('[Steam Auth] Drizzle error, falling back to legacy table:', drizzleErr);
       
-      console.log('[Steam Auth] Created session:', { userId, token: session.token.substring(0, 20) + '...', expiresAt: session.expiresAt });
-      
-      // Create redirect response to dashboard
-      const redirectUrl = new URL('/dashboard', request.url);
-      const response = NextResponse.redirect(redirectUrl);
-      
-      // Set cookie on response - don't set domain to allow it to work on any subdomain
-      response.cookies.set({
-        name: 'session',
-        value: session.token,
-        httpOnly: true,
-        secure: true, // Always use secure in production
-        sameSite: 'lax',
-        expires: session.expiresAt,
-        path: '/',
-      });
-      
-      return response;
-    } catch {
-      // Fallback: legacy public."User"
+      // Fallback to legacy public."User" table
       const sql = postgres(process.env.DATABASE_URL!, { max: 1 });
       try {
         const existing = await sql.unsafe('SELECT "id" FROM "public"."User" WHERE "steam_id" = $1 LIMIT 1;', [steamId]);
         let userId = existing.length ? existing[0].id : null;
+        
         if (!userId) {
           const ins = await sql.unsafe(
             'INSERT INTO "public"."User" ("id", "steam_id", "username", "eclip_id", "created_at", "updated_at", "rank_points", "coins") VALUES (gen_random_uuid(), $1, $2, $3, NOW(), NOW(), $4, $5) RETURNING "id";',
@@ -122,43 +160,39 @@ export async function GET(request: NextRequest) {
           );
           userId = ins[0].id;
         }
+        
         const steamAvatar = await fetchSteamAvatar(steamId);
         if (steamAvatar) {
           try {
             await sql.unsafe('UPDATE "public"."User" SET "avatar" = $1 WHERE "id" = $2;', [steamAvatar, userId]);
           } catch {}
         }
+        
+        const session = await createSession(userId);
+        
+        const redirectUrl = new URL('/dashboard', request.url);
+        const response = NextResponse.redirect(redirectUrl);
+        
+        response.cookies.set({
+          name: 'session',
+          value: session.token,
+          httpOnly: true,
+          secure: true,
+          sameSite: 'lax',
+          expires: session.expiresAt,
+          path: '/',
+        });
+        
         await sql.end({ timeout: 5 });
-        if (userId) {
-          const session = await createSession(userId);
-          
-          console.log('[Steam Auth Legacy] Created session:', { userId, token: session.token.substring(0, 20) + '...', expiresAt: session.expiresAt });
-          
-          // Create redirect response to dashboard
-          const redirectUrl = new URL('/dashboard', request.url);
-          const response = NextResponse.redirect(redirectUrl);
-          
-          // Set cookie on response - don't set domain to allow it to work on any subdomain
-          response.cookies.set({
-            name: 'session',
-            value: session.token,
-            httpOnly: true,
-            secure: true, // Always use secure in production
-            sameSite: 'lax',
-            expires: session.expiresAt,
-            path: '/',
-          });
-          
-          return response;
-        }
-        return NextResponse.redirect(new URL('/?steam=ok', request.url));
-      } catch (e) {
+        return response;
+      } catch (fallbackErr) {
         try { await sql.end({ timeout: 5 }); } catch {}
+        console.error('[Steam Auth] Fallback error:', fallbackErr);
         return NextResponse.redirect(new URL('/?steam=error', request.url));
       }
     }
   } catch (error) {
-    console.error('Steam return error:', error);
+    console.error('[Steam Auth] Error:', error);
     return NextResponse.redirect(new URL('/?steam=error', request.url));
   }
 }
