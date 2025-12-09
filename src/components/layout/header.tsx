@@ -102,29 +102,36 @@ export function Header() {
 
   const handleLogout = async () => {
     try {
+      console.log('[Logout] Starting logout process...');
+      
       // Call logout API to clear session server-side
-      await fetch('/api/auth/logout', { 
+      const logoutResponse = await fetch('/api/auth/logout', { 
         method: 'POST', 
         credentials: 'include',
         headers: {
           'Content-Type': 'application/json'
         }
-      }).catch(err => console.error('Logout API error:', err));
+      });
       
-      // Clear session cookie on client side with multiple attempts
-      document.cookie = 'session=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=.eclip.pro;';
-      document.cookie = 'session=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
-      document.cookie = 'session=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=eclip.pro;';
+      console.log('[Logout] API response status:', logoutResponse.status);
+      
+      if (!logoutResponse.ok) {
+        console.error('[Logout] Logout API returned error:', logoutResponse.status);
+      }
+      
+      // Wait for server to clear the cookie
+      await new Promise(resolve => setTimeout(resolve, 300));
       
       // Update user context to null before redirect
+      console.log('[Logout] Refetching user context...');
       await refetch();
+      console.log('[Logout] User context should be cleared now');
       
       // Hard reload to landing page - forces server to re-validate session
-      setTimeout(() => {
-        window.location.replace('/');
-      }, 200);
+      console.log('[Logout] Redirecting to landing page...');
+      window.location.replace('/');
     } catch (error) {
-      console.error('Logout error:', error);
+      console.error('[Logout] Logout error:', error);
       // Force logout on error with hard reload
       window.location.replace('/');
     }
