@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { badges } from '@/lib/db/schema';
-import { getCurrentUser } from '@/lib/auth';
+import { getCurrentUser, isUserAdmin } from '@/lib/auth';
 import { eq } from 'drizzle-orm';
 
 // GET: list all badges

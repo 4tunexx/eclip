@@ -1,13 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { users } from '@/lib/db/schema';
-import { getCurrentUser } from '@/lib/auth';
+import { getCurrentUser, isUserAdmin } from '@/lib/auth';
 import { eq, or, ilike } from 'drizzle-orm';
 
 export async function GET(request: NextRequest) {
   try {
     const user = await getCurrentUser();
-    if (!user || user.role !== 'ADMIN') {
+    if (!user || !isUserAdmin(user)) {
+      console.warn('[Admin Users] Unauthorized access attempt by user:', user?.id, 'role:', user?.role);
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 403 }

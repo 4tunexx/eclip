@@ -15,6 +15,15 @@ export async function GET(request: NextRequest) {
     }
 
     const userId = user.id;
+    // Validate userId is valid UUID
+    if (!userId || typeof userId !== 'string' || userId.length !== 36) {
+      console.error('[Notifications] Invalid userId:', userId, 'for user:', user.username);
+      return NextResponse.json(
+        { error: 'Invalid user session' },
+        { status: 401 }
+      );
+    }
+
     const limit = request.nextUrl.searchParams.get('limit') || '50';
     const unreadOnly = request.nextUrl.searchParams.get('unreadOnly') === 'true';
 
@@ -91,6 +100,15 @@ export async function PUT(request: NextRequest) {
       );
     }
 
+    // Validate userId
+    if (!user.id || typeof user.id !== 'string' || user.id.length !== 36) {
+      console.error('[Notifications PUT] Invalid userId:', user.id);
+      return NextResponse.json(
+        { error: 'Invalid user session' },
+        { status: 401 }
+      );
+    }
+
     const body = await request.json();
     const { notificationId, read, markAllAsRead } = body;
 
@@ -116,14 +134,23 @@ export async function PUT(request: NextRequest) {
       );
     }
 
-    // Verify notification belongs to user
+    // Verify notification belongs to user - THIS IS CRITICAL FOR SECURITY
     const notif = await db
       .select()
       .from(notifications)
       .where(eq(notifications.id, notificationId))
       .limit(1);
 
-    if (!notif || notif.length === 0 || notif[0].userId !== user.id) {
+    if (!notif || notif.length === 0) {
+      return NextResponse.json(
+        { error: 'Notification not found' },
+        { status: 404 }
+      );
+    }
+
+    // SECURITY: Ensure notification belongs to current user
+    if (notif[0].userId !== user.id) {
+      console.error('[Notifications] Unauthorized access attempt:', { requestedBy: user.id, notificationOwner: notif[0].userId });
       return NextResponse.json(
         { error: 'Notification not found' },
         { status: 404 }

@@ -13,6 +13,8 @@
     "db:introspect": "drizzle-kit introspect",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "node scripts/run-migrations.js",
+    "migrate:db": "tsx scripts/run-database-migrations.ts",
+    "verify:db": "tsx scripts/verify-database-schema.ts",
     "client:dev": "cd client-app && npm start",
     "client:build": "cd client-app && npm install && npm run build:win",
     "client:setup": "cd client-app && npm install"

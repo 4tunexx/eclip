@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import postgres from 'postgres';
-import { getCurrentUser } from '@/lib/auth';
+import { getCurrentUser, isUserAdmin } from '@/lib/auth';
 
 const sql = postgres(process.env.DATABASE_URL!, { max: 1 });
 
@@ -8,7 +8,8 @@ export async function POST(req: Request) {
   try {
     const user = await getCurrentUser();
     
-    if (!user || (user.role?.toUpperCase() !== 'ADMIN' && !user.isAdmin)) {
+    if (!user || !isUserAdmin(user)) {
+      console.warn('[Admin Coins] Unauthorized access attempt by user:', user?.id, 'role:', user?.role);
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 

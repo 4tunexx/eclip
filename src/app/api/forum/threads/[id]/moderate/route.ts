@@ -10,8 +10,13 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     const { id } = await params;
     const user = await getCurrentUser()
     if (!user) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
+    
+    // Strict role validation - require explicit MODERATOR or ADMIN role
     const role = (user as any).role?.toUpperCase?.() || 'USER'
-    if (!(role === 'ADMIN' || role === 'MOD' || role === 'MODERATOR')) {
+    const isAuthorized = role === 'ADMIN' || role === 'MODERATOR' || role === 'MOD'
+    
+    if (!isAuthorized) {
+      console.warn('[Forum Moderation] Unauthorized moderation attempt by user:', user.id, 'role:', role);
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 

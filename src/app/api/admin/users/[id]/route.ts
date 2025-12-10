@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { users, transactions, bans, acEvents } from '@/lib/db/schema';
-import { getCurrentUser } from '@/lib/auth';
+import { getCurrentUser, isUserAdmin } from '@/lib/auth';
 import { eq } from 'drizzle-orm';
 import { z } from 'zod';
 
@@ -21,7 +21,8 @@ export async function GET(
   try {
     const { id } = await params;
     const user = await getCurrentUser();
-    if (!user || user.role !== 'ADMIN') {
+    if (!user || !isUserAdmin(user)) {
+      console.warn('[Admin GET User] Unauthorized access attempt by user:', user?.id, 'role:', user?.role);
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 403 }
@@ -88,7 +89,8 @@ export async function PATCH(
   try {
     const { id } = await params;
     const admin = await getCurrentUser();
-    if (!admin || admin.role !== 'ADMIN') {
+    if (!admin || !isUserAdmin(admin)) {
+      console.warn('[Admin PATCH User] Unauthorized access attempt by user:', admin?.id, 'role:', admin?.role);
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 403 }

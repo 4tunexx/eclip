@@ -1,0 +1,8 @@
+========================================
+Direct Database Check
+Date: Wed Dec 10 10:38:19 UTC 2025
+========================================
+
+Testing connection...
+✗ Connection failed
+DATABASE_URL=postgresql://...

@@ -370,3 +370,14 @@ export const chatMessages = pgTable('chat_messages', {
   createdAt: timestamp('created_at').defaultNow().notNull(),
 });
 
+// Direct Messages table (user-to-user messaging)
+export const directMessages = pgTable('direct_messages', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  senderId: uuid('sender_id').references(() => users.id, { onDelete: 'cascade' }).notNull(),
+  recipientId: uuid('recipient_id').references(() => users.id, { onDelete: 'cascade' }).notNull(),
+  content: text('content').notNull(),
+  read: boolean('read').default(false),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+});
+
+

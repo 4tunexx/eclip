@@ -90,12 +90,25 @@ export async function getCurrentUser() {
     return null;
   }
 
+  // Validate session userId is a valid UUID
+  if (!session.userId || typeof session.userId !== 'string' || session.userId.length !== 36) {
+    console.error('[Auth] Invalid session userId:', session.userId);
+    return null;
+  }
+
   try {
     const [user] = await db.select()
       .from(users)
       .where(eq(users.id, session.userId))
       .limit(1);
-    if (user) return user as any;
+    if (user) {
+      // Validate user has proper ID
+      if (!user.id) {
+        console.error('[Auth] User returned without ID from database');
+        return null;
+      }
+      return user as any;
+    }
   } catch {}
 
   // Fallback: legacy public."User" table
@@ -171,4 +184,19 @@ export async function logout() {
   // Delete cookie - Next.js cookies().delete() handles all variations
   cookieStore.delete('session');
 }
+
+// Helper function to check if user is admin
+export function isUserAdmin(user: any): boolean {
+  if (!user) return false;
+  const role = (user.role || '').toUpperCase();
+  return user.isAdmin === true || role === 'ADMIN';
+}
+
+// Helper function to check if user is moderator or admin
+export function isUserModerator(user: any): boolean {
+  if (!user) return false;
+  const role = (user.role || '').toUpperCase();
+  return user.isAdmin === true || role === 'ADMIN' || role === 'MODERATOR' || role === 'MOD';
+}
+
 

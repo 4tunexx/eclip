@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { cosmetics } from '@/lib/db/schema';
-import { getCurrentUser } from '@/lib/auth';
+import { getCurrentUser, isUserAdmin } from '@/lib/auth';
 import { z } from 'zod';
 
 const createCosmeticSchema = z.object({
@@ -17,7 +17,8 @@ const createCosmeticSchema = z.object({
 export async function GET() {
   try {
     const user = await getCurrentUser();
-    if (!user || user.role !== 'ADMIN') {
+    if (!user || !isUserAdmin(user)) {
+      console.warn('[Admin Cosmetics GET] Unauthorized access attempt by user:', user?.id, 'role:', user?.role);
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 403 }
@@ -46,7 +47,8 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     const user = await getCurrentUser();
-    if (!user || user.role !== 'ADMIN') {
+    if (!user || !isUserAdmin(user)) {
+      console.warn('[Admin Cosmetics POST] Unauthorized access attempt by user:', user?.id, 'role:', user?.role);
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 403 }

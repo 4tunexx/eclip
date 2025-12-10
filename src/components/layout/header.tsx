@@ -43,6 +43,10 @@ export function Header() {
   const [notifications, setNotifications] = useState<any[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [notificationsLoading, setNotificationsLoading] = useState(true);
+  
+  const [messages, setMessages] = useState<any[]>([]);
+  const [messagesUnreadCount, setMessagesUnreadCount] = useState(0);
+  const [messagesLoading, setMessagesLoading] = useState(true);
 
   // Removed automatic refetch interval - use manual refetch when needed
   // If you need to update coins, call refetch() after coin-changing actions
@@ -50,6 +54,7 @@ export function Header() {
   useEffect(() => {
     if (user?.id) {
       fetchNotifications();
+      fetchMessages();
     }
   }, [user?.id]);
 
@@ -71,6 +76,26 @@ export function Header() {
       setUnreadCount(0);
     } finally {
       setNotificationsLoading(false);
+    }
+  };
+
+  const fetchMessages = async () => {
+    try {
+      const response = await fetch('/api/messages', { credentials: 'include' });
+      if (response.ok) {
+        const data = await response.json();
+        setMessages(data.conversations || []);
+        setMessagesUnreadCount(data.totalUnread || 0);
+      } else if (response.status === 401) {
+        setMessages([]);
+        setMessagesUnreadCount(0);
+      }
+    } catch (error) {
+      // Silently fail on errors
+      setMessages([]);
+      setMessagesUnreadCount(0);
+    } finally {
+      setMessagesLoading(false);
     }
   };
 
@@ -246,11 +271,55 @@ export function Header() {
             </DropdownMenuContent>
           </DropdownMenu>
 
-          {/* Messages - placeholder for future */}
-          <Button variant="ghost" size="icon" className="relative disabled opacity-50" disabled title="Messages coming soon">
-            <MessageSquare className="h-5 w-5" />
-            <span className="sr-only">Messages</span>
-          </Button>
+          {/* Messages */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" className="relative">
+                <MessageSquare className="h-5 w-5" />
+                {messagesUnreadCount > 0 && (
+                  <Badge className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full p-0 text-[10px] bg-destructive">
+                    {messagesUnreadCount > 9 ? '9+' : messagesUnreadCount}
+                  </Badge>
+                )}
+                <span className="sr-only">Messages</span>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-80">
+              <DropdownMenuLabel>Messages</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              {messagesLoading ? (
+                <div className="p-4 text-center text-sm text-muted-foreground">Loading...</div>
+              ) : messages.length === 0 ? (
+                <div className="p-4 text-center text-sm text-muted-foreground">No messages</div>
+              ) : (
+                <ScrollArea className="h-72">
+                  <div className="space-y-2 p-2">
+                    {messages.map((conv) => (
+                      <div
+                        key={conv.userId}
+                        className="flex items-start gap-3 p-3 rounded-lg hover:bg-accent/50 transition-colors group cursor-pointer"
+                        onClick={() => {
+                          router.push(`/messages?with=${conv.userId}`);
+                        }}
+                      >
+                        <img 
+                          src={conv.avatar || '/default-avatar.png'} 
+                          alt={conv.username}
+                          className="h-8 w-8 rounded-full"
+                        />
+                        <div className="flex-1">
+                          <p className="font-medium text-sm">{conv.username}</p>
+                          {conv.lastMessage && (
+                            <p className="text-xs text-muted-foreground line-clamp-1">{conv.lastMessage}</p>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </ScrollArea>
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
 
         <DropdownMenu>
