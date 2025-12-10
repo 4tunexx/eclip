@@ -2,17 +2,37 @@ import nodemailer from 'nodemailer';
 import { config } from './config';
 
 // Create reusable transporter - prefer EMAIL_SERVER URL if provided
-const transporter = config.email.server
-  ? nodemailer.createTransport(config.email.server)
-  : nodemailer.createTransport({
-      host: 'mailout.one.com',
-      port: 465,
-      secure: true, // true for 465, false for other ports
-      auth: {
-        user: config.email.user,
-        pass: config.email.password,
-      },
-    });
+let transporter: any;
+
+if (config.email.server) {
+  // Use EMAIL_SERVER URL directly
+  console.log('[Email] Using EMAIL_SERVER URL');
+  transporter = nodemailer.createTransport(config.email.server);
+} else if (config.email.password && config.email.user) {
+  // Use individual credentials with explicit host/port
+  console.log('[Email] Using individual credentials:', {
+    host: config.email.host,
+    port: config.email.port,
+    user: config.email.user,
+  });
+  transporter = nodemailer.createTransport({
+    host: config.email.host,
+    port: config.email.port,
+    secure: config.email.port === 465, // true for 465, false for other ports
+    auth: {
+      user: config.email.user,
+      pass: config.email.password,
+    },
+  });
+} else {
+  // Fallback - no auth (for testing/development)
+  console.log('[Email] No credentials configured, using fallback');
+  transporter = nodemailer.createTransport({
+    host: config.email.host,
+    port: config.email.port,
+    secure: config.email.port === 465,
+  });
+}
 
 export interface EmailOptions {
   to: string;
@@ -47,7 +67,10 @@ export async function sendEmail(options: EmailOptions): Promise<void> {
 
 export async function sendVerificationEmail(email: string, token: string, username: string) {
   console.log('[Email] Attempting to send verification email to:', email);
-  console.log('[Email] Config check - server:', !!config.email.server, 'user:', config.email.user, 'password configured:', !!config.email.password);
+  console.log('[Email] Config check - using EMAIL_SERVER:', !!config.email.server);
+  if (!config.email.server) {
+    console.log('[Email] Fallback - user:', config.email.user, 'password configured:', !!config.email.password);
+  }
 
   // Prefer EMAIL_VERIFY_URL if present; else fallback to API base URL
   const base = config.email.verifyUrl || `${config.api.baseUrl}/api/auth/verify-email`;

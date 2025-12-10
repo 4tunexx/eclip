@@ -1,0 +1,37 @@
+[Email] Attempting to send verification email to: winina6164@crsay.com
+
+[Email] Config check - server: true user: noreply@eclip.pro password configured: false
+
+[Email] Verification URL: https://eclip.pro/api/auth/verify-email?token=ed5140fe-d615-47fe-bc8b-e50bf00410ce
+
+[Email] Sending email to: winina6164@crsay.com from: noreply@eclip.pro
+
+[Email] Error sending email: Error: connect ETIMEDOUT 46.30.211.139:465
+    at <unknown> (Error: connect ETIMEDOUT 46.30.211.139:465) {
+  errno: -110,
+  code: 'ESOCKET',
+  syscall: 'connect',
+  address: '46.30.211.139',
+  port: 465,
+  command: 'CONN'
+}
+
+[Email] Failed to send verification email: Error: connect ETIMEDOUT 46.30.211.139:465
+    at <unknown> (Error: connect ETIMEDOUT 46.30.211.139:465) {
+  errno: -110,
+  code: 'ESOCKET',
+  syscall: 'connect',
+  address: '46.30.211.139',
+  port: 465,
+  command: 'CONN'
+}
+
+[Register] Failed to send verification email: Error: connect ETIMEDOUT 46.30.211.139:465
+    at <unknown> (Error: connect ETIMEDOUT 46.30.211.139:465) {
+  errno: -110,
+  code: 'ESOCKET',
+  syscall: 'connect',
+  address: '46.30.211.139',
+  port: 465,
+  command: 'CONN'
+}

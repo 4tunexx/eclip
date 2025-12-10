@@ -49,3 +49,4 @@ public/downloads/*.exe
 public/downloads/*.zip
 client-app/dist/
 client-app/node_modules/
+.env*.local

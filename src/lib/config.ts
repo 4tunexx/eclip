@@ -66,6 +66,8 @@ export const config = {
     from: process.env.EMAIL_FROM || 'noreply@eclip.pro',
     user: process.env.EMAIL_USER || 'noreply@eclip.pro',
     password: process.env.EMAIL_PASSWORD || process.env.EMAIL_PASS,
+    host: process.env.EMAIL_HOST || 'mailout.one.com',
+    port: parseInt(process.env.EMAIL_PORT || '465'),
     supportEmail: process.env.SUPPORT_EMAIL || 'support@eclip.pro',
     verifyUrl: process.env.EMAIL_VERIFY_URL, // Full verify endpoint base
   },
