@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import {
   AlertCircle,
   BarChart,
@@ -15,6 +16,7 @@ import {
   Loader2,
 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { useUser } from '@/hooks/use-user';
 
 interface AdminStats {
   totalUsers: number;
@@ -24,8 +26,21 @@ interface AdminStats {
 }
 
 export default function AdminIndexPage() {
+  const router = useRouter();
+  const { user, isLoading } = useUser();
   const [stats, setStats] = useState<AdminStats | null>(null);
   const [loading, setLoading] = useState(true);
+
+  // Check admin role
+  useEffect(() => {
+    if (!isLoading && user) {
+      const isAdmin = ((user as any)?.isAdmin as boolean) || (((user as any)?.role || '').toUpperCase() === 'ADMIN');
+      if (!isAdmin) {
+        console.warn('[Admin] User attempted unauthorized access to admin panel');
+        router.replace('/dashboard');
+      }
+    }
+  }, [user, isLoading, router]);
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -68,6 +83,23 @@ export default function AdminIndexPage() {
       positive: true
     }
   ];
+
+  // Show loading while checking auth
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-background">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-sm text-muted-foreground">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  const isAdmin = ((user as any)?.isAdmin as boolean) || (((user as any)?.role || '').toUpperCase() === 'ADMIN');
+  if (!isAdmin) {
+    return null; // Will redirect via useEffect
+  }
 
   return (
     <div className="space-y-8">

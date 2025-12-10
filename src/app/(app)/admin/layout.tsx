@@ -1,6 +1,11 @@
+'use client';
+
 import Link from "next/link";
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ShieldAlert, Users, Gamepad2, Gem, Settings, Award, Target, Trophy, BarChart3 } from "lucide-react";
+import { useUser } from "@/hooks/use-user";
 
 const adminNav = [
     { name: "Anti-Cheat", href: "/admin/anti-cheat", icon: ShieldAlert, disabled: false },
@@ -19,6 +24,37 @@ export default function AdminLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const router = useRouter();
+  const { user, isLoading } = useUser();
+
+  // Check admin role and redirect if not authorized
+  useEffect(() => {
+    if (!isLoading && user) {
+      const isAdmin = ((user as any)?.isAdmin as boolean) || (((user as any)?.role || '').toUpperCase() === 'ADMIN');
+      if (!isAdmin) {
+        console.warn('[Admin] User attempted unauthorized access to admin panel');
+        router.replace('/dashboard');
+      }
+    }
+  }, [user, isLoading, router]);
+
+  // Show loading while checking auth
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-background">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-sm text-muted-foreground">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  const isAdmin = ((user as any)?.isAdmin as boolean) || (((user as any)?.role || '').toUpperCase() === 'ADMIN');
+  if (!isAdmin) {
+    return null; // Will redirect via useEffect
+  }
+
   return (
     <div className="p-4 md:p-8 space-y-8">
       <div className="flex items-center justify-between">
