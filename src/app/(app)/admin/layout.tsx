@@ -66,16 +66,24 @@ export default function AdminLayout({
       </div>
       
       <Tabs defaultValue="/admin/anti-cheat" className="w-full">
-        <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-9 gap-2 h-auto overflow-x-auto">
+        <div className="overflow-x-auto pb-2 -mx-4 px-4 sm:mx-0 sm:px-0">
+          <TabsList className="inline-flex sm:grid w-max sm:w-full grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-9 gap-1 sm:gap-2 h-auto p-1">
             {adminNav.map((item) => (
-                <TabsTrigger value={item.href} key={item.href} asChild disabled={item.disabled}>
-                    <Link href={item.href}>
-                        <item.icon className="mr-2 h-4 w-4" />
-                        {item.name}
+                <TabsTrigger 
+                  value={item.href} 
+                  key={item.href} 
+                  asChild 
+                  disabled={item.disabled}
+                  className="whitespace-nowrap text-xs sm:text-sm px-2 sm:px-3 py-2"
+                >
+                    <Link href={item.href} className="flex items-center gap-1 sm:gap-2">
+                        <item.icon className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
+                        <span className="hidden xs:inline sm:inline">{item.name}</span>
                     </Link>
                 </TabsTrigger>
             ))}
-        </TabsList>
+          </TabsList>
+        </div>
         {children}
       </Tabs>
 

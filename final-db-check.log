@@ -1,9 +1,0 @@
-./check-db-simple.sh: line 4: export: `#': not a valid identifier
-✅ DATABASE_URL loaded
-🔍 Checking database connection...
-./check-db-simple.sh: line 16: psql: command not found
-
-📊 First 10 users:
-./check-db-simple.sh: line 28: psql: command not found
-
-✅ Database check complete!

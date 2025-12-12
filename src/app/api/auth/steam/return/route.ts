@@ -106,13 +106,14 @@ export async function GET(request: NextRequest) {
 
       let avatarUrl = linkedUser?.avatar as string | undefined;
       
-      // Sync Steam avatar if we have none or a temp placeholder
-      if (!avatarUrl) {
+      // Always fetch and update Steam avatar for new logins and when missing
+      if (!avatarUrl || !linkedUser) {
         const steamAvatar = await fetchSteamAvatar(steamId);
         if (steamAvatar) {
           await db.update(users)
-            .set({ avatar: steamAvatar })
+            .set({ avatar: steamAvatar, updatedAt: new Date() })
             .where(eq(users.id as any, userId));
+          console.log('[Steam Auth] Updated avatar for user:', userId);
         }
       }
       
@@ -122,10 +123,18 @@ export async function GET(request: NextRequest) {
           const redirectUrl = new URL('/dashboard?steam-link=success', request.url);
           return NextResponse.redirect(redirectUrl);
         } else {
-          // Create session and set cookie for new login
+          // Delete any existing sessions for this user to prevent stale data
+          try {
+            await db.delete(sessions).where(eq(sessions.userId as any, userId));
+            console.log('[Steam Auth] Cleared existing sessions for user:', userId);
+          } catch (err) {
+            console.log('[Steam Auth] Could not clear existing sessions:', err);
+          }
+          
+          // Create NEW session and set cookie for new login
           const session = await createSession(userId!);
           
-          console.log('[Steam Auth] Created session:', { userId, token: session.token.substring(0, 20) + '...', expiresAt: session.expiresAt });
+          console.log('[Steam Auth] Created NEW session:', { userId, token: session.token.substring(0, 20) + '...', expiresAt: session.expiresAt });
           
           // Create redirect response to dashboard
           const redirectUrl = new URL('/dashboard', request.url);
@@ -148,7 +157,12 @@ export async function GET(request: NextRequest) {
           });
           
           // Clear the logout timestamp to allow UserContext to refetch
-          response.headers.set('Set-Cookie', `logout_timestamp=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 UTC;`);
+          response.cookies.set({
+            name: 'logout_timestamp',
+            value: '',
+            expires: new Date(0),
+            path: '/',
+          });
           
           return response;
         }

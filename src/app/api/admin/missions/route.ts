@@ -43,14 +43,11 @@ export async function POST(request: NextRequest) {
 
     const createdResult = await db.insert(missions)
       .values({
-        id: randomUUID(),
         title: missionData.title,
         description: missionData.description,
-        category: missionData.category,
-        requirementType: missionData.requirementType,
-        requirementValue: missionData.requirementValue,
-        target: missionData.target || 1,
-        isDaily: missionData.isDaily || false,
+        type: missionData.type || 'DAILY', // 'DAILY' | 'WEEKLY' | 'ACHIEVEMENT'
+        objectiveType: missionData.objectiveType || 'daily_login',
+        objectiveValue: missionData.objectiveValue || 1,
         isActive: true,
         rewardXp: missionData.rewardXp || 0,
         rewardCoins: missionData.rewardCoins || 0,

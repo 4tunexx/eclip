@@ -16,15 +16,15 @@ export async function GET(request: NextRequest) {
     }
 
     const url = new URL(request.url);
-    const category = url.searchParams.get('category');
+    const missionType = url.searchParams.get('type'); // 'DAILY', 'WEEKLY', 'ACHIEVEMENT'
     const isDaily = url.searchParams.get('daily') === 'true';
 
     const filters = [eq(missions.isActive, true)];
-    if (category) {
-      filters.push(eq(missions.category, category));
+    if (missionType) {
+      filters.push(eq(missions.type, missionType));
     }
     if (isDaily) {
-      filters.push(eq(missions.isDaily, true));
+      filters.push(eq(missions.type, 'DAILY'));
     }
 
     const allMissions = await db

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import { users } from '@/lib/db/schema';
+import { users, sessions } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
 import postgres from 'postgres';
 import { createSession } from '@/lib/auth';
@@ -77,6 +77,14 @@ export async function GET(request: NextRequest) {
     if (!verifiedUserId) {
       // Token invalid or already used
       return NextResponse.redirect(new URL('/?verify=invalid', request.url));
+    }
+
+    // CRITICAL: Delete all old sessions for this user before creating new one
+    try {
+      await db.delete(sessions).where(eq(sessions.userId, verifiedUserId));
+      console.log('[Verify Email] Cleared old sessions for user:', verifiedUserId);
+    } catch (err) {
+      console.error('[Verify Email] Failed to clear old sessions:', err);
     }
 
     // Create session for verified user to auto-login

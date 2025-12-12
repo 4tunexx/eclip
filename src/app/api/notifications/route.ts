@@ -210,3 +210,104 @@ export async function POST(request: NextRequest) {
     );
   }
 }
+
+/**
+ * DELETE /api/notifications
+ * Delete a specific notification or clear all notifications
+ * Query params: id=<notificationId> or clearAll=true
+ */
+export async function DELETE(request: NextRequest) {
+  try {
+    const user = await getCurrentUser();
+    if (!user) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
+    const { searchParams } = new URL(request.url);
+    const notificationId = searchParams.get('id');
+    const clearAll = searchParams.get('clearAll') === 'true';
+
+    if (clearAll) {
+      // Delete all notifications for this user
+      const deleted = await db.delete(notifications).where(eq(notifications.userId, user.id)).returning();
+      console.log('[Notifications] Cleared all notifications for user:', user.username, '- Count:', deleted.length);
+      return NextResponse.json({ success: true, message: 'All notifications cleared', count: deleted.length });
+    } else if (notificationId) {
+      // Delete specific notification (must belong to user)
+      const deleted = await db.delete(notifications).where(
+        and(
+          eq(notifications.id, notificationId),
+          eq(notifications.userId, user.id)
+        )
+      ).returning();
+      
+      if (deleted.length === 0) {
+        return NextResponse.json(
+          { error: 'Notification not found or unauthorized' },
+          { status: 404 }
+        );
+      }
+      
+      console.log('[Notifications] Deleted notification:', notificationId);
+      return NextResponse.json({ success: true });
+    } else {
+      return NextResponse.json(
+        { error: 'Missing notification ID or clearAll parameter' },
+        { status: 400 }
+      );
+    }
+  } catch (error) {
+    console.error('[Notifications] Delete error:', error);
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
+  }
+}
+
+export async function DELETE(request: NextRequest) {
+  try {
+    const user = await getCurrentUser();
+    if (!user) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
+    const { searchParams } = new URL(request.url);
+    const notificationId = searchParams.get('id');
+    const clearAll = searchParams.get('clearAll') === 'true';
+
+    if (clearAll) {
+      // Delete all notifications for this user
+      await db.delete(notifications).where(eq(notifications.userId, user.id));
+      console.log('[Notifications] Cleared all notifications for user:', user.username);
+      return NextResponse.json({ success: true, message: 'All notifications cleared' });
+    } else if (notificationId) {
+      // Delete specific notification
+      await db.delete(notifications).where(
+        and(
+          eq(notifications.id, notificationId),
+          eq(notifications.userId, user.id)
+        )
+      );
+      console.log('[Notifications] Deleted notification:', notificationId);
+      return NextResponse.json({ success: true });
+    } else {
+      return NextResponse.json(
+        { error: 'Missing notification ID or clearAll parameter' },
+        { status: 400 }
+      );
+    }
+  } catch (error) {
+    console.error('[Notifications] Delete error:', error);
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
+  }
+}

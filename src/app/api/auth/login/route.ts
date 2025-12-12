@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import { users } from '@/lib/db/schema';
+import { users, sessions } from '@/lib/db/schema';
 import { verifyPassword, createSession } from '@/lib/auth';
 import { eq } from 'drizzle-orm';
 import { z } from 'zod';
@@ -75,8 +75,19 @@ export async function POST(request: NextRequest) {
         );
       }
 
-      console.log('[Login] Password valid, creating session...');
+      console.log('[Login] Password valid, clearing old sessions...');
+      
+      // Delete any existing sessions for this user to prevent stale data
+      try {
+        await db.delete(sessions).where(eq(sessions.userId as any, user.id));
+        console.log('[Login] Cleared old sessions for user');
+      } catch (err) {
+        console.log('[Login] Could not clear old sessions:', err);
+      }
+      
+      // Create NEW session
       const session = await createSession(user.id);
+      console.log('[Login] Created new session');
       
       const response = NextResponse.json({
         success: true,

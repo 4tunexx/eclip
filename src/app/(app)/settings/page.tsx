@@ -140,13 +140,30 @@ export default function SettingsPage() {
       </div>
 
       <Tabs defaultValue="account" className="w-full">
-        <TabsList className="grid w-full grid-cols-5 max-w-4xl">
-          <TabsTrigger value="account"><User className="mr-2 h-4 w-4"/>Account</TabsTrigger>
-          <TabsTrigger value="security"><Lock className="mr-2 h-4 w-4"/>Security</TabsTrigger>
-          <TabsTrigger value="privacy"><Eye className="mr-2 h-4 w-4"/>Privacy</TabsTrigger>
-          <TabsTrigger value="social"><Users className="mr-2 h-4 w-4"/>Social</TabsTrigger>
-          <TabsTrigger value="notifications"><Bell className="mr-2 h-4 w-4"/>Notifications</TabsTrigger>
-        </TabsList>
+        <div className="overflow-x-auto pb-2 -mx-4 px-4 sm:mx-0 sm:px-0">
+          <TabsList className="inline-flex sm:grid w-max sm:w-full grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-1 sm:gap-2 h-auto p-1 max-w-4xl">
+            <TabsTrigger value="account" className="whitespace-nowrap text-xs sm:text-sm px-2 sm:px-3 gap-1 sm:gap-2">
+              <User className="h-3 w-3 sm:h-4 sm:w-4"/>
+              <span className="hidden xs:inline">Account</span>
+            </TabsTrigger>
+            <TabsTrigger value="security" className="whitespace-nowrap text-xs sm:text-sm px-2 sm:px-3 gap-1 sm:gap-2">
+              <Lock className="h-3 w-3 sm:h-4 sm:w-4"/>
+              <span className="hidden xs:inline">Security</span>
+            </TabsTrigger>
+            <TabsTrigger value="privacy" className="whitespace-nowrap text-xs sm:text-sm px-2 sm:px-3 gap-1 sm:gap-2">
+              <Eye className="h-3 w-3 sm:h-4 sm:w-4"/>
+              <span className="hidden xs:inline">Privacy</span>
+            </TabsTrigger>
+            <TabsTrigger value="social" className="whitespace-nowrap text-xs sm:text-sm px-2 sm:px-3 gap-1 sm:gap-2">
+              <Users className="h-3 w-3 sm:h-4 sm:w-4"/>
+              <span className="hidden xs:inline">Social</span>
+            </TabsTrigger>
+            <TabsTrigger value="notifications" className="whitespace-nowrap text-xs sm:text-sm px-2 sm:px-3 gap-1 sm:gap-2">
+              <Bell className="h-3 w-3 sm:h-4 sm:w-4"/>
+              <span className="hidden xs:inline">Notifications</span>
+            </TabsTrigger>
+          </TabsList>
+        </div>
         <div className="max-w-2xl mx-auto">
             <TabsContent value="account" className="mt-6">
             <Card className="bg-card/60 backdrop-blur-lg border border-white/10">

@@ -134,20 +134,20 @@ export const queueTickets = pgTable('queue_tickets', {
   createdAt: timestamp('created_at').defaultNow().notNull(),
 });
 
-// Missions - actual DB schema
+// Missions - ACTUAL DB schema from drizzle/0000_flippant_trish_tilby.sql
+// DO NOT CHANGE WITHOUT UPDATING MIGRATION!
 export const missions = pgTable('missions', {
   id: uuid('id').primaryKey().defaultRandom(),
   title: text('title').notNull(),
-  description: text('description').notNull(),
-  category: text('category').notNull(),
-  requirementType: text('requirement_type').notNull(),
-  requirementValue: text('requirement_value'),
-  target: integer('target').notNull(),
-  rewardXp: integer('reward_xp').notNull().default(0),
-  rewardCoins: integer('reward_coins').notNull().default(0),
+  description: text('description'),
+  type: missionTypeEnum('type').notNull(), // 'DAILY' | 'WEEKLY' | 'ACHIEVEMENT'
+  objectiveType: text('objective_type').notNull(), // 'daily_login', 'kill_count', etc
+  objectiveValue: integer('objective_value').notNull(), // numeric value for objective
+  rewardXp: integer('reward_xp').default(0).notNull(),
+  rewardCoins: decimal('reward_coins', { precision: 10, scale: 2 }).default('0').notNull(),
   rewardCosmeticId: uuid('reward_cosmetic_id'),
-  isDaily: boolean('is_daily').default(false),
-  isActive: boolean('is_active').default(true),
+  isActive: boolean('is_active').default(true).notNull(),
+  expiresAt: timestamp('expires_at'),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });

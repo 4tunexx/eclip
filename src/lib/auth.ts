@@ -21,6 +21,14 @@ export async function verifyPassword(password: string, hash: string): Promise<bo
 }
 
 export async function createSession(userId: string) {
+  // CRITICAL: Always delete old sessions before creating new one
+  try {
+    await db.delete(sessions).where(eq(sessions.userId, userId));
+    console.log('[Auth] Cleared old sessions for user:', userId);
+  } catch (cleanupErr) {
+    console.error('[Auth] Failed to clear old sessions:', cleanupErr);
+  }
+
   const token = jwt.sign({ userId }, JWT_SECRET, { expiresIn: '7d' });
   const expiresAt = new Date(Date.now() + SESSION_EXPIRY);
 
@@ -97,6 +105,7 @@ export async function getCurrentUser() {
   }
 
   try {
+    // Always fetch fresh data from database (no caching)
     const [user] = await db.select()
       .from(users)
       .where(eq(users.id, session.userId))
@@ -107,16 +116,19 @@ export async function getCurrentUser() {
         console.error('[Auth] User returned without ID from database');
         return null;
       }
+      // Return fresh user data
       return user as any;
     }
-  } catch {}
+  } catch (dbErr) {
+    console.error('[Auth] Database error fetching user:', dbErr);
+  }
 
   // Fallback: legacy public."User" table
   try {
     const postgresMod = await import('postgres');
     const sql = postgresMod.default(process.env.DATABASE_URL!, { max: 1 });
     try {
-      const rows = await sql.unsafe('SELECT "id", "email", "username", "avatarUrl", "role", "coins" FROM "public"."User" WHERE "id" = $1 LIMIT 1;', [session.userId]);
+      const rows = await sql.unsafe('SELECT "id", "email", "username", "avatarUrl", "avatar", "role", "coins", "steam_id" FROM "public"."User" WHERE "id" = $1 LIMIT 1;', [session.userId]);
       await sql.end({ timeout: 5 });
       if (rows.length) {
         const u: any = rows[0];
@@ -124,15 +136,20 @@ export async function getCurrentUser() {
           id: u.id,
           email: u.email,
           username: u.username,
-          avatarUrl: u.avatarUrl || null,
+          avatar: u.avatar || u.avatarUrl || null,
+          avatarUrl: u.avatar || u.avatarUrl || null,
           role: u.role || 'USER',
           coins: u.coins || '0',
+          steamId: u.steam_id || null,
         } as any;
       }
-    } catch {
+    } catch (sqlErr) {
+      console.error('[Auth] Legacy table error:', sqlErr);
       try { await sql.end({ timeout: 5 }); } catch {}
     }
-  } catch {}
+  } catch (importErr) {
+    console.error('[Auth] Failed to import postgres:', importErr);
+  }
 
   return null;
 }

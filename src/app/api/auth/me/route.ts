@@ -139,6 +139,15 @@ export async function GET() {
     };
 
     console.log('[API/Auth/Me] Returning user data:', responseData);
+    
+    // Track daily login asynchronously (don't wait for it)
+    fetch(new URL('/api/user/daily-login', request.url).toString(), {
+      method: 'POST',
+      headers: {
+        'Cookie': request.headers.get('cookie') || '',
+      },
+    }).catch(err => console.error('[Auth/Me] Daily login tracking failed:', err));
+    
     return NextResponse.json(responseData);
   } catch (error) {
     console.error('[API/Auth/Me] Error:', error);

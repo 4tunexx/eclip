@@ -20,7 +20,8 @@ export async function GET(request: NextRequest) {
     // Get active missions (optionally filter daily)
     const filters = [eq(missions.isActive, true)];
     if (dailyOnly) {
-      filters.push(eq(missions.isDaily, true));
+      // Filter missions with type === 'DAILY'
+      filters.push(eq(missions.type, 'DAILY'));
     }
 
     const activeMissions = await db
@@ -47,11 +48,12 @@ export async function GET(request: NextRequest) {
         id: mission.id,
         title: mission.title,
         description: mission.description,
-        category: mission.category,
-        isDaily: mission.isDaily,
-        objectiveValue: mission.target,
+        type: mission.type,
+        objectiveType: mission.objectiveType,
+        objectiveValue: mission.objectiveValue,
         rewardXp: mission.rewardXp,
         rewardCoins: mission.rewardCoins,
+        isActive: mission.isActive,
         userProgress: progress
           ? {
               missionId: progress.missionId,

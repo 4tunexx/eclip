@@ -338,19 +338,21 @@ export default function ProfilePage() {
         </Card>
 
         <Tabs defaultValue="overview" className="mt-8">
-          <TabsList className="grid w-full grid-cols-6 max-w-3xl">
-                <TabsTrigger value="overview">Overview</TabsTrigger>
-                <TabsTrigger value="matches">Matches</TabsTrigger>
-                <TabsTrigger value="achievements">Achievements</TabsTrigger>
-                <TabsTrigger value="badges">Badges</TabsTrigger>
-                <TabsTrigger value="ranks">Ranks</TabsTrigger>
-            <TabsTrigger value="customize">
-              <div className="flex items-center gap-2">
-                <Brush className="h-4 w-4" />
-                Customize
-              </div>
-            </TabsTrigger>
+          <div className="overflow-x-auto pb-2 -mx-4 px-4 sm:mx-0 sm:px-0">
+            <TabsList className="inline-flex sm:grid w-max sm:w-full grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-1 sm:gap-2 h-auto p-1 max-w-3xl">
+                <TabsTrigger value="overview" className="whitespace-nowrap text-xs sm:text-sm px-2 sm:px-3">Overview</TabsTrigger>
+                <TabsTrigger value="matches" className="whitespace-nowrap text-xs sm:text-sm px-2 sm:px-3">Matches</TabsTrigger>
+                <TabsTrigger value="achievements" className="whitespace-nowrap text-xs sm:text-sm px-2 sm:px-3">Achievements</TabsTrigger>
+                <TabsTrigger value="badges" className="whitespace-nowrap text-xs sm:text-sm px-2 sm:px-3">Badges</TabsTrigger>
+                <TabsTrigger value="ranks" className="whitespace-nowrap text-xs sm:text-sm px-2 sm:px-3">Ranks</TabsTrigger>
+                <TabsTrigger value="customize" className="whitespace-nowrap text-xs sm:text-sm px-2 sm:px-3">
+                  <div className="flex items-center gap-1 sm:gap-2">
+                    <Brush className="h-3 w-3 sm:h-4 sm:w-4" />
+                    <span>Customize</span>
+                  </div>
+                </TabsTrigger>
             </TabsList>
+          </div>
             <TabsContent value="overview" className="mt-6">
                 <Card className="bg-card/60 backdrop-blur-lg border border-white/10">
                     <CardHeader>

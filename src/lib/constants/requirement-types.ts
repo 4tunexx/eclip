@@ -21,6 +21,7 @@ export const MISSION_REQUIREMENT_TYPES = {
   MONEY_EARNED: { value: 'MONEY_EARNED', label: 'Money Earned', unit: 'amount' },
   ROUNDS_PLAYED: { value: 'ROUNDS_PLAYED', label: 'Rounds Played', unit: 'rounds' },
   TIMESPAN_DAYS: { value: 'TIMESPAN_DAYS', label: 'Timespan (Days)', unit: 'days' },
+  DAILY_LOGIN: { value: 'DAILY_LOGIN', label: 'Daily Login', unit: 'logins' },
 } as const;
 
 export const MISSION_REQUIREMENT_TYPE_OPTIONS = Object.values(MISSION_REQUIREMENT_TYPES).map(
