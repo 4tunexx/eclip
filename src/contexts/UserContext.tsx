@@ -89,6 +89,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
         setIsLoading(false);
         setUser(null);
         hasFetchedRef.current = true;
+        isFetchingRef.current = false;
         return;
       }
       // Clear old logout timestamp
@@ -100,7 +101,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
       hasFetchedRef.current = true;
       fetchUser();
     }
-  }, []); // Empty deps - only run on mount
+  }, [fetchUser]);
 
   // Refetch when page becomes visible (user returned from auth flow)
   useEffect(() => {
@@ -109,6 +110,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
         // User returned to tab - refetch to get latest auth state
         console.log('[UserContext] Page became visible, refetching user...');
         hasFetchedRef.current = false;
+        isFetchingRef.current = false; // Reset lock
         fetchUser();
       }
     };

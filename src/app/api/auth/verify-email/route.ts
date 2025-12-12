@@ -3,6 +3,7 @@ import { db } from '@/lib/db';
 import { users } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
 import postgres from 'postgres';
+import { createSession } from '@/lib/auth';
 
 export async function GET(request: NextRequest) {
   try {
@@ -78,7 +79,32 @@ export async function GET(request: NextRequest) {
       return NextResponse.redirect(new URL('/?verify=invalid', request.url));
     }
 
-    return NextResponse.redirect(new URL('/dashboard?verify=success', request.url));
+    // Create session for verified user to auto-login
+    try {
+      const session = await createSession(verifiedUserId);
+      const isProduction = process.env.NODE_ENV === 'production' || 
+                          process.env.API_BASE_URL?.includes('eclip.pro');
+      
+      const redirectUrl = new URL('/dashboard?verify=success', request.url);
+      const response = NextResponse.redirect(redirectUrl);
+      
+      response.cookies.set({
+        name: 'session',
+        value: session.token,
+        httpOnly: true,
+        secure: isProduction,
+        sameSite: 'lax',
+        expires: session.expiresAt,
+        path: '/',
+        ...(isProduction && { domain: '.eclip.pro' }),
+      });
+      
+      return response;
+    } catch (sessionErr) {
+      console.error('[Verify Email] Session creation error:', sessionErr);
+      // Fallback: at least redirect to dashboard verified
+      return NextResponse.redirect(new URL('/dashboard?verify=success&login=manual', request.url));
+    }
   } catch (error) {
     console.error('[Verify Email] Error:', error);
     return NextResponse.redirect(new URL('/?verify=error', request.url));

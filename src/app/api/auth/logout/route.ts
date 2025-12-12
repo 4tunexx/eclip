@@ -23,7 +23,8 @@ export async function POST() {
     const response = NextResponse.json({ 
       success: true,
       redirect: '/',
-      message: 'Logged out successfully'
+      message: 'Logged out successfully',
+      clearCache: true
     });
     
     // Delete the session cookie - multiple methods to ensure it works

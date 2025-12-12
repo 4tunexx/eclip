@@ -89,6 +89,8 @@ export async function GET() {
       level: (user as any).level ?? 1,
       xp: Number((user as any).xp ?? 0),
       rank: rankInfo.tier,
+      rankTier: rankInfo.tier,
+      rankDivision: rankInfo.division,
       esr: esr,
       coins: Number((user as any).coins ?? 0),
       role: (user as any).role || 'USER',

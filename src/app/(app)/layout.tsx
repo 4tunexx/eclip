@@ -17,7 +17,12 @@ export default function AppLayout({
   children: React.ReactNode;
 }) {
   const router = useRouter();
-  const { user, isLoading } = useUser();
+  const { user, isLoading, refetch } = useUser();
+
+  // Refetch user on layout mount (after Steam auth redirect)
+  useEffect(() => {
+    refetch();
+  }, []);
 
   // Redirect to landing page if not authenticated
   useEffect(() => {
