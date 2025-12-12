@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server';
+import { NextResponse, type NextRequest } from 'next/server';
 import { getCurrentUser } from '@/lib/auth';
 import { db } from '@/lib/db';
 import { userProfiles, cosmetics, vip_subscriptions } from '@/lib/db/schema';
@@ -6,7 +6,7 @@ import { eq, and, gt } from 'drizzle-orm';
 import postgres from 'postgres';
 import { getRankFromESR } from '@/lib/rank-calculator';
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
     const user = await getCurrentUser();
     if (!user) {

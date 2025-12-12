@@ -3,6 +3,7 @@ import { db } from '@/lib/db';
 import { users } from '@/lib/db/schema';
 import { hashPassword, createSession } from '@/lib/auth';
 import { sendVerificationEmail } from '@/lib/email';
+import { getRankFromESR } from '@/lib/rank-calculator';
 import { eq } from 'drizzle-orm';
 import { z } from 'zod';
 
@@ -54,6 +55,10 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: 'Username already taken' }, { status: 400 });
       }
 
+      // Calculate rank from ESR using real rank calculator
+      const defaultEsr = 1000;
+      const rankInfo = getRankFromESR(defaultEsr);
+
       // Insert respecting live schema (steam_id NOT NULL)
       const [user] = await db.insert(users).values({
         email: validated.email,
@@ -63,8 +68,10 @@ export async function POST(request: NextRequest) {
         emailVerified: false,
         level: 1,
         xp: 0,
-        esr: 1000,
-        rank: 'Bronze',
+        esr: defaultEsr,
+        rank: rankInfo.tier,
+        rankTier: rankInfo.tier,
+        rankDivision: rankInfo.division,
         coins: '0',
         role: 'USER',
         steamId: `temp-${crypto.randomUUID()}`, // placeholder until user links Steam
@@ -100,6 +107,9 @@ export async function POST(request: NextRequest) {
             );
           }
           
+          const defaultEsr = 1000;
+          const rankInfo = getRankFromESR(defaultEsr);
+
           const [user] = await db.insert(users).values({
             email: validated.email,
             username: validated.username,
@@ -108,8 +118,10 @@ export async function POST(request: NextRequest) {
             emailVerified: false,
             level: 1,
             xp: 0,
-            esr: 1000,
-            rank: 'Bronze',
+            esr: defaultEsr,
+            rank: rankInfo.tier,
+            rankTier: rankInfo.tier,
+            rankDivision: rankInfo.division,
             coins: '0',
             role: 'USER',
             steamId: `temp-${crypto.randomUUID()}`,

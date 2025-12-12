@@ -5,6 +5,7 @@ import { db } from '@/lib/db';
 import { users } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
 import { createSession, getSession } from '@/lib/auth';
+import { getRankFromESR } from '@/lib/rank-calculator';
 
 async function fetchSteamAvatar(steamId: string): Promise<string | null> {
   if (!config.steam.apiKey) return null;
@@ -87,6 +88,8 @@ export async function GET(request: NextRequest) {
         }
       } else {
         // New user registering with Steam
+        const defaultEsr = 1000;
+        const rankInfo = getRankFromESR(defaultEsr);
         const [u] = await db.insert(users).values({
           email: `${steamId}@steam.local`,
           username: `steam_${steamId.slice(-6)}`,
@@ -95,8 +98,10 @@ export async function GET(request: NextRequest) {
           emailVerified: false, // Steam users must verify email separately
           level: 1,
           xp: 0,
-          esr: 1000,
-          rank: 'Bronze',
+          esr: defaultEsr,
+          rank: rankInfo.tier,
+          rankTier: rankInfo.tier,
+          rankDivision: rankInfo.division,
           coins: '0',
           role: 'USER',
         }).returning();
