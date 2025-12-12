@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { UserAvatar } from '@/components/user-avatar';
 import { RankDisplay } from '@/components/rank-display';
-import { Loader2, Trophy, Zap, Target, Users, MessageSquare, Block } from 'lucide-react';
+import { Loader2, Trophy, Zap, Target, Users, MessageSquare, Shield } from 'lucide-react';
 import Link from 'next/link';
 import { useUser } from '@/hooks/use-user';
 
