@@ -153,10 +153,36 @@ export default function DashboardPage() {
   const equippedBanner = parseEquippedBanner();
   const bannerBackground = equippedBanner?.metadata?.gradient || 'rgb(34, 197, 94)';
 
+  // Calculate real K/D and Win Rate from actual match data
+  const totalMatches = matches.length;
+  
+  // Calculate total kills and deaths from all matches where user participated
+  let totalKills = 0;
+  let totalDeaths = 0;
+  let totalWins = 0;
+  
+  matches.forEach((match: any) => {
+    const playerStats = match.players?.find((p: any) => p.id === user.id) || match.players?.[0];
+    if (playerStats) {
+      totalKills += playerStats.kills || 0;
+      totalDeaths += playerStats.deaths || 0;
+    }
+    // Check if user was on winning team
+    if (match.winnerTeam && match.players?.find((p: any) => p.id === user.id)) {
+      const playerTeam = match.players?.find((p: any) => p.id === user.id)?.team;
+      if (playerTeam === match.winnerTeam) {
+        totalWins++;
+      }
+    }
+  });
+  
+  const kdRatio = totalDeaths > 0 ? (totalKills / totalDeaths).toFixed(2) : totalKills.toFixed(2);
+  const winRate = totalMatches > 0 ? Math.round((totalWins / totalMatches) * 100) : 0;
+
   const stats = [
-    { name: "Matches Played", value: matches.length.toString(), icon: Gamepad2 },
-    { name: "K/D", value: "1.23", icon: Crosshair },
-    { name: "Win Rate", value: "68%", icon: TrendingUp, color: "text-green-300" },
+    { name: "Matches Played", value: totalMatches.toString(), icon: Gamepad2 },
+    { name: "K/D", value: kdRatio, icon: Crosshair },
+    { name: "Win Rate", value: `${winRate}%`, icon: TrendingUp, color: "text-green-300" },
     { name: "Coins", value: user.coins?.toFixed(2) || "0.00", icon: CircleDollarSign, color: "text-yellow-400" },
   ];
 

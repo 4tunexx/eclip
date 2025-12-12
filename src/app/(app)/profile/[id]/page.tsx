@@ -1,22 +1,26 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { UserAvatar } from '@/components/user-avatar';
 import { RankDisplay } from '@/components/rank-display';
-import { Loader2, Trophy, Zap, Target, Users } from 'lucide-react';
+import { Loader2, Trophy, Zap, Target, Users, MessageSquare, Block } from 'lucide-react';
 import Link from 'next/link';
 import { useUser } from '@/hooks/use-user';
 
 export default function UserProfilePage() {
   const params = useParams();
+  const router = useRouter();
   const userId = params.id as string;
   const [userData, setUserData] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isFriend, setIsFriend] = useState(false);
+  const [isBlocked, setIsBlocked] = useState(false);
+  const [actionLoading, setActionLoading] = useState(false);
   const { user: currentUser } = useUser();
 
   useEffect(() => {
@@ -29,12 +33,122 @@ export default function UserProfilePage() {
       if (response.ok) {
         const data = await response.json();
         setUserData(data);
+        
+        // Check if friend
+        if (currentUser?.id) {
+          setIsFriend(data.friendIds?.includes(currentUser.id) || false);
+        }
+        
+        // Check if blocked
+        const blockedRes = await fetch('/api/users/blocked');
+        if (blockedRes.ok) {
+          const blockedData = await blockedRes.json();
+          const isUserBlocked = blockedData.blockedUsers?.some((u: any) => u.id === userId);
+          setIsBlocked(isUserBlocked || false);
+        }
       }
     } catch (error) {
       console.error('Error fetching user:', error);
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleAddFriend = async () => {
+    setActionLoading(true);
+    try {
+      const response = await fetch('/api/friends/add', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ friendId: userId }),
+      });
+      
+      if (response.ok) {
+        setIsFriend(true);
+      } else {
+        const error = await response.json();
+        alert(error.error || 'Failed to add friend');
+      }
+    } catch (error) {
+      console.error('Error adding friend:', error);
+      alert('Failed to add friend');
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleRemoveFriend = async () => {
+    setActionLoading(true);
+    try {
+      const response = await fetch('/api/friends/remove', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ friendId: userId }),
+      });
+      
+      if (response.ok) {
+        setIsFriend(false);
+      } else {
+        const error = await response.json();
+        alert(error.error || 'Failed to remove friend');
+      }
+    } catch (error) {
+      console.error('Error removing friend:', error);
+      alert('Failed to remove friend');
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleBlockUser = async () => {
+    setActionLoading(true);
+    try {
+      const response = await fetch(`/api/users/${userId}/block`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ reason: 'User blocked from profile' }),
+      });
+      
+      if (response.ok) {
+        setIsBlocked(true);
+        alert('User blocked successfully');
+      } else {
+        const error = await response.json();
+        alert(error.error || 'Failed to block user');
+      }
+    } catch (error) {
+      console.error('Error blocking user:', error);
+      alert('Failed to block user');
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleUnblockUser = async () => {
+    setActionLoading(true);
+    try {
+      const response = await fetch(`/api/users/${userId}/block`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+      });
+      
+      if (response.ok) {
+        setIsBlocked(false);
+        alert('User unblocked successfully');
+      } else {
+        const error = await response.json();
+        alert(error.error || 'Failed to unblock user');
+      }
+    } catch (error) {
+      console.error('Error unblocking user:', error);
+      alert('Failed to unblock user');
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleSendMessage = () => {
+    router.push(`/messages?with=${userId}`);
   };
 
   if (isLoading) {
@@ -56,8 +170,6 @@ export default function UserProfilePage() {
       </div>
     );
   }
-
-  const isFriend = currentUser?.id !== userId && userData.friendIds?.includes(currentUser?.id);
 
   return (
     <div className="p-4 md:p-8 space-y-8">
@@ -88,11 +200,29 @@ export default function UserProfilePage() {
                 </div>
               </div>
               {currentUser?.id !== userId && (
-                <div className="flex gap-2">
-                  <Button className="bg-green-500/80 hover:bg-green-600">+Rep</Button>
-                  <Button variant="outline">-Rep</Button>
-                  <Button variant="outline">
+                <div className="flex gap-2 flex-wrap">
+                  <Button 
+                    className="bg-blue-500/80 hover:bg-blue-600"
+                    onClick={handleSendMessage}
+                    disabled={actionLoading}
+                  >
+                    <MessageSquare className="h-4 w-4 mr-2" />
+                    Send Message
+                  </Button>
+                  <Button 
+                    variant="outline"
+                    onClick={isFriend ? handleRemoveFriend : handleAddFriend}
+                    disabled={actionLoading}
+                  >
                     {isFriend ? 'Remove Friend' : 'Add Friend'}
+                  </Button>
+                  <Button 
+                    variant="destructive"
+                    onClick={isBlocked ? handleUnblockUser : handleBlockUser}
+                    disabled={actionLoading}
+                  >
+                    <Block className="h-4 w-4 mr-2" />
+                    {isBlocked ? 'Unblock' : 'Block'}
                   </Button>
                 </div>
               )}

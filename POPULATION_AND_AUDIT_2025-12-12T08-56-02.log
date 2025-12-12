@@ -1,0 +1,35 @@
+
+╔════════════════════════════════════════════════════════════════════════════╗
+║        ECLIP DATABASE - COMPLETE POPULATION & INSPECTION                   ║
+║            Real data • Real stats • Real relationships                      ║
+║                        2025-12-12T08:56:03.069Z
+╚════════════════════════════════════════════════════════════════════════════╝
+
+═══════════════════════════════════════════════════════════════════════════
+🔧 PHASE 1: POPULATING DATABASE WITH REAL DATA
+═══════════════════════════════════════════════════════════════════════════
+
+Found 17 existing users
+
+1️⃣  Updating user progression (XP, Level, ESR)...
+   ✅ Updated progression for all users
+
+2️⃣  Creating realistic competitive matches...
+   ✅ Created 5 matches with 50 player statistics
+
+3️⃣  Creating match statistics aggregates...
+   ✅ Created match statistics
+
+4️⃣  Populating user cosmetics inventory...
+   ✅ Added 61 cosmetic purchases
+
+5️⃣  Creating forum threads and posts...
+   ✅ Created 6 threads and 12 posts
+
+6️⃣  Creating missions and progress...
+
+❌ ERROR: new row for relation "missions" violates check constraint "missions_category_check"
+error: new row for relation "missions" violates check constraint "missions_category_check"
+    at /workspaces/eclip/node_modules/pg/lib/client.js:545:17
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async main (/workspaces/eclip/scripts/populate-and-audit.js:199:22)

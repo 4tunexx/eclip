@@ -52,7 +52,7 @@ export async function GET(req: Request) {
   try {
     const user = await getCurrentUser();
     
-    if (!user || (user.role?.toUpperCase() !== 'ADMIN' && !user.isAdmin)) {
+    if (!user || (user.role?.toUpperCase() !== 'ADMIN')) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 

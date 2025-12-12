@@ -38,7 +38,8 @@ export function Header() {
   const router = useRouter();
   const { user, refetch, clearUser } = useUser();
   const coins = Number(user?.coins ?? 0);
-  const isAdmin = ((user as any)?.isAdmin as boolean) || (((user as any)?.role || '').toUpperCase() === 'ADMIN');
+  // Only show admin menu if user is authenticated AND has admin role
+  const isAdmin = user ? (((user as any)?.isAdmin as boolean) || (((user as any)?.role || '').toUpperCase() === 'ADMIN')) : false;
   
   const [notifications, setNotifications] = useState<any[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
@@ -137,6 +138,12 @@ export function Header() {
         clearUser();
       }
       
+      // Clear local state immediately
+      setNotifications([]);
+      setUnreadCount(0);
+      setMessages([]);
+      setMessagesUnreadCount(0);
+      
       // THIRD: Call logout API to clear session server-side
       const logoutResponse = await fetch('/api/auth/logout', { 
         method: 'POST', 
@@ -153,9 +160,19 @@ export function Header() {
         console.log('[Logout] Server response:', data);
       }
       
-      // FOURTH: Redirect with hard reload to ensure clean state
+      // FOURTH: Clear all cookies manually (belt and suspenders approach)
+      document.cookie.split(';').forEach(cookie => {
+        const name = cookie.split('=')[0].trim();
+        document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
+        document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=${window.location.hostname};`;
+        document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=.${window.location.hostname};`;
+      });
+      
+      // FIFTH: Redirect with hard reload to ensure clean state
       console.log('[Logout] Performing hard redirect to landing page...');
-      window.location.href = '/';
+      setTimeout(() => {
+        window.location.href = '/';
+      }, 100);
     } catch (error) {
       console.error('[Logout] Logout error:', error);
       // Force redirect on error (user already cleared above)

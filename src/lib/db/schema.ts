@@ -459,6 +459,15 @@ export const forum_replies = pgTable('forum_replies', {
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
 
+// Friends table (bidirectional friendships)
+export const friends = pgTable('friends', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  userId: uuid('user_id').references(() => users.id, { onDelete: 'cascade' }).notNull(),
+  friendId: uuid('friend_id').references(() => users.id, { onDelete: 'cascade' }).notNull(),
+  status: text('status').default('accepted').notNull(), // 'pending', 'accepted', 'blocked'
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+});
+
 // Blocked Users table
 export const blocked_users = pgTable('blocked_users', {
   id: uuid('id').primaryKey().defaultRandom(),

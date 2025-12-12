@@ -93,7 +93,7 @@ export default function ProfilePage() {
   };
 
   const normalizedRole = (user as any)?.role ? String((user as any).role).trim().toUpperCase() : '';
-  const isAdmin = normalizedRole === 'ADMIN' || Boolean((user as any)?.isAdmin);
+  const isAdmin = normalizedRole === 'ADMIN';
 
   const fetchCosmetics = async () => {
     if (!user) return;

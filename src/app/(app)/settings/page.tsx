@@ -9,9 +9,10 @@ import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import { SteamIcon } from "@/components/icons/SteamIcon";
-import { User, Bell, Lock, Eye, Loader2 } from "lucide-react";
+import { User, Bell, Lock, Eye, Loader2, Users, Ban } from "lucide-react";
 import { useUser } from '@/hooks/use-user';
 import { useToast } from '@/hooks/use-toast';
+import Link from 'next/link';
 
 export default function SettingsPage() {
   const { user, isLoading, refetch } = useUser();
@@ -139,11 +140,12 @@ export default function SettingsPage() {
       </div>
 
       <Tabs defaultValue="account" className="w-full">
-        <TabsList className="grid w-full grid-cols-4 max-w-2xl">
-          <TabsTrigger value="account"><User className="mr-2"/>Account</TabsTrigger>
-          <TabsTrigger value="security"><Lock className="mr-2"/>Security</TabsTrigger>
-          <TabsTrigger value="privacy"><Eye className="mr-2"/>Privacy</TabsTrigger>
-          <TabsTrigger value="notifications"><Bell className="mr-2"/>Notifications</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-5 max-w-4xl">
+          <TabsTrigger value="account"><User className="mr-2 h-4 w-4"/>Account</TabsTrigger>
+          <TabsTrigger value="security"><Lock className="mr-2 h-4 w-4"/>Security</TabsTrigger>
+          <TabsTrigger value="privacy"><Eye className="mr-2 h-4 w-4"/>Privacy</TabsTrigger>
+          <TabsTrigger value="social"><Users className="mr-2 h-4 w-4"/>Social</TabsTrigger>
+          <TabsTrigger value="notifications"><Bell className="mr-2 h-4 w-4"/>Notifications</TabsTrigger>
         </TabsList>
         <div className="max-w-2xl mx-auto">
             <TabsContent value="account" className="mt-6">
@@ -305,6 +307,36 @@ export default function SettingsPage() {
                          <Switch id="match-history" defaultChecked disabled />
                     </div>
                     <p className="text-sm text-muted-foreground">Privacy settings coming soon!</p>
+                </CardContent>
+            </Card>
+            </TabsContent>
+            <TabsContent value="social" className="mt-6 space-y-6">
+            <Card className="bg-card/60 backdrop-blur-lg border border-white/10">
+                <CardHeader>
+                    <CardTitle>Friends</CardTitle>
+                    <CardDescription>Manage your friends list.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <Button asChild>
+                      <Link href="/settings/friends" className="flex items-center gap-2">
+                        <Users className="h-4 w-4" />
+                        View Friends List
+                      </Link>
+                    </Button>
+                </CardContent>
+            </Card>
+            <Card className="bg-card/60 backdrop-blur-lg border border-white/10">
+                <CardHeader>
+                    <CardTitle>Blocked Users</CardTitle>
+                    <CardDescription>Manage users you've blocked.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <Button asChild variant="destructive">
+                      <Link href="/settings/blocked" className="flex items-center gap-2">
+                        <Ban className="h-4 w-4" />
+                        View Blocked Users
+                      </Link>
+                    </Button>
                 </CardContent>
             </Card>
             </TabsContent>

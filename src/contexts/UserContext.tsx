@@ -28,9 +28,11 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
   const hasFetchedRef = useRef(false);
 
   const clearUser = useCallback(() => {
+    console.log('[UserContext] Clearing user state');
     setUser(null);
     setIsLoading(false);
     hasFetchedRef.current = false; // Reset so next login triggers fetch
+    isFetchingRef.current = false; // Reset fetch lock
     localStorage.setItem('logout_timestamp', Date.now().toString());
   }, []);
 
@@ -51,12 +53,15 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
       
       if (response.ok) {
         const data = await response.json();
+        console.log('[UserContext] User data fetched:', { id: data.id, username: data.username, role: data.role });
         setUser(data);
       } else if (response.status === 401) {
         // Explicitly clear user on 401 (not authenticated)
+        console.log('[UserContext] 401 - Clearing user state');
         setUser(null);
       } else {
         // Other errors - also clear user to be safe
+        console.log('[UserContext] Error response - Clearing user state');
         setUser(null);
       }
     } catch (error) {

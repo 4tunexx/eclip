@@ -76,7 +76,8 @@ export function AppSidebar() {
   const pathname = usePathname();
   const { user, refetch } = useUser();
   const { isClientConnected, setClientOpen, setLauncherOpen } = useClient();
-  const isAdmin = (((user as any)?.isAdmin as boolean) || (((user as any)?.role || '').toUpperCase() === 'ADMIN')) ?? false;
+  // Only show admin features if user is authenticated AND has admin role
+  const isAdmin = user ? ((((user as any)?.isAdmin as boolean) || (((user as any)?.role || '').toUpperCase() === 'ADMIN')) ?? false) : false;
   const [coinsOpen, setCoinsOpen] = useState(false);
   const [coinAmount, setCoinAmount] = useState('1000');
   const [isLoading, setIsLoading] = useState(false);

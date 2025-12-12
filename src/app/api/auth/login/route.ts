@@ -90,7 +90,6 @@ export async function POST(request: NextRequest) {
           esr: user.esr,
           coins: Number(user.coins),
           role: user.role || 'USER',
-          isAdmin: ((user.role || '').toUpperCase() === 'ADMIN'),
         },
       });
       
@@ -161,7 +160,6 @@ export async function POST(request: NextRequest) {
               esr: user.esr,
               coins: Number(user.coins),
               role: user.role || 'USER',
-              isAdmin: ((user.role || '').toUpperCase() === 'ADMIN'),
             },
           });
           

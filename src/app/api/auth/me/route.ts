@@ -91,7 +91,7 @@ export async function GET() {
       rank: rankInfo.tier,
       esr: esr,
       coins: Number((user as any).coins ?? 0),
-      isAdmin: ((user as any).role || '').toUpperCase() === 'ADMIN',
+      role: (user as any).role || 'USER',
       emailVerified: Boolean((user as any).emailVerified ?? (profile?.emailVerifiedAt ? true : false)),
       hasSteamAuth: hasSteamAuth,
       steamId: hasSteamAuth ? steamId : null,

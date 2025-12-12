@@ -30,7 +30,7 @@ export default function AdminLayout({
   // Check admin role and redirect if not authorized
   useEffect(() => {
     if (!isLoading && user) {
-      const isAdmin = ((user as any)?.isAdmin as boolean) || (((user as any)?.role || '').toUpperCase() === 'ADMIN');
+      const isAdmin = (((user as any)?.role || '').toUpperCase() === 'ADMIN');
       console.log('[AdminLayout] Checking access:', { userId: user.id, role: user.role, isAdmin });
       if (!isAdmin) {
         console.warn('[AdminLayout] User attempted unauthorized access to admin panel', { userId: user.id, role: user.role });

@@ -34,7 +34,7 @@ export default function AdminIndexPage() {
   // Check admin role
   useEffect(() => {
     if (!isLoading && user) {
-      const isAdmin = ((user as any)?.isAdmin as boolean) || (((user as any)?.role || '').toUpperCase() === 'ADMIN');
+      const isAdmin = (((user as any)?.role || '').toUpperCase() === 'ADMIN');
       if (!isAdmin) {
         console.warn('[Admin] User attempted unauthorized access to admin panel');
         router.replace('/dashboard');
