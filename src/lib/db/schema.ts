@@ -31,6 +31,9 @@ export const users = pgTable('users', {
   esr: integer('esr').default(1000),
   rank: text('rank').default('Bronze'),
   role: text('role').default('USER'),
+  isVip: boolean('is_vip').default(false),
+  vipExpiresAt: timestamp('vip_expires_at'),
+  vipAutoRenew: boolean('vip_auto_renew').default(false),
   emailVerified: boolean('email_verified').default(false),
   emailVerificationToken: text('email_verification_token'),
   passwordResetToken: text('password_reset_token'),
@@ -503,6 +506,22 @@ export const match_stats = pgTable('match_stats', {
   totalDeaths: integer('total_deaths').default(0),
   winningTeam: text('winning_team'),
   mapName: text('map_name'),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+});
+
+// VIP Subscriptions table
+export const vip_subscriptions = pgTable('vip_subscriptions', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  userId: uuid('user_id').references(() => users.id, { onDelete: 'cascade' }).notNull(),
+  purchaseDate: timestamp('purchase_date').defaultNow().notNull(),
+  expiresAt: timestamp('expires_at').notNull(),
+  autoRenew: boolean('auto_renew').default(true),
+  renewalDay: integer('renewal_day'), // Day of month to renew
+  totalCostCoins: integer('total_cost_coins').default(100),
+  status: text('status').default('active').notNull(), // 'active', 'expired', 'cancelled'
+  cancelledAt: timestamp('cancelled_at'),
+  cancelReason: text('cancel_reason'),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });

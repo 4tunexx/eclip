@@ -1,0 +1,107 @@
+
+╔════════════════════════════════════════════════════════╗
+║         NEON DATABASE FRESH INSPECTION                  ║
+╚════════════════════════════════════════════════════════╝
+
+📊 FOUND 42 TABLES
+
+📭 ac_events                      | Cols: 10 | Rows: 0
+📭 achievement_progress           | Cols: 7  | Rows: 0
+✅ achievements                   | Cols: 13 | Rows: 50
+📭 anti_cheat_logs                | Cols: 10 | Rows: 0
+✅ badges                         | Cols: 10 | Rows: 50
+📭 bans                           | Cols: 8  | Rows: 0
+📭 blocked_users                  | Cols: 5  | Rows: 0
+✅ chat_messages                  | Cols: 4  | Rows: 1
+✅ cosmetics                      | Cols: 11 | Rows: 38
+📭 direct_messages                | Cols: 6  | Rows: 0
+✅ esr_thresholds                 | Cols: 7  | Rows: 15
+✅ forum_categories               | Cols: 5  | Rows: 3
+📭 forum_likes                    | Cols: 5  | Rows: 0
+📭 forum_posts                    | Cols: 6  | Rows: 0
+📭 forum_replies                  | Cols: 8  | Rows: 0
+📭 forum_threads                  | Cols: 13 | Rows: 0
+📭 friends                        | Cols: 5  | Rows: 0
+📭 leaderboards                   | Cols: 6  | Rows: 0
+✅ level_thresholds               | Cols: 4  | Rows: 100
+✅ match_players                  | Cols: 13 | Rows: 1
+✅ match_stats                    | Cols: 9  | Rows: 5
+✅ matches                        | Cols: 13 | Rows: 6
+📭 mission_progress               | Cols: 7  | Rows: 0
+✅ missions                       | Cols: 14 | Rows: 55
+✅ notifications                  | Cols: 8  | Rows: 7
+📭 queue_entries                  | Cols: 8  | Rows: 0
+✅ queue_tickets                  | Cols: 9  | Rows: 3
+📭 reports                        | Cols: 13 | Rows: 0
+✅ role_permissions               | Cols: 4  | Rows: 38
+✅ sessions                       | Cols: 5  | Rows: 7
+📭 site_config                    | Cols: 5  | Rows: 0
+✅ transactions                   | Cols: 7  | Rows: 5
+✅ user_achievements              | Cols: 4  | Rows: 2
+📭 user_cosmetics                 | Cols: 4  | Rows: 0
+✅ user_inventory                 | Cols: 4  | Rows: 8
+📭 user_metrics                   | Cols: 17 | Rows: 0
+✅ user_mission_progress          | Cols: 8  | Rows: 1
+📭 user_missions                  | Cols: 7  | Rows: 0
+✅ user_profiles                  | Cols: 9  | Rows: 1
+📭 user_subscriptions             | Cols: 13 | Rows: 0
+✅ users                          | Cols: 25 | Rows: 1
+✅ vip_tiers                      | Cols: 11 | Rows: 4
+
+═════════════════════════════════════════════════════════
+
+👥 USERS TABLE FULL DATA:
+
+
+  1. USERNAME: admin
+     ID: 406b8abd-bb5f-4f0b-9829-b65c9043cd3b
+     Level: 1 | XP: 0 | ESR: 1000
+     Rank: N/A | Role: ADMIN
+     Verified: undefined | Created: 2025-12-05
+     Role Color: #FFFFFF
+
+═════════════════════════════════════════════════════════
+
+⚔️  MATCHES:
+
+  1. Map: Nuke            | Status: FINISHED   | Winner: 2 | 2025-12-11
+  2. Map: Dust2           | Status: FINISHED   | Winner: 1 | 2025-12-10
+  3. Map: Cache           | Status: FINISHED   | Winner: 1 | 2025-12-09
+  4. Map: Mirage          | Status: FINISHED   | Winner: 2 | 2025-12-08
+  5. Map: Inferno         | Status: FINISHED   | Winner: 1 | 2025-12-07
+  6. Map: null            | Status: active     | Winner: A | 2025-11-22
+
+═════════════════════════════════════════════════════════
+
+🎁 COSMETICS BREAKDOWN:
+
+
+  Banner:
+    Common       = 9
+    Epic         = 3
+    Legendary    = 2
+    Rare         = 6
+
+  Frame:
+    Common       = 7
+    Epic         = 1
+    Legendary    = 1
+    Rare         = 4
+
+  Title:
+    Epic         = 5
+
+═════════════════════════════════════════════════════════
+
+📋 KEY STATISTICS:
+
+  Total Users               = 1
+  Total Matches             = 6
+  Total Cosmetics           = 38
+  Total Achievements        = 50
+  Total Missions            = 55
+  Active Sessions           = 7
+  Notifications             = 7
+
+✅ Database inspection complete!
+

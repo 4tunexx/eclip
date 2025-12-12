@@ -1,0 +1,101 @@
+🔍 CHECKING DATABASE FUNCTIONS
+══════════════════════════════════════════════════════════════════════
+Found 3 functions:
+
+📌 Function: calculate_rank_from_mmr
+Code:
+
+      BEGIN
+        RETURN QUERY SELECT 
+          CASE 
+            WHEN mmr_amount < 1200 THEN 'Bronze'
+            WHEN mmr_amount < 1500 THEN 'Silver'
+            WHEN mmr_amount < 1800 THEN 'Gold'
+            WHEN mmr_amount < 2100 THEN 'Platinum'
+            WHEN mmr_amount < 2500 THEN 'Diamond'
+            ELSE 'Radiant'
+          END::TEXT,
+          CASE 
+            WHEN mmr_amount < 1200 THEN 'Beginner'
+            WHEN mmr_amount < 1350 THEN 'Bronze I'
+            WHEN mmr_amount < 1500 THEN 'Bronze II'
+            WHEN mmr_amount < 1650 THEN 'Silver I'
+            WHEN mmr_amount < 1800 THEN 'Silver II'
+            WHEN mmr_amount < 1950 THEN 'Gold I'
+            WHEN mmr_amount < 2100 THEN 'Gold II'
+            WHEN mmr_amount < 2250 THEN 'Platinum I'
+            WHEN mmr_amount < 2400 THEN 'Platinum II'
+            WHEN mmr_amount < 2550 THEN 'Diamond I'
+            ELSE 'Radiant'
+          END::TEXT,
+          CASE 
+            WHEN mmr_amount < 1200 THEN 1
+            WHEN mmr_amount < 1350 THEN 1
+            WHEN mmr_amount < 1500 THEN 2
+            WHEN mmr_amount < 1650 THEN 1
+            WHEN mmr_amount < 1800 THEN 2
+            WHEN mmr_amount < 1950 THEN 1
+            WHEN mmr_amount < 2100 THEN 2
+            WHEN mmr_amount < 2250 THEN 1
+            WHEN mmr_amount < 2400 THEN 2
+            WHEN mmr_amount < 2550 THEN 1
+            ELSE 1
+          END::INTEGER;
+      END;
+      
+
+──────────────────────────────────────────────────────────────────────
+
+📌 Function: create_levelup_notification
+Code:
+
+    DECLARE
+      new_level INT;
+      old_level INT;
+    BEGIN
+      new_level := floor(NEW.xp::float / 100) + 1;
+      old_level := floor(OLD.xp::float / 100) + 1;
+
+      IF new_level > old_level THEN
+        INSERT INTO notifications (user_id, type, title, message, data)
+        VALUES (
+          NEW.id,
+          'level_up',
+          'Level Up! 🎉',
+          'Congratulations! You reached Level ' || new_level,
+          jsonb_build_object(
+            'newLevel', new_level,
+            'xp', NEW.xp
+          )
+        );
+      END IF;
+      RETURN NEW;
+    END;
+    
+
+──────────────────────────────────────────────────────────────────────
+
+📌 Function: create_rankup_notification
+Code:
+
+    BEGIN
+      IF NEW.rank != OLD.rank OR NEW.rank_tier != OLD.rank_tier THEN
+        INSERT INTO notifications (user_id, type, title, message, data)
+        VALUES (
+          NEW.id,
+          'rank_up',
+          'Rank Up! 📈',
+          'You ranked up to ' || NEW.rank || ' ' || NEW.rank_tier,
+          jsonb_build_object(
+            'newRank', NEW.rank,
+            'newTier', NEW.rank_tier,
+            'mmr', NEW.mmr
+          )
+        );
+      END IF;
+      RETURN NEW;
+    END;
+    
+
+──────────────────────────────────────────────────────────────────────
+

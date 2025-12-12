@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/auth';
 import { db } from '@/lib/db';
-import { userProfiles, cosmetics } from '@/lib/db/schema';
-import { eq } from 'drizzle-orm';
+import { userProfiles, cosmetics, vip_subscriptions } from '@/lib/db/schema';
+import { eq, and, gt } from 'drizzle-orm';
 import postgres from 'postgres';
 import { getRankFromESR } from '@/lib/rank-calculator';
 
@@ -81,6 +81,39 @@ export async function GET() {
     const steamId = (user as any).steamId || '';
     const hasSteamAuth = /^\d{17}$/.test(steamId);
 
+    // Check VIP status
+    let vipStatus = {
+      isVip: false,
+      expiresAt: null as any,
+      daysRemaining: 0,
+      autoRenew: false,
+    };
+
+    try {
+      const activeVip = await db
+        .select()
+        .from(vip_subscriptions)
+        .where(
+          and(
+            eq(vip_subscriptions.userId, user.id),
+            eq(vip_subscriptions.status, 'active'),
+            gt(vip_subscriptions.expiresAt, new Date())
+          )
+        )
+        .limit(1);
+
+      if (activeVip.length > 0) {
+        const sub = activeVip[0];
+        vipStatus.isVip = true;
+        vipStatus.expiresAt = sub.expiresAt;
+        vipStatus.autoRenew = sub.autoRenew;
+        const now = new Date();
+        vipStatus.daysRemaining = Math.ceil((sub.expiresAt.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+      }
+    } catch (e) {
+      console.log('[API/Auth/Me] VIP status fetch error:', (e as any).message);
+    }
+
     const responseData = {
       id: (user as any).id,
       email: (user as any).email || null,
@@ -102,6 +135,7 @@ export async function GET() {
       equippedBanner,
       equippedBadge,
       stats: profile?.stats || null,
+      vip: vipStatus,
     };
 
     console.log('[API/Auth/Me] Returning user data:', responseData);

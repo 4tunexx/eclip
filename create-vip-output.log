@@ -1,0 +1,29 @@
+📦 CREATING VIP SYSTEM TABLES
+══════════════════════════════════════════════════════════════════════
+
+1️⃣ Creating vip_tiers table...
+  ✅ vip_tiers table created
+  ✅ Default VIP tiers inserted
+
+2️⃣ Creating user_subscriptions table...
+  ✅ user_subscriptions table created with indexes
+
+3️⃣ Creating update trigger...
+{
+  severity_local: 'NOTICE',
+  severity: 'NOTICE',
+  code: '00000',
+  message: 'trigger "trigger_subscription_updated_at" for relation "user_subscriptions" does not exist, skipping',
+  file: 'dropcmds.c',
+  line: '523',
+  routine: 'does_not_exist_skipping'
+}
+  ✅ Trigger created
+
+4️⃣ Verifying tables...
+  ✅ user_subscriptions: created
+  ✅ vip_tiers: created
+
+  VIP Tiers: 4 levels
+
+✅ VIP SYSTEM TABLES CREATED!

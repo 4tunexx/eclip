@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { users, transactions, bans, acEvents } from '@/lib/db/schema';
 import { getCurrentUser, isUserAdmin } from '@/lib/auth';
+import { getRoleConfig } from '@/lib/role-config';
 import { eq } from 'drizzle-orm';
 import { z } from 'zod';
 
@@ -107,7 +108,20 @@ export async function PATCH(
     if (updates.level !== undefined) updateData.level = updates.level;
     if (updates.esr !== undefined) updateData.esr = updates.esr;
     if (updates.rank !== undefined) updateData.rank = updates.rank;
-    if (updates.role !== undefined) updateData.role = updates.role;
+    
+    // If role is being updated, apply role colors and extras automatically
+    if (updates.role !== undefined) {
+      const normalizedRole = updates.role.toUpperCase();
+      updateData.role = normalizedRole;
+      
+      // Auto-apply role color based on role
+      const roleConfig = getRoleConfig(normalizedRole);
+      if (roleConfig) {
+        updateData.roleColor = roleConfig.color;
+        console.log(`[Admin PATCH] Assigning role ${normalizedRole} with color ${roleConfig.color} to user ${userId}`);
+      }
+    }
+    
     updateData.updatedAt = new Date();
 
     await db.update(users)
@@ -134,7 +148,22 @@ export async function PATCH(
       }
     }
 
-    return NextResponse.json({ success: true });
+    // Return updated user with role config
+    const [updatedUser] = await db.select()
+      .from(users)
+      .where(eq(users.id, userId))
+      .limit(1);
+
+    const roleConfig = getRoleConfig(updatedUser.role);
+
+    return NextResponse.json({ 
+      success: true,
+      user: {
+        ...updatedUser,
+        coins: Number(updatedUser.coins),
+      },
+      roleConfig
+    });
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(

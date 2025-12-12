@@ -81,16 +81,22 @@ export async function POST(
           if (user) {
             const isWinner = matchPlayer.team === winnerTeam;
             
-            // Calculate rewards
-            const xpReward = isWinner ? 100 : 50;
-            const coinReward = isWinner ? 0.10 : 0.02;
+            // Calculate base rewards
+            let xpReward = isWinner ? 100 : 50;
+            let coinReward = isWinner ? 0.10 : 0.02;
+            let esrChange = isWinner ? 25 : -15;
+
+            // Apply VIP bonuses if user is VIP
+            if (user.isVip) {
+              xpReward = Math.floor(xpReward * 1.2); // +20% XP
+              esrChange = Math.floor(esrChange * 1.1); // +10% ESR
+            }
 
             // Update XP and level
             const newXP = Number(user.xp) + xpReward;
             const newLevel = Math.floor(newXP / 200) + 1;
 
             // Update ESR (simple ELO-like calculation)
-            const esrChange = isWinner ? 25 : -15;
             const newESR = Math.max(0, (user as any).esr + esrChange);
 
             // Update user

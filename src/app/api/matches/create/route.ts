@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import { matches, matchPlayers, queueTickets } from '@/lib/db/schema';
-import { eq, and, inArray } from 'drizzle-orm';
+import { matches, matchPlayers, queueTickets, users, vip_subscriptions } from '@/lib/db/schema';
+import { eq, and, inArray, gt } from 'drizzle-orm';
 
 // Available CS2 maps
 const AVAILABLE_MAPS = [
@@ -18,10 +18,70 @@ function getRandomMap(): string {
   return AVAILABLE_MAPS[Math.floor(Math.random() * AVAILABLE_MAPS.length)];
 }
 
+/**
+ * Group players by ESR tier for balanced matchmaking
+ * VIP players get priority placement as team leaders
+ */
+async function createBalancedTeams(tickets: any[]) {
+  // Get user details including VIP status
+  const ticketIds = tickets.map(t => t.id);
+  const userIds = tickets.map(t => t.userId);
+
+  const userDetails = await db
+    .select({
+      id: users.id,
+      esr: users.esr,
+      isVip: users.isVip,
+      username: users.username,
+    })
+    .from(users)
+    .where(inArray(users.id, userIds));
+
+  const userMap = new Map(userDetails.map(u => [u.id, u]));
+  const enrichedTickets = tickets.map(t => ({
+    ...t,
+    user: userMap.get(t.userId),
+  }));
+
+  // Separate VIP and non-VIP players
+  const vipPlayers = enrichedTickets.filter(t => t.user?.isVip);
+  const nonVipPlayers = enrichedTickets.filter(t => !t.user?.isVip);
+
+  // Sort non-VIP by ESR to create balanced teams
+  nonVipPlayers.sort((a, b) => (b.user?.esr || 0) - (a.user?.esr || 0));
+
+  // Create teams: alternate high ESR players to balance
+  const team1 = [];
+  const team2 = [];
+
+  // Place VIP players first (one on each team if available)
+  if (vipPlayers.length > 0) {
+    team1.push(vipPlayers[0]);
+    if (vipPlayers.length > 1) {
+      team2.push(vipPlayers[1]);
+    }
+  }
+
+  // Alternate non-VIP players for balance
+  nonVipPlayers.forEach((player, index) => {
+    if (index % 2 === 0) {
+      team1.push(player);
+    } else {
+      team2.push(player);
+    }
+  });
+
+  // Trim to 5 players each
+  return {
+    team1: team1.slice(0, 5),
+    team2: team2.slice(0, 5),
+  };
+}
+
 // Matchmaker - finds 10 players and creates a match
 export async function POST() {
   try {
-    // Get waiting queue tickets grouped by region and similar ESR
+    // Get waiting queue tickets sorted by wait time (FIFO)
     const waitingTickets = await db.select()
       .from(queueTickets)
       .where(eq(queueTickets.status, 'WAITING'))
@@ -34,9 +94,18 @@ export async function POST() {
       });
     }
 
-    // Group by region (for now, just take first 10)
-    // TODO: Implement proper ESR-based matching
+    // Select exactly 10 players
     const selectedTickets = waitingTickets.slice(0, 10);
+
+    // Create balanced teams with ESR matching + VIP priority
+    const { team1, team2 } = await createBalancedTeams(selectedTickets);
+
+    if (team1.length < 5 || team2.length < 5) {
+      return NextResponse.json({
+        error: 'Failed to create balanced teams',
+        status: 500,
+      });
+    }
 
     // Create match with random map selection
     const [match] = await db.insert(matches).values({
@@ -46,9 +115,6 @@ export async function POST() {
     }).returning();
 
     // Create match player entries
-    const team1 = selectedTickets.slice(0, 5);
-    const team2 = selectedTickets.slice(5, 10);
-
     await db.insert(matchPlayers).values([
       ...team1.map(ticket => ({
         matchId: match.id,
@@ -82,7 +148,9 @@ export async function POST() {
     return NextResponse.json({
       success: true,
       matchId: match.id,
-      message: 'Match created',
+      message: 'Match created with ESR-based matchmaking',
+      team1: team1.map(t => ({ userId: t.userId, esr: t.user?.esr })),
+      team2: team2.map(t => ({ userId: t.userId, esr: t.user?.esr })),
     });
   } catch (error) {
     console.error('Error creating match:', error);

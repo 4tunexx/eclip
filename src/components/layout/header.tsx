@@ -15,6 +15,7 @@ import {
   LayoutDashboard,
   Check,
   Trash2,
+  Crown,
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -33,6 +34,7 @@ import { SidebarTrigger } from '@/components/ui/sidebar';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useUser } from '@/hooks/use-user';
 import { Logo } from '../icons/logo';
+import { VIPPopup } from '@/components/vip-popup';
 
 export function Header() {
   const router = useRouter();
@@ -49,6 +51,9 @@ export function Header() {
   const [messagesUnreadCount, setMessagesUnreadCount] = useState(0);
   const [messagesLoading, setMessagesLoading] = useState(true);
 
+  const [vipOpen, setVipOpen] = useState(false);
+  const [vipStatus, setVipStatus] = useState<any>({ vip_active: false });
+
   // Removed automatic refetch interval - use manual refetch when needed
   // If you need to update coins, call refetch() after coin-changing actions
 
@@ -56,8 +61,21 @@ export function Header() {
     if (user?.id) {
       fetchNotifications();
       fetchMessages();
+      fetchVipStatus();
     }
   }, [user?.id]);
+
+  const fetchVipStatus = async () => {
+    try {
+      const response = await fetch('/api/vip', { credentials: 'include' });
+      if (response.ok) {
+        const data = await response.json();
+        setVipStatus(data);
+      }
+    } catch (error) {
+      console.error('Failed to fetch VIP status:', error);
+    }
+  };
 
   const fetchNotifications = async () => {
     try {
@@ -208,6 +226,17 @@ export function Header() {
             <span className="font-bold text-yellow-400">{coins.toFixed(2)}</span>
             <span className="text-yellow-400">Coins</span>
           </div>
+
+          {/* VIP Button */}
+          <Button
+            variant={vipStatus.vip_active ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setVipOpen(true)}
+            className={vipStatus.vip_active ? 'bg-yellow-500 hover:bg-yellow-600 text-black font-bold' : ''}
+          >
+            <Crown className={`h-4 w-4 mr-1 ${vipStatus.vip_active ? 'text-white' : 'text-yellow-400'}`} />
+            {vipStatus.vip_active ? 'VIP' : 'Get VIP'}
+          </Button>
 
           {/* Notifications */}
           <DropdownMenu>
@@ -381,6 +410,19 @@ export function Header() {
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
+
+      {/* VIP Modal */}
+      <VIPPopup
+        isOpen={vipOpen}
+        onClose={() => setVipOpen(false)}
+        vipStatus={vipStatus}
+        userCoins={coins}
+        onPurchaseSuccess={() => {
+          setVipStatus({ ...vipStatus, vip_active: true });
+          refetch();
+          fetchVipStatus();
+        }}
+      />
     </header>
   );
 }

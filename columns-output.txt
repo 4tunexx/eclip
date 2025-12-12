@@ -1,0 +1,59 @@
+
+USERS TABLE COLUMNS:
+
+1. id                             | uuid
+2. steam_id                       | text
+3. username                       | text
+4. eclip_id                       | text
+5. created_at                     | timestamp with time zone
+6. avatar                         | text
+7. rank_points                    | integer
+8. coins                          | numeric
+9. updated_at                     | timestamp with time zone
+10. role_color                     | text
+11. rank_tier                      | text
+12. rank_division                  | integer
+13. email                          | text
+14. password_hash                  | text
+15. role                           | text
+16. email_verified                 | boolean
+17. email_verification_token       | text
+18. password_reset_token           | text
+19. password_reset_expires         | timestamp without time zone
+20. level                          | integer
+21. xp                             | integer
+22. esr                            | integer
+23. rank                           | text
+24. level_computed                 | integer
+25. emailverifiedat                | timestamp without time zone
+
+
+SAMPLE DATA:
+
+{
+  "id": "406b8abd-bb5f-4f0b-9829-b65c9043cd3b",
+  "steam_id": "76561198001993310",
+  "username": "admin",
+  "eclip_id": "0c903283-3a61-480f-b18c-5e7b9056aa49",
+  "created_at": "2025-12-05T22:21:54.353Z",
+  "avatar": "https://avatars.steamstatic.com/ef51ab8508a2b715278ea19b6b82d6ebf33675ce_full.jpg",
+  "rank_points": 1000,
+  "coins": "800.00",
+  "updated_at": "2025-12-06T23:32:03.732Z",
+  "role_color": "#FFFFFF",
+  "rank_tier": "Rookie",
+  "rank_division": 3,
+  "email": "admin@eclip.pro",
+  "password_hash": "$2b$10$F/f..eMf/.uoCR5GFkhdWeQq8JpMu1WWtlXSlffpj59cVUMQ7Eef2",
+  "role": "ADMIN",
+  "email_verified": true,
+  "email_verification_token": null,
+  "password_reset_token": null,
+  "password_reset_expires": null,
+  "level": 1,
+  "xp": 0,
+  "esr": 1000,
+  "rank": "Rookie",
+  "level_computed": 1,
+  "emailverifiedat": null
+}

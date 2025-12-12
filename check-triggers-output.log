@@ -1,0 +1,45 @@
+🔍 CHECKING DATABASE TRIGGERS
+══════════════════════════════════════════════════════════════════════
+Found 6 triggers:
+
+📌 Trigger: trigger_cosmetics_updated_at
+   Table: cosmetics
+   Event: UPDATE
+   Action: EXECUTE FUNCTION update_cosmetics_updated_at()...
+
+📌 Trigger: trigger_missions_updated_at
+   Table: missions
+   Event: UPDATE
+   Action: EXECUTE FUNCTION update_cosmetics_updated_at()...
+
+📌 Trigger: trigger_achievement_unlock_notification
+   Table: user_achievements
+   Event: UPDATE
+   Action: EXECUTE FUNCTION create_achievement_unlock_notification()...
+
+📌 Trigger: trigger_mission_completion_notification
+   Table: user_mission_progress
+   Event: UPDATE
+   Action: EXECUTE FUNCTION create_mission_completion_notification()...
+
+📌 Trigger: trigger_levelup_notification
+   Table: users
+   Event: UPDATE
+   Action: EXECUTE FUNCTION create_levelup_notification()...
+
+📌 Trigger: trigger_rankup_notification
+   Table: users
+   Event: UPDATE
+   Action: EXECUTE FUNCTION create_rankup_notification()...
+
+
+⚠️ TRIGGERS ON USERS TABLE:
+══════════════════════════════════════════════════════════════════════
+
+Trigger: trigger_levelup_notification
+Code:
+EXECUTE FUNCTION create_levelup_notification()
+
+Trigger: trigger_rankup_notification
+Code:
+EXECUTE FUNCTION create_rankup_notification()
