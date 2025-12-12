@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { users } from '@/lib/db/schema';
 import { desc } from 'drizzle-orm';
+import { getRankFromESR } from '@/lib/rank-calculator';
 
 /**
  * Public leaderboard - returns top players by ESR
@@ -18,9 +19,6 @@ export async function GET(request: Request) {
         username: users.username,
         avatar: users.avatar,
         esr: users.esr,
-        rank: users.rank,
-        rankTier: users.rankTier,
-        rankDivision: users.rankDivision,
         level: users.level,
       })
       .from(users)
@@ -28,16 +26,21 @@ export async function GET(request: Request) {
       .limit(limit);
 
     return NextResponse.json({
-      players: topPlayers.map((player) => ({
-        id: player.id,
-        username: player.username,
-        avatarUrl: player.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${player.username}`,
-        esr: Number(player.esr || 1000),
-        rank: player.rank || 'Bronze',
-        rankTier: player.rankTier || 'I',
-        rankDivision: player.rankDivision || 1,
-        level: player.level || 1,
-      })),
+      players: topPlayers.map((player) => {
+        const esrValue = Number(player.esr || 1000);
+        const rankInfo = getRankFromESR(esrValue);
+        
+        return {
+          id: player.id,
+          username: player.username,
+          avatarUrl: player.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${player.username}`,
+          esr: esrValue,
+          rank: rankInfo.tier,
+          rankTier: rankInfo.division,
+          rankDivision: rankInfo.division,
+          level: player.level || 1,
+        };
+      }),
       count: topPlayers.length,
       timestamp: new Date().toISOString(),
     });
