@@ -1,0 +1,42 @@
+14:14:47.378 Running build in Washington, D.C., USA (East) – iad1
+14:14:47.378 Build machine configuration: 2 cores, 8 GB
+14:14:47.810 Cloning github.com/4tunexx/eclip (Branch: master, Commit: 49b5623)
+14:14:50.058 Cloning completed: 2.247s
+14:14:50.618 Restored build cache from previous deployment (4wtKeatgZCJ1fCRHGzgvejDn9sgZ)
+14:14:51.802 Running "vercel build"
+14:14:52.342 Vercel CLI 50.0.0
+14:14:52.753 Installing dependencies...
+14:14:56.136 
+14:14:56.137 up to date in 2s
+14:14:56.137 
+14:14:56.137 225 packages are looking for funding
+14:14:56.137   run `npm fund` for details
+14:14:56.167 Detected Next.js version: 15.5.8
+14:14:56.174 Running "npm run build"
+14:14:56.331 
+14:14:56.332 > nextn@0.1.0 build
+14:14:56.332 > next build
+14:14:56.332 
+14:14:57.464    ▲ Next.js 15.5.8
+14:14:57.464 
+14:14:57.560    Creating an optimized production build ...
+14:15:13.012 Failed to compile.
+14:15:13.013 
+14:15:13.013 ./src/app/api/notifications/route.ts
+14:15:13.013 Module parse failed: Identifier 'DELETE' has already been declared (232:22)
+14:15:13.013 File was processed with these loaders:
+14:15:13.013  * ./node_modules/next/dist/build/webpack/loaders/next-flight-loader/index.js
+14:15:13.013  * ./node_modules/next/dist/build/webpack/loaders/next-swc-loader.js
+14:15:13.013 You may need an additional loader to handle the result of these loaders.
+14:15:13.013 |     }
+14:15:13.013 | }
+14:15:13.013 > export async function DELETE(request) {
+14:15:13.013 |     try {
+14:15:13.013 |         const user = await getCurrentUser();
+14:15:13.013 
+14:15:13.013 Import trace for requested module:
+14:15:13.014 ./src/app/api/notifications/route.ts
+14:15:13.014 
+14:15:13.019 
+14:15:13.020 > Build failed because of webpack errors
+14:15:13.053 Error: Command "npm run build" exited with 1
