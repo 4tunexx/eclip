@@ -221,7 +221,7 @@ export default function UserProfilePage() {
                     onClick={isBlocked ? handleUnblockUser : handleBlockUser}
                     disabled={actionLoading}
                   >
-                    <Block className="h-4 w-4 mr-2" />
+                    <Shield className="h-4 w-4 mr-2" />
                     {isBlocked ? 'Unblock' : 'Block'}
                   </Button>
                 </div>

@@ -21,8 +21,8 @@ export async function GET(request: NextRequest) {
     );
 
     return NextResponse.json({ 
-      blockedUsers: blocked.rows || [],
-      count: blocked.rows?.length || 0
+      blockedUsers: (blocked as any) || [],
+      count: ((blocked as any)?.length) || 0
     });
   } catch (error) {
     console.error('[Blocked List] Error:', error);

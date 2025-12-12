@@ -112,7 +112,7 @@ export async function GET(request: NextRequest) {
         if (steamAvatar) {
           await db.update(users)
             .set({ avatar: steamAvatar })
-            .where(eq(users.id, userId));
+            .where(eq(users.id as any, userId));
         }
       }
       

@@ -262,7 +262,7 @@ export default function ProfilePage() {
                     {/* Avatar (no circular progress ring or level badge on profile) */}
                     <div className="relative w-44 h-44 flex items-center justify-center">
                       <UserAvatar 
-                          avatarUrl={user.avatarUrl}
+                          avatarUrl={user.avatarUrl || ''}
                           username={user.username}
                           frameData={user.equippedFrame}
                           className="w-40 h-40 rounded-full border-4 border-background"
@@ -594,7 +594,7 @@ export default function ProfilePage() {
                       <div className="bg-secondary/60 border border-border rounded-lg p-4 space-y-3">
                         <div className="flex items-center gap-3">
                           <UserAvatar 
-                            avatarUrl={user.avatarUrl}
+                            avatarUrl={user.avatarUrl || ''}
                             username={user.username}
                             frameData={user.equippedFrame}
                             className="w-12 h-12 rounded-full"
@@ -673,7 +673,7 @@ export default function ProfilePage() {
                         <h3 className="font-semibold text-lg">Avatar Frame Preview</h3>
                         <div className="h-32 relative bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex items-center justify-center rounded-lg border-2 border-border shadow-lg overflow-hidden">
                           <UserAvatar 
-                            avatarUrl={user.avatarUrl}
+                            avatarUrl={user.avatarUrl || ''}
                             username={user.username}
                             frameData={user.equippedFrame}
                             className="w-20 h-20 rounded-full"

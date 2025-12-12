@@ -85,7 +85,7 @@ export function LiveChat() {
         }));
         
         // Compare only message IDs and text to avoid timestamp differences
-        const newHash = formattedMessages.map(m => `${m.id}:${m.text}`).join('|');
+        const newHash = formattedMessages.map((m: any) => `${m.id}:${m.text}`).join('|');
         
         // Only update if messages changed
         if (messagesHashRef.current !== newHash) {

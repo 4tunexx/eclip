@@ -1,0 +1,28 @@
+b368b46 Cleanup: Remove unnecessary files
+6d5a683 Fix: Resolve 13 TypeScript compilation errors in API routes and audit scripts
+af81fb9 Fix favicon display inconsistency and standardize admin role checking across all endpoints
+dd9209d Add SendGrid implementation documentation
+8170aba Implement SendGrid email system - replace One.com SMTP with SendGrid
+0ad5b27 Fix email verification: use separate EMAIL credentials instead of URL parsing for better one.com SMTP compatibility
+94f2136 Your commit message here
+1c84e6d Add database schema and table definitions
+24db78d fix: resolve TypeScript compilation errors and complete setup
+1e9c533 Add role-based access control to admin panel - restrict to ADMIN users only
+On branch master
+Your branch is up to date with 'origin/master'.
+
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+	modified:   src/app/(app)/profile/[id]/page.tsx
+	modified:   src/app/(app)/profile/page.tsx
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+	build-errors.log
+	code-issues.log
+	eslint-errors.log
+	git-history.log
+	typescript-errors.log
+
+no changes added to commit (use "git add" and/or "git commit -a")

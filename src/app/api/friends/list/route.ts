@@ -28,8 +28,8 @@ export async function GET(request: NextRequest) {
     );
 
     return NextResponse.json({ 
-      friends: friends.rows || [],
-      count: friends.rows?.length || 0
+      friends: (friends as any) || [],
+      count: ((friends as any)?.length) || 0
     });
   } catch (error) {
     console.error('[Friends List] Error:', error);
