@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { cosmetics } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
-import { getCurrentUser } from '@/lib/auth';
+import { getCurrentUser, isUserAdmin } from '@/lib/auth';
 
 export async function PUT(
   request: NextRequest,
@@ -12,7 +12,7 @@ export async function PUT(
     const { id } = await params;
     const user = await getCurrentUser();
     
-    if (!user || user.role !== 'ADMIN') {
+    if (!user || !isUserAdmin(user)) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -67,7 +67,7 @@ export async function DELETE(
     const { id } = await params;
     const user = await getCurrentUser();
     
-    if (!user || user.role !== 'ADMIN') {
+    if (!user || !isUserAdmin(user)) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 

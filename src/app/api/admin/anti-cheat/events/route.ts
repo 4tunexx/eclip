@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { acEvents, users, matches } from '@/lib/db/schema';
-import { getCurrentUser } from '@/lib/auth';
+import { getCurrentUser, isUserModerator } from '@/lib/auth';
 import { eq, desc } from 'drizzle-orm';
 
 export async function GET(request: NextRequest) {
   try {
     const user = await getCurrentUser();
-    if (!user || (user.role !== 'ADMIN' && user.role !== 'MOD')) {
+    if (!user || !isUserModerator(user)) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 403 }

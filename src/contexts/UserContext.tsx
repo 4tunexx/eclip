@@ -30,6 +30,8 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
   const clearUser = useCallback(() => {
     setUser(null);
     setIsLoading(false);
+    hasFetchedRef.current = false; // Reset so next login triggers fetch
+    localStorage.setItem('logout_timestamp', Date.now().toString());
   }, []);
 
   const fetchUser = useCallback(async () => {
@@ -88,12 +90,27 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
       localStorage.removeItem('logout_timestamp');
     }
     
-    // Only fetch once on mount
+    // Only fetch once on mount or when hasFetchedRef is reset
     if (!hasFetchedRef.current) {
       hasFetchedRef.current = true;
       fetchUser();
     }
   }, []); // Empty deps - only run on mount
+
+  // Refetch when page becomes visible (user returned from auth flow)
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        // User returned to tab - refetch to get latest auth state
+        console.log('[UserContext] Page became visible, refetching user...');
+        hasFetchedRef.current = false;
+        fetchUser();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, [fetchUser]);
 
   return (
     <UserContext.Provider value={{ user, isLoading, refetch: fetchUser, clearUser }}>

@@ -14,8 +14,8 @@ export const metadata: Metadata = {
   title: 'Eclip.pro - Competitive CS2 Platform',
   description: 'A modern competitive platform for Counter-Strike 2 with transparent progression, a player-driven economy, and a robust anti-cheat system.',
   icons: {
-    icon: '/images/favicon.ico',
-    shortcut: '/images/favicon.ico',
+    icon: '/favicon.ico',
+    shortcut: '/favicon.ico',
     apple: '/images/min-logo.png',
   },
 };

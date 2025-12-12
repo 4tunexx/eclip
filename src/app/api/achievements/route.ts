@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { achievements, achievementProgress } from '@/lib/db/schema';
-import { getCurrentUser } from '@/lib/auth';
+import { getCurrentUser, isUserAdmin } from '@/lib/auth';
 import { eq, and } from 'drizzle-orm';
 
 /**
@@ -68,7 +68,7 @@ export async function POST(request: NextRequest) {
 
     // Verify requester is admin or system
     const user = await getCurrentUser();
-    if (!user || user.role !== 'ADMIN') {
+    if (!user || !isUserAdmin(user)) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 

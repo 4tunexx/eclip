@@ -147,6 +147,9 @@ export async function GET(request: NextRequest) {
             ...(isProduction && { domain: '.eclip.pro' }),
           });
           
+          // Clear the logout timestamp to allow UserContext to refetch
+          response.headers.set('Set-Cookie', `logout_timestamp=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 UTC;`);
+          
           return response;
         }
     } catch (drizzleErr) {

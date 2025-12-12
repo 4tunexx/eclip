@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { acEvents } from '@/lib/db/schema';
-import { getCurrentUser } from '@/lib/auth';
+import { getCurrentUser, isUserModerator } from '@/lib/auth';
 import { eq } from 'drizzle-orm';
 import { z } from 'zod';
 
@@ -16,7 +16,7 @@ export async function PATCH(
   try {
     const { id } = await params;
     const user = await getCurrentUser();
-    if (!user || (user.role !== 'ADMIN' && user.role !== 'MOD')) {
+    if (!user || !isUserModerator(user)) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 403 }

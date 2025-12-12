@@ -377,7 +377,125 @@ export const directMessages = pgTable('direct_messages', {
   recipientId: uuid('recipient_id').references(() => users.id, { onDelete: 'cascade' }).notNull(),
   content: text('content').notNull(),
   read: boolean('read').default(false),
+  createdAt: timestamp('created_at').defaultNow(),
+});
+
+// Anti-Cheat Logs table (track all anti-cheat events)
+export const antiCheatLogs = pgTable('anti_cheat_logs', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  userId: uuid('user_id').references(() => users.id, { onDelete: 'cascade' }).notNull(),
+  matchId: uuid('match_id').references(() => matches.id, { onDelete: 'cascade' }),
+  code: text('code').notNull(),
+  severity: integer('severity').notNull(),
+  details: jsonb('details'),
+  reviewed: boolean('reviewed').default(false),
+  reviewedBy: uuid('reviewed_by').references(() => users.id, { onDelete: 'set null' }),
+  reviewedAt: timestamp('reviewed_at'),
+  status: text('status'),
   createdAt: timestamp('created_at').defaultNow().notNull(),
+});
+
+// User Missions table (relationship between users and missions)
+export const userMissions = pgTable('user_missions', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  userId: uuid('user_id').references(() => users.id, { onDelete: 'cascade' }).notNull(),
+  missionId: uuid('mission_id').references(() => missions.id, { onDelete: 'cascade' }).notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+});
+
+// Achievement Progress table (new - replaces achievementProgress)
+export const achievements_progress = pgTable('achievement_progress', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  userId: uuid('user_id').references(() => users.id, { onDelete: 'cascade' }).notNull(),
+  achievementId: uuid('achievement_id').references(() => achievements.id, { onDelete: 'cascade' }).notNull(),
+  progress: integer('progress').default(0).notNull(),
+  unlockedAt: timestamp('unlocked_at'),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+});
+
+// Mission Progress table (user progress on missions)
+export const mission_progress = pgTable('mission_progress', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  userId: uuid('user_id').references(() => users.id, { onDelete: 'cascade' }).notNull(),
+  missionId: uuid('mission_id').references(() => missions.id, { onDelete: 'cascade' }).notNull(),
+  progress: integer('progress').default(0).notNull(),
+  completedAt: timestamp('completed_at'),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+});
+
+// Queue Entries table (users in queue)
+export const queue_entries = pgTable('queue_entries', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  userId: uuid('user_id').references(() => users.id, { onDelete: 'cascade' }).notNull(),
+  queueStatus: text('queue_status').default('WAITING').notNull(),
+  joinedAt: timestamp('joined_at').defaultNow().notNull(),
+  matchedAt: timestamp('matched_at'),
+  matchId: uuid('match_id').references(() => matches.id, { onDelete: 'set null' }),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+});
+
+// Forum Likes table
+export const forum_likes = pgTable('forum_likes', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  userId: uuid('user_id').references(() => users.id, { onDelete: 'cascade' }).notNull(),
+  threadId: uuid('thread_id').references(() => forumThreads.id, { onDelete: 'cascade' }),
+  replyId: uuid('reply_id').references(() => forumPosts.id, { onDelete: 'cascade' }),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+});
+
+// Forum Replies (alias for posts - new name)
+export const forum_replies = pgTable('forum_replies', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  threadId: uuid('thread_id').references(() => forumThreads.id, { onDelete: 'cascade' }).notNull(),
+  authorId: uuid('author_id').references(() => users.id, { onDelete: 'cascade' }).notNull(),
+  content: text('content').notNull(),
+  isEdited: boolean('is_edited').default(false),
+  editedAt: timestamp('edited_at'),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+});
+
+// Blocked Users table
+export const blocked_users = pgTable('blocked_users', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  userId: uuid('user_id').references(() => users.id, { onDelete: 'cascade' }).notNull(),
+  blockedUserId: uuid('blocked_user_id').references(() => users.id, { onDelete: 'cascade' }).notNull(),
+  reason: text('reason'),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+});
+
+// Reports table (user/match reports)
+export const reports = pgTable('reports', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  reporterId: uuid('reporter_id').references(() => users.id, { onDelete: 'cascade' }).notNull(),
+  reportedUserId: uuid('reported_user_id').references(() => users.id, { onDelete: 'set null' }),
+  matchId: uuid('match_id').references(() => matches.id, { onDelete: 'set null' }),
+  reportType: text('report_type').notNull(),
+  reason: text('reason').notNull(),
+  description: text('description'),
+  status: text('status').default('OPEN').notNull(),
+  reviewedBy: uuid('reviewed_by').references(() => users.id, { onDelete: 'set null' }),
+  reviewedAt: timestamp('reviewed_at'),
+  resolution: text('resolution'),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+});
+
+// Match Stats table
+export const match_stats = pgTable('match_stats', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  matchId: uuid('match_id').references(() => matches.id, { onDelete: 'cascade' }).notNull().unique(),
+  durationSeconds: integer('duration_seconds'),
+  totalKills: integer('total_kills').default(0),
+  totalDeaths: integer('total_deaths').default(0),
+  winningTeam: text('winning_team'),
+  mapName: text('map_name'),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
 
 

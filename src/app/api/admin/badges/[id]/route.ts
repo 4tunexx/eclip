@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { badges } from '@/lib/db/schema';
-import { getCurrentUser } from '@/lib/auth';
+import { getCurrentUser, isUserAdmin } from '@/lib/auth';
 import { eq } from 'drizzle-orm';
 
 // PUT: update badge
@@ -9,7 +9,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
   try {
     const { id } = await params;
     const user = await getCurrentUser();
-    if (!user || user.role !== 'ADMIN') {
+    if (!user || !isUserAdmin(user)) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -61,7 +61,7 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
   try {
     const { id } = await params;
     const user = await getCurrentUser();
-    if (!user || user.role !== 'ADMIN') {
+    if (!user || !isUserAdmin(user)) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 

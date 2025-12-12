@@ -26,12 +26,8 @@ async function checkAdminPermission(userId: string) {
 export async function GET(request: NextRequest) {
   try {
     const user = await getCurrentUser();
-    if (!user) {
+    if (!user || !isUserAdmin(user)) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    if (user.role !== 'ADMIN') {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
     const allAchievements = await db.select().from(achievements).execute();
@@ -53,12 +49,8 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const user = await getCurrentUser();
-    if (!user) {
+    if (!user || !isUserAdmin(user)) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    if (user.role !== 'ADMIN') {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
     const achievementData = await request.json();
@@ -101,12 +93,8 @@ export async function POST(request: NextRequest) {
 export async function PUT(request: NextRequest) {
   try {
     const user = await getCurrentUser();
-    if (!user) {
+    if (!user || !isUserAdmin(user)) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    if (user.role !== 'ADMIN') {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
     const url = new URL(request.url);
@@ -157,12 +145,8 @@ export async function PUT(request: NextRequest) {
 export async function DELETE(request: NextRequest) {
   try {
     const user = await getCurrentUser();
-    if (!user) {
+    if (!user || !isUserAdmin(user)) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    if (user.role !== 'ADMIN') {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
     const url = new URL(request.url);
