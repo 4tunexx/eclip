@@ -56,8 +56,13 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     console.error('Error checking VIP status:', error);
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    console.error('VIP Error Details:', {
+      message: errorMessage,
+      stack: error instanceof Error ? error.stack : undefined,
+    });
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: 'Internal server error', details: errorMessage },
       { status: 500 }
     );
   }
@@ -171,8 +176,13 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error('Error purchasing VIP:', error);
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    console.error('VIP Purchase Error Details:', {
+      message: errorMessage,
+      stack: error instanceof Error ? error.stack : undefined,
+    });
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: 'Internal server error', details: errorMessage },
       { status: 500 }
     );
   }
@@ -228,8 +238,13 @@ export async function DELETE(request: NextRequest) {
     });
   } catch (error) {
     console.error('Error cancelling VIP:', error);
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    console.error('VIP Cancel Error Details:', {
+      message: errorMessage,
+      stack: error instanceof Error ? error.stack : undefined,
+    });
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: 'Internal server error', details: errorMessage },
       { status: 500 }
     );
   }

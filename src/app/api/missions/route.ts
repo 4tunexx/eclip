@@ -69,8 +69,13 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(missionsWithProgress);
   } catch (error) {
     console.error('Error fetching missions:', error);
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    console.error('Mission Error Details:', {
+      message: errorMessage,
+      stack: error instanceof Error ? error.stack : undefined,
+    });
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: 'Internal server error', details: errorMessage },
       { status: 500 }
     );
   }

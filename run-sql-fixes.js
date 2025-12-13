@@ -58,9 +58,37 @@ const pool = new Pool({ connectionString: DATABASE_URL });
     const fix2 = await client.query(`
       UPDATE users SET role = 'ADMIN' WHERE email = 'pawav14370@lawior.com'
     `);
-    console.log(`   ✅ Set ${fix2.rowCount} users as ADMIN\n`);
+    // Fix 4: Create VIP subscriptions table
+    console.log('4️⃣  Creating VIP subscriptions table...');
+    const fix4 = await client.query(`
+      -- Add VIP columns to users table
+      ALTER TABLE users 
+      ADD COLUMN IF NOT EXISTS is_vip boolean DEFAULT false,
+      ADD COLUMN IF NOT EXISTS vip_expires_at timestamp,
+      ADD COLUMN IF NOT EXISTS vip_auto_renew boolean DEFAULT false;
 
-    // Fix 3: Verify all users
+      -- Create VIP Subscriptions table
+      CREATE TABLE IF NOT EXISTS vip_subscriptions (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        purchase_date TIMESTAMP NOT NULL DEFAULT NOW(),
+        expires_at TIMESTAMP NOT NULL,
+        auto_renew BOOLEAN NOT NULL DEFAULT true,
+        renewal_day INTEGER,
+        total_cost_coins INTEGER NOT NULL DEFAULT 100,
+        status TEXT NOT NULL DEFAULT 'active',
+        cancelled_at TIMESTAMP,
+        cancel_reason TEXT,
+        created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+        updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+      );
+
+      -- Create index for efficient lookups
+      CREATE INDEX IF NOT EXISTS idx_vip_subscriptions_user_id ON vip_subscriptions(user_id);
+      CREATE INDEX IF NOT EXISTS idx_vip_subscriptions_expires_at ON vip_subscriptions(expires_at);
+      CREATE INDEX IF NOT EXISTS idx_vip_subscriptions_status ON vip_subscriptions(status);
+    `);
+    console.log(`   ✅ VIP table created/indexed\n`);
     console.log('3️⃣  Current user data:\n');
     const result = await client.query(`
       SELECT id, username, email, rank, rank_tier, rank_division, role, email_verified 
@@ -90,6 +118,7 @@ const pool = new Pool({ connectionString: DATABASE_URL });
     console.log('   ✅ Login with Steam');
     console.log('   ✅ Access /admin panel (with your admin account)');
     console.log('   ✅ See correct ranks (Rookie III, not Bronze)');
+    console.log('   ✅ VIP subscriptions table created');
     console.log('   ✅ All features working 100%\n');
 
   } catch (error) {

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { config } from '@/lib/config';
 import postgres from 'postgres';
 import { db } from '@/lib/db';
-import { users } from '@/lib/db/schema';
+import { users, sessions } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
 import { createSession, getSession } from '@/lib/auth';
 import { getRankFromESR } from '@/lib/rank-calculator';
